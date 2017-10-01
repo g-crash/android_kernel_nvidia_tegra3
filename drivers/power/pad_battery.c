@@ -876,47 +876,47 @@ static int pad_remove(struct i2c_client *client)
 	return 0;
 }
 
-#if defined (CONFIG_PM)
-static int pad_suspend(struct i2c_client *client,
-	pm_message_t state)
+static int pad_suspend(struct device *dev)
 {
-
 	cancel_delayed_work_sync(&pad_device->status_poll_work);
 	del_timer_sync(&pad_device->charger_pad_dock_detect_timer);
        flush_workqueue(battery_work_queue);
-	if(tegra3_get_project_id()==TEGRA3_PROJECT_TF201)
+	if(tegra3_get_project_id() == TEGRA3_PROJECT_TF201)
 		gpio_direction_output(TEGRA_GPIO_PU3, 0);
 	return 0;
 }
 
 /* any smbus transaction will wake up pad */
 
-static int pad_resume(struct i2c_client *client)
+static int pad_resume(struct device *dev)
 {
-	pad_device->battery_present =!(gpio_get_value(pad_device->gpio_battery_detect));
+	pad_device->battery_present =! (gpio_get_value(pad_device->gpio_battery_detect));
 	cancel_delayed_work(&pad_device->status_poll_work);
-	queue_delayed_work(battery_work_queue,&pad_device->status_poll_work,5*HZ);
-	if(tegra3_get_project_id()==TEGRA3_PROJECT_TF201)
+	queue_delayed_work(battery_work_queue, &pad_device->status_poll_work,5 * HZ);
+	if(tegra3_get_project_id() == TEGRA3_PROJECT_TF201)
 		gpio_direction_output(TEGRA_GPIO_PU3, 1);
 	return 0;
 }
-#endif
 
 static const struct i2c_device_id pad_id[] = {
 	{ "pad-battery", 0 },
 	{},
 };
 
+static const struct dev_pm_ops pad_pm_ops = {
+	.suspend	= pad_suspend,
+	.resume		= pad_resume,
+};
+
 static struct i2c_driver pad_battery_driver = {
 	.probe		= pad_probe,
 	.remove 	= pad_remove,
-#if defined (CONFIG_PM)
-	.suspend	= pad_suspend,
-	.resume 	= pad_resume,
-#endif
 	.id_table	= pad_id,
 	.driver = {
 		.name	= "pad-battery",
+#ifdef CONFIG_PM
+		.pm		= &pad_pm_ops,
+#endif
 	},
 };
 static int __init pad_battery_init(void)
