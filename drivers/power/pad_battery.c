@@ -32,13 +32,13 @@
 #include <linux/interrupt.h>
 #include <linux/wakelock.h>
 
-#include <linux/miscdevice.h>
 #include <mach/gpio.h>
 #include <linux/timer.h>
 #include "../../arch/arm/mach-tegra/gpio-names.h"
 #include "../../arch/arm/mach-tegra/wakeups-t3.h"
-#include <mach/board-cardhu-misc.h>
+#include <mach/board-asus-t30-misc.h>
 #include <linux/delay.h>
+
 #define SMBUS_RETRY                                     (3)
 #define BAT_IN_DET                                        TEGRA_GPIO_PN4
 #define GPIOPIN_BATTERY_DETECT	         BAT_IN_DET
@@ -55,6 +55,7 @@
 #define USB_Cable ((1 << (USB_SHIFT)) | (USB_DETECT_CABLE))
 #define USB_AC_Adapter ((1 << (AC_SHIFT)) | (USB_DETECT_CABLE))
 #define USB_CALBE_DETECT_MASK (USB_Cable  | USB_DETECT_CABLE)
+
 unsigned battery_cable_status=0;
 unsigned battery_docking_status=0;
 unsigned battery_driver_ready=0;
@@ -65,6 +66,7 @@ static unsigned int 	battery_current;
 static unsigned int  battery_remaining_capacity;
 module_param(battery_current, uint, 0644);
 module_param(battery_remaining_capacity, uint, 0644);
+
 enum {
        REG_MANUFACTURER_DATA,  	
 	REG_STATE_OF_HEALTH,
@@ -234,7 +236,6 @@ static struct power_supply pad_supply[] = {
 
 static struct pad_device_info {
 	struct i2c_client	*client;
-        struct delayed_work battery_stress_test;
 	struct delayed_work thermal_stress_test;
 	struct delayed_work pmu_stress_test;
 	struct delayed_work status_poll_work;
@@ -253,7 +254,6 @@ static struct pad_device_info {
 	int irq_battery_detect;
 	bool dock_charger_pad_interrupt_enabled;
 	spinlock_t		lock;
-	struct miscdevice battery_misc;
 	unsigned int prj_id;
 	struct wake_lock low_battery_wake_lock;
 	struct wake_lock cable_event_wake_lock;
@@ -784,7 +784,7 @@ static int pad_get_property(struct power_supply *psy,
 		
 	return -EINVAL;	
 }
-#include "stress_test.c"
+
 void config_thermal_power(void)
 {
 	int ret;
@@ -830,7 +830,6 @@ static int pad_probe(struct i2c_client *client,
 	dev_info(&pad_device->client->dev,"%s: battery driver registered\n", client->name);
        spin_lock_init(&pad_device->lock);
 	INIT_DELAYED_WORK(&pad_device->status_poll_work, battery_status_poll) ;
-       INIT_DELAYED_WORK(&pad_device->battery_stress_test,  battery_strees_test) ;
 	INIT_DELAYED_WORK(&pad_device->low_low_bat_work , low_low_battery_check) ;
         battery_work_queue = create_singlethread_workqueue("battery_workqueue");
 	setup_timer(&pad_device->charger_pad_dock_detect_timer, charger_pad_dock_detection, 0);
@@ -850,12 +849,6 @@ static int pad_probe(struct i2c_client *client,
 	 cancel_delayed_work(&pad_device->status_poll_work);
 	 setup_detect_irq();
 	 setup_low_battery_irq();
-        pad_device->battery_misc.minor	= MISC_DYNAMIC_MINOR;
-	 pad_device->battery_misc.name	= "battery";
-	 pad_device->battery_misc.fops  	= &battery_fops;
-        rc=misc_register(&pad_device->battery_misc);
-	 printk(KERN_INFO "battery register misc device for I2C stress test rc=%x\n", rc);
-
 	 wake_lock_init(&pad_device->low_battery_wake_lock, WAKE_LOCK_SUSPEND, "low_battery_detection");
 	 wake_lock_init(&pad_device->cable_event_wake_lock, WAKE_LOCK_SUSPEND, "battery_cable_event");
 	 battery_driver_ready=1;
