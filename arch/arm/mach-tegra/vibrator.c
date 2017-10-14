@@ -51,10 +51,12 @@ static struct timed_output_dev tegra_vibrator = {
         .get_time       = vibrator_get_time,
         .enable         = vibrator_enable,
 };
-static void stop_vibrator(void)
+
+static void stop_vibrator(unsigned long trigger)
 {
-	gpio_direction_output(TEGRA_GPIO_PH7, 0);
+	gpio_direction_output(TEGRA_GPIO_PH7, trigger);
 }
+
 static int __init vibrator_init(void)
 {
 	int ret;
@@ -93,7 +95,7 @@ static int __init vibrator_init(void)
 static void __exit vibrator_exit(void)
 {
 	del_timer_sync(&v_timer);
-	stop_vibrator();
+	stop_vibrator(0);
 	timed_output_dev_unregister(&tegra_vibrator);
 }
 
