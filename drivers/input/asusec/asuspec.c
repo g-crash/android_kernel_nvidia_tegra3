@@ -25,7 +25,7 @@
 
 #include <../gpio-names.h>
 
-#include <mach/board-cardhu-misc.h>
+#include <mach/board-asus-t30-misc.h>
 
 #include "asuspec.h"
 #include "ec_gpio.h"
@@ -558,10 +558,8 @@ static int asuspec_irq_ec_request(struct i2c_client *client)
 {
 	int rc = 0 ;
 	unsigned gpio = asuspec_ecreq_gpio;
-	int irq = gpio_to_irq(gpio);
 	const char* label = "asuspec_request" ;
 
-	ASUSPEC_INFO("gpio = %d, irq = %d\n", gpio, irq);
 	ASUSPEC_INFO("GPIO = %d , state = %d\n", gpio, gpio_get_value(gpio));
 
 	rc = gpio_request(gpio, label);

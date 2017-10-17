@@ -23,7 +23,7 @@
 
 #include <../gpio-names.h>
 
-#include <mach/board-cardhu-misc.h>
+#include <mach/board-asus-t30-misc.h>
 
 #include "asusdec.h"
 #include "ec_gpio.h"
@@ -924,10 +924,8 @@ static int asusdec_irq_ec_request(struct i2c_client *client)
 {
 	int rc = 0 ;
 	unsigned gpio = asusdec_ecreq_gpio;
-	unsigned irq = gpio_to_irq(asusdec_apwake_gpio);
 	const char* label = "asusdec_request" ;
 
-	ASUSDEC_INFO("gpio = %d, irq = %d\n", gpio, irq);
 	ASUSDEC_INFO("GPIO = %d , state = %d\n", gpio, gpio_get_value(gpio));
 
 	rc = gpio_request(gpio, label);
@@ -1614,7 +1612,6 @@ static void asusdec_stresstest_work_function(struct work_struct *dat)
 static void asusdec_dock_init_work_function(struct work_struct *dat)
 {
 	int gpio = asusdec_dock_in_gpio;
-	int irq = gpio_to_irq(gpio);
 	int i = 0;
 	int d_counter = 0;
 	int gpio_state = 0;

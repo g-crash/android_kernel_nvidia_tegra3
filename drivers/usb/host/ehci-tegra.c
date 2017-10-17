@@ -148,20 +148,6 @@ static void gpio_dock_in_irq_init(struct usb_hcd *hcd)
 	printk(KERN_INFO "%s: request irq = %d, ret = %d\n", __func__, gpio_dock_in_irq, ret);
 	INIT_DELAYED_WORK(&usb3_ehci_dock_in_work, usb3_ehci_dock_in_work_handler);
 }
-
-void tegra_ehci_modem_port_host_reregister(void)
-{
-	if (!modem_port_device) {
-		pr_err("%s: !modem_port_device\n", __func__);
-		return -EINVAL;
-	}
-
-	tegra_cardhu_usb_utmip_host_unregister(modem_port_device);
-	modem_port_device = NULL;
-	mdelay(500);
-	modem_port_device = tegra_cardhu_usb_utmip_host_register();
-}
-EXPORT_SYMBOL(tegra_ehci_modem_port_host_reregister);
 #endif /* CONFIG_MACH_TRANSFORMER */
 
 static struct usb_phy *get_usb_phy(struct tegra_usb_phy *x)
