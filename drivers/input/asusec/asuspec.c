@@ -28,7 +28,6 @@
 #include <mach/board-asus-t30-misc.h>
 
 #include "asuspec.h"
-#include "ec_gpio.h"
 
 MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL");
@@ -540,10 +539,9 @@ fail_to_access_ec:
 }
 
 static irqreturn_t asuspec_interrupt_handler(int irq, void *dev_id){
-	int gpio = irq_to_gpio(irq);
 
-	ASUSPEC_INFO("interrupt irq = %d, gpio = %d\n", irq, gpio);
-	if (gpio == asuspec_apwake_gpio){
+	ASUSPEC_INFO("interrupt irq = %d\n", irq);
+	if (irq == gpio_to_irq(asuspec_apwake_gpio)){
 		disable_irq_nosync(irq);
 		if (ec_chip->op_mode){
 			queue_delayed_work(asuspec_wq, &ec_chip->asuspec_fw_update_work, 0);

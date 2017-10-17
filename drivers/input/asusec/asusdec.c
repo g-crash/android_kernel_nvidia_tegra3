@@ -26,7 +26,6 @@
 #include <mach/board-asus-t30-misc.h>
 
 #include "asusdec.h"
-#include "ec_gpio.h"
 #include "elan_i2c_asus.h"
 
 MODULE_DESCRIPTION(DRIVER_DESC);
@@ -757,12 +756,9 @@ fail_to_access_ec:
 
 }
 
-
 static irqreturn_t asusdec_interrupt_handler(int irq, void *dev_id){
 
-	int gpio = irq_to_gpio(irq);
-
-	if (gpio == asusdec_apwake_gpio){
+	if (irq == gpio_to_irq(asusdec_apwake_gpio)){
 		disable_irq_nosync(irq);
 		if (ec_chip->op_mode){
 			queue_delayed_work(asusdec_wq, &ec_chip->asusdec_fw_update_work, 0);
@@ -778,11 +774,11 @@ static irqreturn_t asusdec_interrupt_handler(int irq, void *dev_id){
 			queue_delayed_work(asusdec_wq, &ec_chip->asusdec_work, 0);
 		}
 	}
-	else if (gpio == asusdec_dock_in_gpio){
+	else if (irq == gpio_to_irq(asusdec_dock_in_gpio)){
 		ec_chip->dock_in = 0;
 		ec_chip->dock_det++;
 		queue_delayed_work(asusdec_wq, &ec_chip->asusdec_dock_init_work, 0);
-	} else if (gpio == asusdec_hall_sensor_gpio){
+	} else if (irq == gpio_to_irq(asusdec_hall_sensor_gpio)){
 		queue_delayed_work(asusdec_wq, &ec_chip->asusdec_hall_sensor_work, 0);
 	}
 	return IRQ_HANDLED;
