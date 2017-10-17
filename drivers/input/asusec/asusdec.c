@@ -189,16 +189,20 @@ struct file_operations asusdec_fops = {
 	.release = asusdec_release,
 };
 
+static struct dev_pm_ops asusdec_dev_pm_ops ={
+	.suspend = asusdec_suspend,
+	.resume = asusdec_resume,
+};
+
 static struct i2c_driver asusdec_driver = {
 	.class	= I2C_CLASS_HWMON,
 	.driver	 = {
 		.name = "asusdec",
 		.owner = THIS_MODULE,
+		.pm = &asusdec_dev_pm_ops,
 	},
 	.probe	 = asusdec_probe,
 	.remove	 = __devexit_p(asusdec_remove),
-	.suspend = asusdec_suspend,
-	.resume = asusdec_resume,
 	.id_table = asusdec_id,
 };
 

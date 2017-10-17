@@ -141,16 +141,20 @@ struct file_operations asuspec_fops = {
 	.release = asuspec_release,
 };
 
+static struct dev_pm_ops asuspec_dev_pm_ops ={
+	.suspend = asuspec_suspend,
+	.resume = asuspec_resume,
+};
+
 static struct i2c_driver asuspec_driver = {
 	.class	= I2C_CLASS_HWMON,
 	.driver	 = {
 		.name = "asuspec",
 		.owner = THIS_MODULE,
+		.pm = &asuspec_dev_pm_ops,
 	},
 	.probe	 = asuspec_probe,
 	.remove	 = __devexit_p(asuspec_remove),
-	.suspend = asuspec_suspend,
-	.resume = asuspec_resume,
 	.id_table = asuspec_id,
 };
 
