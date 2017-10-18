@@ -87,8 +87,8 @@ static int asusdec_touchpad_get_response(struct i2c_client *client, int res);
 static int asusdec_touchpad_enable(struct i2c_client *client);
 static int asusdec_touchpad_disable(struct i2c_client *client);
 //static int asusdec_touchpad_reset(struct i2c_client *client);
-static int asusdec_suspend(struct i2c_client *client, pm_message_t mesg);
-static int asusdec_resume(struct i2c_client *client);
+static int asusdec_suspend(struct device *dev);
+static int asusdec_resume(struct device *dev);
 static int asusdec_open(struct inode *inode, struct file *flip);
 static int asusdec_release(struct inode *inode, struct file *flip);
 static long asusdec_ioctl(struct file *flip, unsigned int cmd, unsigned long arg);
@@ -2256,7 +2256,8 @@ static ssize_t asusdec_show_lid_status(struct device *class,struct device_attrib
 	return sprintf(buf, "%d\n", gpio_get_value(asusdec_hall_sensor_gpio));
 }
 
-static int asusdec_suspend(struct i2c_client *client, pm_message_t mesg){
+static int asusdec_suspend(struct device *dev)
+{
 	int ret_val;
 
 	ASUSDEC_NOTICE("asusdec_suspend+\n");
@@ -2292,7 +2293,8 @@ fail_to_access_ec:
 	return 0;
 }
 
-static int asusdec_resume(struct i2c_client *client){
+static int asusdec_resume(struct device *dev)
+{
 
 	printk("asusdec_resume+\n");
 	if ((gpio_get_value(asusdec_dock_in_gpio) == 0) && gpio_get_value(asusdec_apwake_gpio)) {
@@ -2729,7 +2731,6 @@ int asusAudiodec_cable_type_callback (void) {
 			}
 		}
 	}
-fail_to_access_mcu:
 	ASUSDEC_NOTICE("MCU doesn't exist or fail to access MCU\n");
 	return -1;
 }

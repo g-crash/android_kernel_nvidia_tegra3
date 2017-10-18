@@ -79,8 +79,8 @@ static ssize_t asuspec_switch_name(struct switch_dev *sdev, char *buf);
 static ssize_t asuspec_switch_state(struct switch_dev *sdev, char *buf);
 static ssize_t apower_switch_name(struct switch_dev *sdev, char *buf);
 static ssize_t apower_switch_state(struct switch_dev *sdev, char *buf);
-static int asuspec_suspend(struct i2c_client *client, pm_message_t mesg);
-static int asuspec_resume(struct i2c_client *client);
+static int asuspec_suspend(struct device *dev);
+static int asuspec_resume(struct device *dev);
 static int asuspec_open(struct inode *inode, struct file *flip);
 static int asuspec_release(struct inode *inode, struct file *flip);
 static long asuspec_ioctl(struct file *flip, unsigned int cmd, unsigned long arg);
@@ -1102,7 +1102,8 @@ static ssize_t apower_switch_state(struct switch_dev *sdev, char *buf)
 	return sprintf(buf, "%d\n", ec_chip->apower_state);
 }
 
-static int asuspec_suspend(struct i2c_client *client, pm_message_t mesg){
+static int asuspec_suspend(struct device *dev)
+{
 	printk("asuspec_suspend+\n");
 	del_timer_sync(&ec_chip->asuspec_timer);
 	ec_chip->ec_in_s3 = 1;
@@ -1110,22 +1111,24 @@ static int asuspec_suspend(struct i2c_client *client, pm_message_t mesg){
 	return 0;
 }
 
-static int asuspec_resume(struct i2c_client *client){
+static int asuspec_resume(struct device *dev)
+{
 	printk("asuspec_resume+\n");
 	ec_chip->i2c_err_count = 0;
 	printk("asuspec_resume-\n");
 	return 0;
 }
 
-
 static int asuspec_open(struct inode *inode, struct file *flip){
 	ASUSPEC_NOTICE("\n");
 	return 0;
 }
+
 static int asuspec_release(struct inode *inode, struct file *flip){
 	ASUSPEC_NOTICE("\n");
 	return 0;
 }
+
 static long asuspec_ioctl(struct file *flip,
 					unsigned int cmd, unsigned long arg){
 	int err = 1;
