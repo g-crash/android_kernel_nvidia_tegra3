@@ -521,24 +521,6 @@ static struct uart_clk_parent uart_parent_clk[] = {
 static struct tegra_uart_platform_data cardhu_uart_pdata;
 static struct tegra_uart_platform_data cardhu_loopback_uart_pdata;
 
-static unsigned int debug_uart_port_irq;
-
-static char *uart_names[] = {
-	"uarta",
-	"uartb",
-	"uartc",
-	"uartd",
-	"uarte",
-};
-
-static struct platform_device *debug_uarts[] = {
-	&debug_uarta_device,
-	&debug_uartb_device,
-	&debug_uartc_device,
-	&debug_uartd_device,
-	&debug_uarte_device,
-};
-
 static int __init uart_debug_init(void)
 {
 	struct board_info board_info;
