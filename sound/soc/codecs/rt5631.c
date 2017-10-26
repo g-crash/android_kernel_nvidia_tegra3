@@ -29,6 +29,11 @@
 
 #include "rt5631.h"
 
+#ifdef CONFIG_AUDIO_DOCK
+struct snd_soc_codec *rt5631_audio_codec = NULL;
+EXPORT_SYMBOL(rt5631_audio_codec) ;
+#endif
+
 struct rt5631_priv {
 	int codec_version;
 	int master;
@@ -1630,6 +1635,9 @@ static int rt5631_probe(struct snd_soc_codec *codec)
 	}
 
 	codec->dapm.bias_level = SND_SOC_BIAS_STANDBY;
+#ifdef CONFIG_AUDIO_DOCK
+    rt5631_audio_codec = codec;
+#endif
 
 	return 0;
 }
