@@ -162,8 +162,6 @@ static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_codec *codec = rtd->codec;
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
-	struct snd_soc_card *card = codec->card;
-	struct tegra_rt5631 *machine = snd_soc_card_get_drvdata(card);
 
 	int ret;
 	printk("%s+\n", __func__);
