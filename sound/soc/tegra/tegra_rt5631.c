@@ -41,8 +41,6 @@ struct tegra_rt5631 {
 extern bool headset_alive;
 extern bool lineout_alive;
 extern struct snd_soc_codec *rt5631_audio_codec;
-static bool audio_dock_in = false;
-static bool audio_stand_in = false;
 extern void audio_dock_init(void);
 
 static int tegra_rt5631_hw_params(struct snd_pcm_substream *substream,
