@@ -1374,20 +1374,30 @@ static struct therm_est_data skin_data = {
 	.devs = skin_devs,
 };
 
+static struct throttle_table skin_throttle_table[] = {
+		/* CPU_THROT_LOW cannot be used by other than CPU */
+		/* NO_CAP cannot be used by CPU */
+		/*    CPU,    CBUS,    SCLK,     EMC */
+		{ { 1000000,  NO_CAP,  NO_CAP,  NO_CAP } },
+		{ {  760000,  NO_CAP,  NO_CAP,  NO_CAP } },
+		{ {  760000,  NO_CAP,  NO_CAP,  NO_CAP } },
+		{ {  620000,  NO_CAP,  NO_CAP,  NO_CAP } },
+		{ {  620000,  NO_CAP,  NO_CAP,  NO_CAP } },
+		{ {  620000,  437000,  NO_CAP,  NO_CAP } },
+		{ {  620000,  352000,  NO_CAP,  NO_CAP } },
+		{ {  475000,  352000,  NO_CAP,  NO_CAP } },
+		{ {  475000,  352000,  NO_CAP,  NO_CAP } },
+		{ {  475000,  352000,  250000,  375000 } },
+		{ {  475000,  352000,  250000,  375000 } },
+		{ {  475000,  247000,  204000,  375000 } },
+		{ {  475000,  247000,  204000,  204000 } },
+		{ {  475000,  247000,  204000,  204000 } },
+	  { { CPU_THROT_LOW,  247000,  204000,  102000 } },
+};
+
 static struct balanced_throttle skin_throttle = {
-	.throt_tab_size = 10,
-	.throt_tab = {
-		{ 0, 1000 },
-		{ 640000, 1000 },
-		{ 640000, 1000 },
-		{ 640000, 1000 },
-		{ 640000, 1000 },
-		{ 640000, 1000 },
-		{ 760000, 1000 },
-		{ 760000, 1050 },
-		{1000000, 1050 },
-		{1000000, 1100 },
-	},
+	.throt_tab_size = ARRAY_SIZE(skin_throttle_table),
+	.throt_tab = skin_throttle_table,
 };
 
 static int __init cardhu_skin_init(void)
