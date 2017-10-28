@@ -91,7 +91,6 @@ static void gpio_limit_set1_detection_work_handler(struct work_struct *w);
 extern void  register_usb_cable_status_cb(unsigned  (*fn) (void));
 extern int usb_suspend_tag;
 extern unsigned int previous_cable_status;
-extern int cable_detect_callback(unsigned cable_state);
 
 struct cable_info {
 	/*
@@ -1862,11 +1861,8 @@ static int tegra_vbus_session(struct usb_gadget *gadget, int is_active)
 #endif
 	}
 	mutex_unlock(&udc->sync_lock);
+
 #ifdef CONFIG_MACH_TRANSFORMER
-
-if (project_id == TEGRA3_PROJECT_ME301T)
-		cable_detect_callback(s_cable_info.cable_status);
-
 #if BATTERY_CALLBACK_ENABLED
 	if(previous_cable_status != udc->connect_type && project_id != TEGRA3_PROJECT_ME301T) {
 		if(project_id == TEGRA3_PROJECT_P1801) {
