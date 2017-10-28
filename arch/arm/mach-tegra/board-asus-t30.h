@@ -244,9 +244,6 @@ void tegra_usb3_utmip_host_unregister(struct platform_device *pdev);
 
 extern struct tegra_uart_platform_data cardhu_irda_pdata;
 
-#define MPU_TYPE_MPU3050	1
-#define MPU_TYPE_MPU6050	2
-#define MPU_GYRO_TYPE		MPU_TYPE_MPU3050
 /* Invensense MPU Definitions */
 #define MPU_GYRO_NAME		"mpu3050"
 #define MPU6050_GYRO_NAME		"mpu6050"
@@ -267,27 +264,10 @@ extern struct tegra_uart_platform_data cardhu_irda_pdata;
 #define MPU_COMPASS_BUS_NUM	2
 #define MPU_COMPASS_ORIENTATION	{ -1, 0, 0, 0, 1, 0, 0, 0, -1 }
 
-//Sensors orientation matrix for TF300T
-#define TF300T_GYRO_ORIENTATION		{ -1, 0, 0, 0, 1, 0, 0, 0, -1 }
-#define TF300T_ACCEL_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
-#define TF300T_COMPASS_ORIENTATION	{ 0, -1, 0, -1, 0, 0, 0, 0, -1 }
-
 //Sensors orientation matrix for TF300TG
 #define TF300TG_GYRO_ORIENTATION		{ -1, 0, 0, 0, 1, 0, 0, 0, -1 }
 //#define TF300TG_ACCEL_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
 #define TF300TG_COMPASS_ORIENTATION	{ 1, 0, 0, 0, -1, 0, 0, 0, -1 }
-
-/*
-//Sensors orientation matrix for TF700T
-#define TF700T_GYRO_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
-#define TF700T_ACCEL_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
-#define TF700T_COMPASS_ORIENTATION	{ 1, 0, 0, 0, -1, 0, 0, 0, -1 }
-
-//Sensors orientation matrix for TF300TL
-#define TF300TL_GYRO_ORIENTATION		{ -1, 0, 0, 0, 1, 0, 0, 0, -1 }
-#define TF300TL_ACCEL_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
-#define TF300TL_COMPASS_ORIENTATION	{ -1, 0, 0, 0, -1, 0, 0, 0, 1 }
-*/
 
 //Sensors orientation matrix for TF500T
 #define TF500T_GYRO_ORIENTATION		{ 0, -1, 0, 1, 0, 0, 0, 0, 1 }
