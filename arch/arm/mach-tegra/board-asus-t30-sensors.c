@@ -117,11 +117,9 @@ static int IsTF300(void)
 {
     u32 project_info = tegra3_get_project_id();
 
-    if (project_info == TEGRA3_PROJECT_TF300T)
-        return 1;
-    else if (project_info == TEGRA3_PROJECT_TF300TG)
-        return 1;
-    else if (project_info == TEGRA3_PROJECT_TF300TL)
+    if ((project_info == TEGRA3_PROJECT_TF300T) || 
+       (project_info == TEGRA3_PROJECT_TF300TG) || 
+       (project_info == TEGRA3_PROJECT_TF300TL))
         return 1;
     else
         return 0;
@@ -1463,43 +1461,38 @@ static int __init cam_tca6416_init(void)
 }
 #endif
 
-static struct mpu_platform_data mpu3050_data = {
+/* MPU board file definition	*/
+static struct mpu_platform_data mpu_gyro_data = {
 	.int_config	= 0x10,
 	.level_shifter	= 0,
 	.orientation	= MPU_GYRO_ORIENTATION,	/* Located in board_[platformname].h	*/
+	.sec_slave_type	= SECONDARY_SLAVE_TYPE_ACCEL,
+	.sec_slave_id	= ACCEL_ID_KXTF9,
+	.secondary_i2c_addr	= MPU_ACCEL_ADDR,
+	.secondary_read_reg	= 0x06,
+	.secondary_orientation	= MPU_ACCEL_ORIENTATION,
+	.key		= {0x4E, 0xCC, 0x7E, 0xEB, 0xF6, 0x1E, 0x35, 0x22,
+			   0x00, 0x34, 0x0D, 0x65, 0x32, 0xE9, 0x94, 0x89},
 };
 
-static struct ext_slave_platform_data mpu3050_accel_data = {
-	.address	= MPU_ACCEL_ADDR,
-	.irq		= 0,
-	.adapt_num	= MPU_ACCEL_BUS_NUM,
-	.bus		= EXT_SLAVE_BUS_SECONDARY,
-	.orientation	= MPU_ACCEL_ORIENTATION,	/* Located in board_[platformname].h	*/
-};
-
-static struct ext_slave_platform_data mpu3050_compass_data = {
-	.address	= MPU_COMPASS_ADDR,
-	.irq		= 0,
-	.adapt_num	= MPU_COMPASS_BUS_NUM,
-	.bus		= EXT_SLAVE_BUS_PRIMARY,
-	.orientation	= MPU_COMPASS_ORIENTATION,	/* Located in board_[platformname].h	*/
+static struct mpu_platform_data mpu_compass_data = {
+	.orientation    = MPU_COMPASS_ORIENTATION,
+	.sec_slave_type = SECONDARY_SLAVE_TYPE_NONE,
 };
 
 static struct i2c_board_info __initdata inv_mpu_i2c2_board_info[] = {
 	{
-		I2C_BOARD_INFO(MPU3050_GYRO_NAME, MPU3050_GYRO_ADDR),
-		.platform_data = &mpu3050_data,
+		I2C_BOARD_INFO(MPU_GYRO_NAME, MPU_GYRO_ADDR),
+		.platform_data = &mpu_gyro_data,
 	},
 	{
 		I2C_BOARD_INFO(MPU_ACCEL_NAME, MPU_ACCEL_ADDR),
-		.platform_data = &mpu3050_accel_data,
 	},
 	{
 		I2C_BOARD_INFO(MPU_COMPASS_NAME, MPU_COMPASS_ADDR),
-		.platform_data = &mpu3050_compass_data,
+		.platform_data = &mpu_compass_data,
 	},
 };
-
 
 //CONFIG_MPU_SENSORS_MPU6050B1
 static struct mpu_platform_data mpu6050_data = {
@@ -1618,69 +1611,10 @@ static void mpuirq6050_init(void)
 
 static void mpuirq_init(void)
 {
-	u32 project_info;
 	int ret = 0;
 	int i = 0;
-	pr_info("*** MPU START *** cardhu_mpuirq_init...\n");
-
-	project_info = tegra3_get_project_id();
-
-	if (project_info == TEGRA3_PROJECT_TF300T)
-	{
-		/* Use "TF300T" to check the project name */
-		struct mpu_orientation_def TF300T = {
-			TF300T_GYRO_ORIENTATION,
-			TF300T_ACCEL_ORIENTATION,
-			TF300T_COMPASS_ORIENTATION,
-			};
-
-		pr_info("initial mpu with TF300T config...\n");
-		memcpy( mpu3050_data.orientation, TF300T.gyro_orientation, sizeof(mpu3050_data.orientation));
-		memcpy( mpu3050_accel_data.orientation, TF300T.accel_orientation, sizeof(mpu3050_accel_data.orientation));
-		memcpy( mpu3050_compass_data.orientation, TF300T.compass_orientation, sizeof(mpu3050_compass_data.orientation));
-	}
-	else if (project_info == TEGRA3_PROJECT_TF300TG)
-	{
-		/* Use "TF300TG" to check the project name */
-		struct mpu_orientation_def TF300TG = {
-			TF300TG_GYRO_ORIENTATION,
-			TF300TG_ACCEL_ORIENTATION,
-			TF300TG_COMPASS_ORIENTATION,
-			};
-
-		pr_info("initial mpu with TF300TG config...\n");
-		memcpy( mpu3050_data.orientation, TF300TG.gyro_orientation, sizeof(mpu3050_data.orientation));
-		memcpy( mpu3050_accel_data.orientation, TF300TG.accel_orientation, sizeof(mpu3050_accel_data.orientation));
-		memcpy( mpu3050_compass_data.orientation, TF300TG.compass_orientation, sizeof(mpu3050_compass_data.orientation));
-	}
-	else if (project_info == TEGRA3_PROJECT_TF700T)
-	{
-		/* Use "TF700T" to check the project name */
-		struct mpu_orientation_def TF700T = {
-			TF700T_GYRO_ORIENTATION,
-			TF700T_ACCEL_ORIENTATION,
-			TF700T_COMPASS_ORIENTATION,
-			};
-
-		pr_info("initial mpu with TF700T config...\n");
-		memcpy( mpu3050_data.orientation, TF700T.gyro_orientation, sizeof(mpu3050_data.orientation));
-		memcpy( mpu3050_accel_data.orientation, TF700T.accel_orientation, sizeof(mpu3050_accel_data.orientation));
-		memcpy( mpu3050_compass_data.orientation, TF700T.compass_orientation, sizeof(mpu3050_compass_data.orientation));
-	}
-	else if (project_info == TEGRA3_PROJECT_TF300TL)
-	{
-		/* Use "TF300TL" to check the project name */
-		struct mpu_orientation_def TF300TL = {
-			TF300TL_GYRO_ORIENTATION,
-			TF300TL_ACCEL_ORIENTATION,
-			TF300TL_COMPASS_ORIENTATION,
-			};
-
-		pr_info("initial mpu with TF300TL config...\n");
-		memcpy( mpu3050_data.orientation, TF300TL.gyro_orientation, sizeof(mpu3050_data.orientation));
-		memcpy( mpu3050_accel_data.orientation, TF300TL.accel_orientation, sizeof(mpu3050_accel_data.orientation));
-		memcpy( mpu3050_compass_data.orientation, TF300TL.compass_orientation, sizeof(mpu3050_compass_data.orientation));
-	}
+	
+	pr_info("*** MPU START *** mpuirq_init...\n");
 
 #if	MPU_ACCEL_IRQ_GPIO
 	/* ACCEL-IRQ assignment */
@@ -1699,7 +1633,7 @@ static void mpuirq_init(void)
 #endif
 
 	/* MPU-IRQ assignment */
-	/*ret = gpio_request(MPU_GYRO_IRQ_GPIO, MPU_GYRO_NAME);
+	ret = gpio_request(MPU_GYRO_IRQ_GPIO, MPU_GYRO_NAME);
 	if (ret < 0) {
 		pr_err("%s: gpio_request failed %d\n", __func__, ret);
 		return;
@@ -1710,7 +1644,7 @@ static void mpuirq_init(void)
 		pr_err("%s: gpio_direction_input failed %d\n", __func__, ret);
 		gpio_free(MPU_GYRO_IRQ_GPIO);
 		return;
-	}*/
+	}
 	pr_info("*** MPU END *** mpuirq_init...\n");
 
 	inv_mpu_i2c2_board_info[i++].irq = gpio_to_irq(MPU_GYRO_IRQ_GPIO);
