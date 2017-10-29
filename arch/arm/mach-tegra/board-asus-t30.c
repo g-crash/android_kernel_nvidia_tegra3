@@ -521,7 +521,17 @@ static struct uart_clk_parent uart_parent_clk[] = {
 static struct tegra_uart_platform_data cardhu_uart_pdata;
 static struct tegra_uart_platform_data cardhu_loopback_uart_pdata;
 
-static int __init uart_debug_init(void)
+static unsigned int debug_uart_port_irq;
+
+static struct platform_device *debug_uarts[] = {
+	&debug_uarta_device,
+	&debug_uartb_device,
+	&debug_uartc_device,
+	&debug_uartd_device,
+	&debug_uarte_device,
+};
+
+static void __init uart_debug_init(void)
 {
 	struct board_info board_info;
 	int debug_port_id;
@@ -543,10 +553,15 @@ static int __init uart_debug_init(void)
 
 	debug_port_id = uart_console_debug_init(default_debug_port);
 	if (debug_port_id < 0)
-		return debug_port_id;
+		return;
+
+    if (debug_port_id >= ARRAY_SIZE(debug_uarts)) {
+		pr_info("The debug console id %d is invalid, Assuming UARTA",
+			debug_port_id);
+		debug_port_id = 0;
+	}
 
 	cardhu_uart_devices[debug_port_id] = uart_console_debug_device;
-	return debug_port_id;
 }
 
 static void __init cardhu_uart_init(void)
@@ -594,6 +609,9 @@ static void __init cardhu_uart_init(void)
 		tegra_uartb_device.dev.platform_data = &cardhu_irda_pdata;
 	}
 #endif
+
+	tegra_serial_debug_init(debug_uart_port_base, debug_uart_port_irq,
+				debug_uart_clk, -1, -1);
 
 	platform_add_devices(cardhu_uart_devices,
 				ARRAY_SIZE(cardhu_uart_devices));
