@@ -837,6 +837,10 @@ static void mxt_proc_t9_messages(struct mxt_data *data, u8 *message)
 	}
 
 	if (status & MXT_T9_DETECT) {
+#ifdef CONFIG_MACH_TRANSFORMER
+		if (!amplitude)
+			amplitude = 1;
+#endif
 		/* Touch in detect, report X/Y position */
 		input_mt_report_slot_state(input_dev, MT_TOOL_FINGER, 1);
 
