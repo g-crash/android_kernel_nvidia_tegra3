@@ -250,9 +250,6 @@
 #define MXT_T9_PRESS		(1 << 6)
 #define MXT_T9_DETECT		(1 << 7)
 
-/* T9 status bit field */
-#define	MXT_MSG_T9_TCHAREA		0x05
-
 /* Touch orient bits */
 #define MXT_XY_SWITCH		(1 << 0)
 #define MXT_X_INVERT		(1 << 1)
@@ -792,7 +789,6 @@ static void mxt_proc_t9_messages(struct mxt_data *data, u8 *message)
 	int area;
 	int amplitude;
 	u8 vector;
-    u8 touch_size = 255;
 	int id;
 
 	if (!input_dev || data->driver_paused)
@@ -815,6 +811,7 @@ static void mxt_proc_t9_messages(struct mxt_data *data, u8 *message)
 	if (data->max_y < 1024)
 		y >>= 2;
 	area = message[5];
+	amplitude = message[6];
 	vector = message[7];
 
 	dev_dbg(dev,
@@ -840,19 +837,6 @@ static void mxt_proc_t9_messages(struct mxt_data *data, u8 *message)
 	}
 
 	if (status & MXT_T9_DETECT) {
-
-        touch_size = message[MXT_MSG_T9_TCHAREA];
-
-		if (touch_size <= 15)
-			touch_size = touch_size << 4;
-		else
-			touch_size = 255;
-
-		if (!touch_size)
-			touch_size = 1;
-
-        amplitude = touch_size;
-
 		/* Touch in detect, report X/Y position */
 		input_mt_report_slot_state(input_dev, MT_TOOL_FINGER, 1);
 
