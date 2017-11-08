@@ -84,20 +84,20 @@
 #define CODEC_RT5642_RESET	TEGRA_GPIO_PP2
 
 #ifdef CONFIG_BT_BLUESLEEP
-static struct resource cardhu_bcm4330_rfkill_resources[] = {
+static struct resource cardhu_bcm4329_rfkill_resources[] = {
 	{
-		.name   = "bcm4330_nshutdown_gpio",
+		.name   = "bcm4329_nshutdown_gpio",
 		.start  = TEGRA_GPIO_PU0,
 		.end    = TEGRA_GPIO_PU0,
 		.flags  = IORESOURCE_IO,
 	},
 };
 
-static struct platform_device cardhu_bcm4330_rfkill_device = {
-	.name           = "bcm4330_rfkill",
+static struct platform_device cardhu_bcm4329_rfkill_device = {
+	.name           = "bcm4329_rfkill",
 	.id             = -1,
-	.num_resources  = ARRAY_SIZE(cardhu_bcm4330_rfkill_resources),
-	.resource       = cardhu_bcm4330_rfkill_resources,
+	.num_resources  = ARRAY_SIZE(cardhu_bcm4329_rfkill_resources),
+	.resource       = cardhu_bcm4329_rfkill_resources,
 };
 
 static struct resource cardhu_bluesleep_resources[] = {
@@ -829,7 +829,7 @@ static struct platform_device *cardhu_devices[] __initdata = {
 	&bluetooth_dit_device,
 	&baseband_dit_device,
 #ifdef CONFIG_BT_BLUESLEEP
-	&cardhu_bcm4330_rfkill_device,
+	&cardhu_bcm4329_rfkill_device,
 #endif
 	&tegra_pcm_device,
 	&cardhu_audio_device,
