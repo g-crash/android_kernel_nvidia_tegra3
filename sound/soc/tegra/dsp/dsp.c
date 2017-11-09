@@ -27,11 +27,10 @@
 #include <linux/gpio.h>
 //----
 
-//#include <mach/board-ventana-misc.h>
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 #include "dsp.h"
-#include <mach/board-cardhu-misc.h>
+#include <mach/board-asus-t30-misc.h>
 
 #undef DUMP_REG
 
