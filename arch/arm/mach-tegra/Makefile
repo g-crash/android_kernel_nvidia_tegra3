@@ -403,5 +403,5 @@ obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-sensors.o
 obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-memory.o
 obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-powermon.o
 obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-misc.o
-obj-${CONFIG_ARCH_ASUS_T30}             += vibrator.o
+obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-vibrator.o
 
