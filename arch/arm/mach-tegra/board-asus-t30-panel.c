@@ -107,7 +107,6 @@ static struct regulator *cardhu_lvds_vdd_panel = NULL;
 static struct board_info board_info;
 static struct board_info display_board_info;
 extern bool isRecording;
-//extern int scalar_update_status;          //      drivers/video/tegra/scalar.c
 
 static struct i2c_board_info scalar_i2c1_board_info[] = {
     {
@@ -622,8 +621,6 @@ static int cardhu_hdmi_disable(void)
         //do not power off scalar when scalar firmware is updating
         //or is recording
         if ( tegra3_get_project_id() == TEGRA3_PROJECT_P1801
-//                        && scalar_update_status!=2
-//                        && scalar_update_status!=-1
                         && !isRecording){
                 msleep(300);
                 gpio_set_value(EN_VDD_BL, 0);
@@ -958,16 +955,6 @@ static struct tegra_fb_data cardhu_fb_data_800_1280 = {
 	.bits_per_pixel	= 32,
 //	.flags		= TEGRA_FB_FLIP_ON_PROBE,
 };
-
-/*
-static struct tegra_fb_data cardhu_hdmi_fb_data_800_1280 = {
-	.win		= 0,
-	.xres		= 800,
-	.yres		= 1280,
-	.bits_per_pixel	= 32,
-//	.flags		= TEGRA_FB_FLIP_ON_PROBE,
-};
-*/
 
 static struct tegra_dc_out cardhu_disp2_out = {
 	.type		= TEGRA_DC_OUT_HDMI,
@@ -1695,8 +1682,6 @@ int __init cardhu_panel_init(void)
 	}
 
 	if ( tegra3_get_project_id() == TEGRA3_PROJECT_ME301T){
-		cardhu_disp1_pdata.min_emc_clk_rate = 102000000;
-
 		cardhu_disp1_out.sd_settings->panel_min_brightness = 28;
 
 		//take effect for ER2/PR/MP

@@ -1018,7 +1018,6 @@ static struct tegra_usb_platform_data tegra_ehci2_hsic_xmm_pdata = {
 	.phy_intf = TEGRA_USB_PHY_INTF_HSIC,
 	.op_mode	= TEGRA_USB_OPMODE_HOST,
 	.u_data.host = {
-		.enable_gpio = EN_HSIC_GPIO,
 		.vbus_gpio = -1,
 		.hot_plug = false,
 		.remote_wakeup_supported = false,
