@@ -244,27 +244,25 @@ void tegra_usb3_utmip_host_unregister(struct platform_device *pdev);
 
 extern struct tegra_uart_platform_data cardhu_irda_pdata;
 
-#define MPU_TYPE_MPU3050	1
-#define MPU_TYPE_MPU6050	2
-#define MPU_GYRO_TYPE		MPU_TYPE_MPU3050
 /* Invensense MPU Definitions */
-#define MPU3050_GYRO_NAME		"mpu3050"
-#define MPU6050_GYRO_NAME		"mpu6050"
+#define MPU_GYRO_NAME		"mpu3050"
 #define MPU_GYRO_IRQ_GPIO	TEGRA_GPIO_PX1
-#define MPU3050_GYRO_ADDR		0x68
-#define MPU6050_GYRO_ADDR		0x69
-#define MPU6050_TF500T_GYRO_ADDR		0x68
+#define MPU_GYRO_ADDR		0x68
 #define MPU_GYRO_BUS_NUM	2
-#define MPU_GYRO_ORIENTATION	{ 0, -1, 0, -1, 0, 0, 0, 0, -1 }
+
 #define MPU_ACCEL_NAME		"kxtf9"
 #define MPU_ACCEL_IRQ_GPIO	TEGRA_GPIO_PO5
 #define MPU_ACCEL_ADDR		0x0F
 #define MPU_ACCEL_BUS_NUM	2
-#define MPU_ACCEL_ORIENTATION	{ -1, 0, 0, 0, 1, 0, 0, 0, -1 }
+
 #define MPU_COMPASS_NAME	"ami306"
 #define MPU_COMPASS_IRQ_GPIO	TEGRA_GPIO_PW0
 #define MPU_COMPASS_ADDR	0x0E
 #define MPU_COMPASS_BUS_NUM	2
+
+//Sensors orientation matrix for TF201
+#define MPU_GYRO_ORIENTATION	{ 0, -1, 0, -1, 0, 0, 0, 0, -1 }
+#define MPU_ACCEL_ORIENTATION	{ -1, 0, 0, 0, 1, 0, 0, 0, -1 }
 #define MPU_COMPASS_ORIENTATION	{ -1, 0, 0, 0, 1, 0, 0, 0, -1 }
 
 //Sensors orientation matrix for TF300T
@@ -287,6 +285,11 @@ extern struct tegra_uart_platform_data cardhu_irda_pdata;
 #define TF300TL_ACCEL_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
 #define TF300TL_COMPASS_ORIENTATION	{ -1, 0, 0, 0, -1, 0, 0, 0, 1 }
 
+/*
+#define MPU6050_GYRO_NAME		"mpu6050"
+#define MPU6050_GYRO_ADDR		0x69
+#define MPU6050_TF500T_GYRO_ADDR		0x68
+
 //Sensors orientation matrix for TF500T
 #define TF500T_GYRO_ORIENTATION		{ 0, -1, 0, 1, 0, 0, 0, 0, 1 }
 #define TF500T_COMPASS_ORIENTATION	{ 0, -1, 0, 1, 0, 0, 0, 0, 1 }
@@ -295,7 +298,7 @@ extern struct tegra_uart_platform_data cardhu_irda_pdata;
 #define ME301T_GYRO_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
 #define ME301T_COMPASS_ORIENTATION	{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
 
-/* Kionix Accel sensor Definitions*/
+//Kionix Accel sensor Definitions
 #define KIONIX_ACCEL_NAME	"KXT_9"
 #define KIONIX_ACCEL_IRQ_GPIO	TEGRA_GPIO_PO5
 #define KIONIX_ACCEL_ADDR		0x0F
@@ -303,6 +306,7 @@ extern struct tegra_uart_platform_data cardhu_irda_pdata;
 
 //Sensors orientation matrix for P1801
 #define P1801_ACCEL_ORIENTATION		{ 0, -1, 0, -1, 0, 0, 0, 0, -1 }
+*/
 
 /* Baseband GPIO addresses */
 /*#define BB_GPIO_BB_EN			TEGRA_GPIO_PR5

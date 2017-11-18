@@ -56,7 +56,7 @@
 #include <generated/mach-types.h>
 #include "gpio-names.h"
 #include "board.h"
-#include <linux/mpu.h>
+#include <linux/mpu_inv.h>
 
 /* KIONIX KXT_9 Digital Tri-axis Accelerometer */
 //#include <plat/mux.h>
@@ -1471,7 +1471,7 @@ static int __init cam_tca6416_init(void)
 }
 #endif
 
-static struct mpu_platform_data mpu3050_data = {
+static struct mpu_platform_data mpu3050_gyro_data = {
 	.int_config	= 0x10,
 	.level_shifter	= 0,
 	.orientation	= MPU_GYRO_ORIENTATION,	/* Located in board_[platformname].h	*/
@@ -1495,8 +1495,8 @@ static struct ext_slave_platform_data mpu3050_compass_data = {
 
 static struct i2c_board_info __initdata inv_mpu_i2c2_board_info[] = {
 	{
-		I2C_BOARD_INFO(MPU3050_GYRO_NAME, MPU3050_GYRO_ADDR),
-		.platform_data = &mpu3050_data,
+		I2C_BOARD_INFO(MPU_GYRO_NAME, MPU_GYRO_ADDR),
+		.platform_data = &mpu3050_gyro_data,
 	},
 	{
 		I2C_BOARD_INFO(MPU_ACCEL_NAME, MPU_ACCEL_ADDR),
@@ -1508,7 +1508,7 @@ static struct i2c_board_info __initdata inv_mpu_i2c2_board_info[] = {
 	},
 };
 
-
+#if 0 
 //CONFIG_MPU_SENSORS_MPU6050B1
 static struct mpu_platform_data mpu6050_data = {
 	.int_config	= 0x10,
@@ -1535,7 +1535,6 @@ static struct i2c_board_info __initdata inv_mpu6050_i2c2_board_info[] = {
 	},
 };
 
-#if 0       /* TODO: remove when KXTJ9 is ported */
 //CONFIG_SENSORS_KXTJ9
 static struct KXT_9_platform_data kxt_9_data = {
 	.min_interval	= 1,
@@ -1585,6 +1584,7 @@ struct mpu_orientation_def{
 	__s8 compass_orientation[9];
 };
 
+#if 0 
 static void mpuirq6050_init(void)
 {
 	u32 project_info;
@@ -1623,17 +1623,16 @@ static void mpuirq6050_init(void)
 	i2c_register_board_info(MPU_GYRO_BUS_NUM, inv_mpu6050_i2c2_board_info,
 		ARRAY_SIZE(inv_mpu6050_i2c2_board_info));
 }
+#endif
 
 static void mpuirq_init(void)
 {
-	u32 project_info;
 	int ret = 0;
 	int i = 0;
-	pr_info("*** MPU START *** cardhu_mpuirq_init...\n");
+	
+	pr_info("*** MPU START *** mpuirq_init...\n");
 
-	project_info = tegra3_get_project_id();
-
-	if (project_info == TEGRA3_PROJECT_TF300T)
+	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF300T)
 	{
 		/* Use "TF300T" to check the project name */
 		struct mpu_orientation_def TF300T = {
@@ -1643,11 +1642,11 @@ static void mpuirq_init(void)
 			};
 
 		pr_info("initial mpu with TF300T config...\n");
-		memcpy( mpu3050_data.orientation, TF300T.gyro_orientation, sizeof(mpu3050_data.orientation));
+		memcpy( mpu3050_gyro_data.orientation, TF300T.gyro_orientation, sizeof(mpu3050_gyro_data.orientation));
 		memcpy( mpu3050_accel_data.orientation, TF300T.accel_orientation, sizeof(mpu3050_accel_data.orientation));
 		memcpy( mpu3050_compass_data.orientation, TF300T.compass_orientation, sizeof(mpu3050_compass_data.orientation));
 	}
-	else if (project_info == TEGRA3_PROJECT_TF300TG)
+	else if (tegra3_get_project_id() == TEGRA3_PROJECT_TF300TG)
 	{
 		/* Use "TF300TG" to check the project name */
 		struct mpu_orientation_def TF300TG = {
@@ -1657,11 +1656,11 @@ static void mpuirq_init(void)
 			};
 
 		pr_info("initial mpu with TF300TG config...\n");
-		memcpy( mpu3050_data.orientation, TF300TG.gyro_orientation, sizeof(mpu3050_data.orientation));
+		memcpy( mpu3050_gyro_data.orientation, TF300TG.gyro_orientation, sizeof(mpu3050_gyro_data.orientation));
 		memcpy( mpu3050_accel_data.orientation, TF300TG.accel_orientation, sizeof(mpu3050_accel_data.orientation));
 		memcpy( mpu3050_compass_data.orientation, TF300TG.compass_orientation, sizeof(mpu3050_compass_data.orientation));
 	}
-	else if (project_info == TEGRA3_PROJECT_TF700T)
+	else if (tegra3_get_project_id() == TEGRA3_PROJECT_TF700T)
 	{
 		/* Use "TF700T" to check the project name */
 		struct mpu_orientation_def TF700T = {
@@ -1671,11 +1670,11 @@ static void mpuirq_init(void)
 			};
 
 		pr_info("initial mpu with TF700T config...\n");
-		memcpy( mpu3050_data.orientation, TF700T.gyro_orientation, sizeof(mpu3050_data.orientation));
+		memcpy( mpu3050_gyro_data.orientation, TF700T.gyro_orientation, sizeof(mpu3050_gyro_data.orientation));
 		memcpy( mpu3050_accel_data.orientation, TF700T.accel_orientation, sizeof(mpu3050_accel_data.orientation));
 		memcpy( mpu3050_compass_data.orientation, TF700T.compass_orientation, sizeof(mpu3050_compass_data.orientation));
 	}
-	else if (project_info == TEGRA3_PROJECT_TF300TL)
+	else if (tegra3_get_project_id() == TEGRA3_PROJECT_TF300TL)
 	{
 		/* Use "TF300TL" to check the project name */
 		struct mpu_orientation_def TF300TL = {
@@ -1685,10 +1684,11 @@ static void mpuirq_init(void)
 			};
 
 		pr_info("initial mpu with TF300TL config...\n");
-		memcpy( mpu3050_data.orientation, TF300TL.gyro_orientation, sizeof(mpu3050_data.orientation));
+		memcpy( mpu3050_gyro_data.orientation, TF300TL.gyro_orientation, sizeof(mpu3050_gyro_data.orientation));
 		memcpy( mpu3050_accel_data.orientation, TF300TL.accel_orientation, sizeof(mpu3050_accel_data.orientation));
 		memcpy( mpu3050_compass_data.orientation, TF300TL.compass_orientation, sizeof(mpu3050_compass_data.orientation));
 	}
+    else pr_info("initial mpu with TF201 config...\n");
 
 #if	MPU_ACCEL_IRQ_GPIO
 	/* ACCEL-IRQ assignment */
@@ -1707,7 +1707,7 @@ static void mpuirq_init(void)
 #endif
 
 	/* MPU-IRQ assignment */
-	/*ret = gpio_request(MPU_GYRO_IRQ_GPIO, MPU_GYRO_NAME);
+	ret = gpio_request(MPU_GYRO_IRQ_GPIO, MPU_GYRO_NAME);
 	if (ret < 0) {
 		pr_err("%s: gpio_request failed %d\n", __func__, ret);
 		return;
@@ -1718,7 +1718,7 @@ static void mpuirq_init(void)
 		pr_err("%s: gpio_direction_input failed %d\n", __func__, ret);
 		gpio_free(MPU_GYRO_IRQ_GPIO);
 		return;
-	}*/
+	}
 	pr_info("*** MPU END *** mpuirq_init...\n");
 
 	inv_mpu_i2c2_board_info[i++].irq = gpio_to_irq(MPU_GYRO_IRQ_GPIO);
@@ -1866,20 +1866,20 @@ int __init cardhu_sensors_init(void)
 	if (err)
 		return err;
 
-	if ((project_info == TEGRA3_PROJECT_TF500T) ||
-		(project_info == TEGRA3_PROJECT_ME301T) ||
-		(project_info == TEGRA3_PROJECT_ME301TL))
-	{
-		mpuirq6050_init();
-	}
-	else if (project_info == TEGRA3_PROJECT_P1801)
-	{
+//	if ((project_info == TEGRA3_PROJECT_TF500T) ||
+//		(project_info == TEGRA3_PROJECT_ME301T) ||
+//		(project_info == TEGRA3_PROJECT_ME301TL))
+//	{
+//		mpuirq6050_init();
+//	}
+//	else if (project_info == TEGRA3_PROJECT_P1801)
+//	{
 //		kxtj9_init();
-	}
-	else
-	{
+//	}
+//	else
+//	{
 		mpuirq_init();
-	}
+//	}
 
 	return 0;
 }
