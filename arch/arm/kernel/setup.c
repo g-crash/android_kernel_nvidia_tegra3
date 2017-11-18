@@ -554,6 +554,7 @@ int __init arm_add_memory(phys_addr_t start, unsigned long size)
 	return 0;
 }
 
+#ifdef CONFIG_MACH_TRANSFORMER
 /*
 only for check CN or VF SKU
 for CN or VF sku, cn_vf_sku = 1
@@ -573,6 +574,7 @@ static int __init check_sku(char *p)
         return 0;
 }
 early_param("SKU", check_sku);
+#endif
 
 /*
  * Pick out the memory size.  We look for mem=size@start,
