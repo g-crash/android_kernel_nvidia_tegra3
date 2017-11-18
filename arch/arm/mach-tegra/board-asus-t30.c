@@ -855,7 +855,7 @@ static struct mxt_platform_data atmel_mxt_info = {
 
 static struct i2c_board_info __initdata atmel_i2c_info[] = {
 	{
-		I2C_BOARD_INFO("atmel_mxt_ts", MXT768E_I2C_ADDR2),
+		I2C_BOARD_INFO("atmel_mxt_ts", MXT1386_I2C_ADDR2),
 		.flags = I2C_CLIENT_WAKE,
 		.platform_data = &atmel_mxt_info,
 	}
