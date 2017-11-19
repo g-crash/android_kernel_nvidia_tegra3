@@ -106,7 +106,7 @@ static struct regulator *cardhu_lvds_vdd_panel = NULL;
 
 static struct board_info board_info;
 static struct board_info display_board_info;
-extern bool isRecording;
+/*extern*/ static bool isRecording = false;
 
 static struct i2c_board_info scalar_i2c1_board_info[] = {
     {
