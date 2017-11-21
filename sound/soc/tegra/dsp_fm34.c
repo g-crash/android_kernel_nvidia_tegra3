@@ -202,8 +202,7 @@ static int fm34_check_i2c(struct i2c_client *client)
 		msleep(50);
 		fm34_reset();
 		return ret;
-	}
-	else if(ret == 1){ /* reg 0xC0 value should be 1 */
+	} else /*if(ret == 1)*/ { /* reg 0xC0 value should be 1 */
 		//pr_info("DSP ack, read 0x%x: %d\n", buf1, ret);
 		return 0;
 	}
@@ -214,7 +213,6 @@ static int fm34_chip_init(struct i2c_client *client)
 	int rc = 0;
 
 	//config RST# pin, default HIGH.
-	tegra_gpio_enable(TEGRA_GPIO_PO3);
 	rc = gpio_request(TEGRA_GPIO_PO3, "fm34_reset");
 	if (rc) {
 		pr_err("gpio_request failed for input %d\n", TEGRA_GPIO_PO3);
@@ -229,7 +227,6 @@ static int fm34_chip_init(struct i2c_client *client)
 	gpio_set_value(TEGRA_GPIO_PO3, 1);
 
 	//config PWDN# pin, default HIGH.
-	tegra_gpio_enable(TEGRA_GPIO_PBB6);
 	rc = gpio_request(TEGRA_GPIO_PBB6, "fm34_pwdn");
 	if (rc) {
 		pr_err("gpio_request failed for input %d\n", TEGRA_GPIO_PBB6);
@@ -262,7 +259,6 @@ static long fm34_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	int err = 0;
 	int retval = 0;
 	static int recording_enabled = -1;
-	struct work_struct *work;
 
 	if (_IOC_TYPE(cmd) != DSP_IOC_MAGIC) return -ENOTTY;
 	if (_IOC_NR(cmd) > DSP_IOC_MAXNR) return -ENOTTY;
@@ -421,7 +417,7 @@ static long fm34_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 		case DSP_RECONFIG:
 			pr_info("DSP ReConfig parameters\n");
-			fm34_reconfigure(work);
+			fm34_reconfigure(NULL);
 		break;
 
 	  default:  /* redundant, as cmd was checked against MAXNR */
