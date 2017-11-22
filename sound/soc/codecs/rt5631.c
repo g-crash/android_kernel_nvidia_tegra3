@@ -29,10 +29,8 @@
 
 #include "rt5631.h"
 
-#ifdef CONFIG_AUDIO_DOCK
 struct snd_soc_codec *rt5631_audio_codec = NULL;
 EXPORT_SYMBOL(rt5631_audio_codec) ;
-#endif
 
 struct rt5631_priv {
 	int codec_version;
