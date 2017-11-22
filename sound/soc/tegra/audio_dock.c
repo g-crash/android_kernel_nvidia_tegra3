@@ -32,18 +32,11 @@
 extern struct snd_soc_codec *wm8903_codec;
 extern struct snd_soc_codec *rt5631_audio_codec;
 
-//extern bool lineout_alive;
 static bool audio_dock_in = false;
-static bool audio_stand_in = false;
 static struct snd_soc_codec *audio_codec;
-//extern void set_lineout_state(bool);
 
-bool isAudioStandIn(void)
-{
-	return audio_stand_in;
-}
-
-EXPORT_SYMBOL(audio_stand_in);
+extern bool lineout_alive;
+extern void set_lineout_state(bool);
 
 int audio_stand_route(bool status)
 {
@@ -80,7 +73,6 @@ int audio_dock_in_out(u8 status)
 	struct snd_soc_dapm_context *dapm = NULL;
 
 	audio_dock_in = (status == AUDIO_DOCK) ? true : false;
-	audio_stand_in = (status == AUDIO_STAND) ? true : false;
 
 	if(audio_codec == NULL){
 		printk("%s: audio_codec is NULL\n", __func__);
@@ -98,13 +90,13 @@ int audio_dock_in_out(u8 status)
                 	snd_soc_dapm_sync(dapm);
 		}else if(status == AUDIO_STAND ){
 			if(gpio_get_value(TEGRA_GPIO_PX3) == 0){
-//				lineout_alive = true;
+				lineout_alive = true;
 				audio_stand_route(true);
-//				set_lineout_state(true);
+				set_lineout_state(true);
 			}else{
-//				lineout_alive = false;
+				lineout_alive = false;
 				audio_stand_route(false);
-//				set_lineout_state(false);
+				set_lineout_state(false);
 			}
 		}else{
                 	printk("%s: audio_stand_dock_out\n", __func__);
@@ -119,11 +111,11 @@ int audio_dock_in_out(u8 status)
 		 * headphone is removed.
 		 */
 		if(gpio_get_value(TEGRA_GPIO_PX3) == 0){
-//			lineout_alive = true;
-//			set_lineout_state(true);
+			lineout_alive = true;
+			set_lineout_state(true);
 		}else{
-//			lineout_alive = false;
-//			set_lineout_state(false);
+			lineout_alive = false;
+			set_lineout_state(false);
 		}
 	}
 
