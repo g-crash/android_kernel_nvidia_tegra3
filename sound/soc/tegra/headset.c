@@ -37,8 +37,10 @@
 #include <asm/string.h>
 #include <sound/soc.h>
 #include "../gpio-names.h"
+#include "../codecs/wm8903.h"
 #include "../codecs/rt5640.h"
 #include <mach/board-grouper-misc.h>
+#include <mach/board-asus-t30-misc.h>
 #include <mach/pinmux-tegra30.h>
 #include "../board.h"
 #include "../board-grouper.h"
@@ -60,31 +62,35 @@ MODULE_LICENSE("GPL");
 /*----------------------------------------------------------------------------
 ** FUNCTION DECLARATION
 **----------------------------------------------------------------------------*/
-static int   __init     	headset_init(void);
-static void __exit    headset_exit(void);
+static int   __init     headset_init(void);
+static void __exit	headset_exit(void);
 static irqreturn_t   	detect_irq_handler(int irq, void *dev_id);
 static void 		detection_work(struct work_struct *work);
-static int               	jack_config_gpio(void);
+static int		jack_config_gpio(void);
+static irqreturn_t 	lineout_irq_handler(int irq, void *dev_id);
 static void 		lineout_work_queue(struct work_struct *work);
 static void		dock_work_queue(struct work_struct *work);
-static int               	lineout_config_gpio(u32 project_info);
+static int              lineout_config_gpio(u32 project_info);
 static void 		detection_work(struct work_struct *work);
-static int               	btn_config_gpio(void);
-static int                      switch_config_gpio(void);
+static int              btn_config_gpio(void);
+static int              switch_config_gpio(void);
 int 			hs_micbias_power(int on);
 static irqreturn_t	dockin_irq_handler(int irq, void *dev_id);
 static void		set_dock_switches(void);
-static int dockin_config_gpio(void);
+static int		dockin_config_gpio(void);
 /*----------------------------------------------------------------------------
 ** GLOBAL VARIABLES
 **----------------------------------------------------------------------------*/
 #define JACK_GPIO		(TEGRA_GPIO_PW2)
+#define LINEOUT_GPIO_TF		(TEGRA_GPIO_PX3)
 #define LINEOUT_GPIO_NAKASI	(TEGRA_GPIO_PW3)
 #define LINEOUT_GPIO_BACH	(TEGRA_GPIO_PX6)
 #define HOOK_GPIO		(TEGRA_GPIO_PX2)
 #define UART_HEADPHONE_SWITCH (TEGRA_GPIO_PS2)
 #define ON	(1)
 #define OFF	(0)
+#define MICDET_ENA		(1 << 1)
+#define MICBIAS_ENA		(1 << 0)
 
 enum{
 	NO_DEVICE = 0,
@@ -92,8 +98,14 @@ enum{
 	HEADSET_WITHOUT_MIC = 2,
 };
 
+enum{
+	NO_LINEOUT = 0,
+	LINEOUT_IN = 1,
+};
+
 struct headset_data {
 	struct switch_dev sdev;
+	struct switch_dev ldev;
 	struct input_dev *input;
 	unsigned int irq;
 	struct hrtimer timer;
@@ -109,6 +121,8 @@ EXPORT_SYMBOL(lineout_alive);
 static struct workqueue_struct *g_detection_work_queue;
 static DECLARE_WORK(g_detection_work, detection_work);
 
+extern struct snd_soc_codec *rt5631_audio_codec;
+extern struct snd_soc_codec *wm8903_codec;
 extern struct snd_soc_codec *rt5640_audio_codec;
 struct work_struct headset_work;
 struct work_struct lineout_work;
@@ -118,6 +132,19 @@ static unsigned int revision;
 static u32 lineout_gpio;
 static int gpio_dock_in = 0;
 
+#ifdef CONFIG_AUDIO_DOCK
+extern int audio_stand_route(bool);
+
+void set_lineout_state(bool status)
+{
+	if(status)
+		switch_set_state(&hs_data->ldev, LINEOUT_IN);
+	else
+		switch_set_state(&hs_data->ldev, NO_DEVICE);
+}
+EXPORT_SYMBOL(set_lineout_state);
+#endif
+
 static struct switch_dev dock_switch = {
 	.name = "dock",
 };
@@ -125,6 +152,47 @@ static struct switch_dev dock_switch = {
 static struct switch_dev audio_switch = {
 	.name = "usb_audio",
 };
+
+#ifdef CONFIG_MACH_TRANSFORMER
+static ssize_t lineout_name_show(struct switch_dev *ldev, char *buf)
+{
+	switch (switch_get_state(&hs_data->ldev)){
+		case NO_LINEOUT:
+			{
+				return sprintf(buf, "%s\n", "No Device");
+			}
+		case LINEOUT_IN:
+			{
+				return sprintf(buf, "%s\n", "LINEOUT_IN");
+			}
+	}
+	return -EINVAL;
+}
+
+static ssize_t lineout_state_show(struct switch_dev *ldev, char *buf)
+{
+	switch (switch_get_state(&hs_data->ldev)){
+		case NO_LINEOUT:
+			return sprintf(buf, "%d\n", 0);
+		case LINEOUT_IN:
+			return sprintf(buf, "%d\n", 1);
+	}
+	return -EINVAL;
+}
+
+/**********************************************************
+ ** Function: LineOut detection interrupt handler
+ ** Parameter: dedicated irq
+ ** Return value: if sucess, then returns IRQ_HANDLED
+ **
+ ************************************************************/
+static irqreturn_t lineout_irq_handler(int irq, void *dev_id)
+{
+	schedule_work(&lineout_work);
+
+	return IRQ_HANDLED;
+}
+#endif
 
 static ssize_t headset_name_show(struct switch_dev *sdev, char *buf)
 {
@@ -207,7 +275,7 @@ static void insert_headset(void)
 		headset_alive = false;
 	}else{
 		printk("HEADSET: %s: headset\n", __func__);
-		switch_set_state(&hs_data->sdev, HEADSET_WITHOUT_MIC);
+		switch_set_state(&hs_data->sdev, HEADSET_WITH_MIC);
 		hs_micbias_power(ON);
 		pulldown_uart();
 		gpio_direction_output(UART_HEADPHONE_SWITCH, 1);
@@ -215,6 +283,7 @@ static void insert_headset(void)
 	}
 	hs_data->debouncing_time = ktime_set(0, 100000000);  /* 100 ms */
 }
+
 static void remove_headset(void)
 {
 	switch_set_state(&hs_data->sdev, NO_DEVICE);
@@ -328,13 +397,20 @@ static int btn_config_gpio()
 static void lineout_work_queue(struct work_struct *work)
 {
 	msleep(300);
-
 	if (gpio_get_value(lineout_gpio) == 0){
 		printk("HEADSET: LINEOUT: LineOut inserted\n");
 		lineout_alive = true;
+#ifdef CONFIG_AUDIO_DOCK
+		audio_stand_route(true);
+		switch_set_state(&hs_data->ldev, LINEOUT_IN);
+#endif
 	}else if(gpio_get_value(lineout_gpio)){
 		printk("HEADSET: LINEOUT: LineOut removed\n");
 		lineout_alive = false;
+#ifdef CONFIG_AUDIO_DOCK
+		audio_stand_route(false);
+		switch_set_state(&hs_data->ldev, NO_DEVICE);
+#endif
 	}
 
 }
@@ -370,17 +446,36 @@ static int lineout_config_gpio(u32 project_info)
 	int ret;
 
 	printk("HEADSET: Config LineOut detection gpio\n");
+#ifdef CONFIG_MACH_TRANSFORMER
+	lineout_gpio = LINEOUT_GPIO;
+#else
 	if(project_info == GROUPER_PROJECT_BACH)
 		lineout_gpio = LINEOUT_GPIO_BACH;
 	else if(project_info == GROUPER_PROJECT_NAKASI)
 		lineout_gpio = LINEOUT_GPIO_NAKASI;
+#endif
 	ret = gpio_request(lineout_gpio, "lineout_int");
 	ret = gpio_direction_input(lineout_gpio);
-	if (gpio_get_value(lineout_gpio) == 0)
-		lineout_alive = true;
-	else
-		lineout_alive = false;
 
+#ifdef CONFIG_MACH_TRANSFORMER
+	ret = request_irq(gpio_to_irq(hs_data->lineout_gpio),
+			&lineout_irq_handler,
+			IRQF_TRIGGER_FALLING|IRQF_TRIGGER_RISING,
+			"lineout_int", 0);
+#endif
+	if (gpio_get_value(lineout_gpio) == 0){
+		lineout_alive = true;
+#ifdef CONFIG_AUDIO_DOCK
+		audio_stand_route(true);
+		switch_set_state(&hs_data->ldev, LINEOUT_IN);
+#endif
+	}else{
+		lineout_alive = false;
+#ifdef CONFIG_AUDIO_DOCK
+		audio_stand_route(false);
+		switch_set_state(&hs_data->ldev, NO_DEVICE);
+#endif
+	}
 	return 0;
 }
 
@@ -443,6 +538,51 @@ static irqreturn_t detect_irq_handler(int irq, void *dev_id)
 
 static int codec_micbias_power(int on)
 {
+#ifdef CONFIG_MACH_TRANSFORMER
+	unsigned int CtrlReg = 0;
+	u32 project_info = tegra3_get_project_id();
+
+	if(on){
+		if(project_info == TEGRA3_PROJECT_TF201 || project_info == TEGRA3_PROJECT_TF300TG ||
+		   project_info == TEGRA3_PROJECT_TF700T || project_info == TEGRA3_PROJECT_TF300TL)
+		{
+			if(rt5631_audio_codec == NULL){
+				printk("%s: No rt5631 rt5631_audio_codec - set micbias on fail\n", __func__);
+				return 0;
+			}
+			/* Mic Bias enable */
+			CtrlReg = snd_soc_read(rt5631_audio_codec, 0x3B);
+			CtrlReg = CtrlReg | (1 << 3);
+			snd_soc_write(rt5631_audio_codec, 0x3B, CtrlReg);
+		}else if(project_info == TEGRA3_PROJECT_TF300T){
+			if(wm8903_codec == NULL){
+				printk("%s: No wm8903_codec - set micbias on fail\n", __func__);
+				return 0;
+			}
+			CtrlReg = MICBIAS_ENA | MICDET_ENA;
+			snd_soc_write(wm8903_codec, WM8903_MIC_BIAS_CONTROL_0, CtrlReg);
+		}
+	}else{
+		if(project_info == TEGRA3_PROJECT_TF201 || project_info == TEGRA3_PROJECT_TF300TG ||
+		   project_info == TEGRA3_PROJECT_TF700T || project_info == TEGRA3_PROJECT_TF300TL)
+		{
+			if(rt5631_audio_codec == NULL){
+				printk("%s: No rt5631 rt5631_audio_codec - set micbias off fail\n", __func__);
+				return 0;
+			}
+			/* Mic Bias diable*/
+			CtrlReg = snd_soc_read(rt5631_audio_codec, 0x3B);
+			CtrlReg = CtrlReg & (0xFFFFFFF7);
+			snd_soc_write(rt5631_audio_codec, 0x3B, CtrlReg);
+		}else if(project_info == TEGRA3_PROJECT_TF300T){
+			if(wm8903_codec == NULL){
+				printk("%s: No wm8903_codec - set micbias off fail\n", __func__);
+				return 0;
+			}
+			CtrlReg = 0;
+			snd_soc_write(wm8903_codec, WM8903_MIC_BIAS_CONTROL_0, CtrlReg);
+		}
+#else
 	if(on){
 		//for ALC5642
 		if(rt5640_audio_codec == NULL){
@@ -457,6 +597,7 @@ static int codec_micbias_power(int on)
 		}
 		snd_soc_update_bits(rt5640_audio_codec, RT5640_PWR_ANLG2, RT5640_PWR_MB1, 0); /* Disable MicBias1 */
 		snd_soc_update_bits(rt5640_audio_codec, RT5640_PWR_ANLG1, RT5640_PWR_LDO2, 0); /* Disable LDO2 */
+#endif /* CONFIG_MACH_TRANSFORMER */
 	}
 	return 0;
 }
@@ -516,14 +657,26 @@ static int __init headset_init(void)
 	hs_data->sdev.print_name = headset_name_show;
 	hs_data->sdev.print_state = headset_state_show;
 
+#ifdef CONFIG_MACH_TRANSFORMER
+	hs_data->ldev.name = "lineout";
+	hs_data->ldev.print_name = lineout_name_show;
+	hs_data->ldev.print_state = lineout_state_show;
+
+	ret = switch_dev_register(&hs_data->ldev);
+	if (ret < 0)
+		goto err_switch_dev_register;
+#endif
+
 	ret = switch_dev_register(&hs_data->sdev);
 	if (ret < 0)
 		goto err_switch_dev_register;
 
+#ifndef CONFIG_MACH_TRANSFORMER
 	WARN_ON(switch_dev_register(&dock_switch));
 	WARN_ON(switch_dev_register(&audio_switch));
 	/* Make sure dock switches are correct at boot */
 	set_dock_switches();
+#endif
 
 	g_detection_work_queue = create_workqueue("detection");
 
@@ -533,11 +686,15 @@ static int __init headset_init(void)
 	printk("HEADSET: Headset detection mode\n");
 	lineout_config_gpio(project_info);
 	btn_config_gpio();/*Config hook detection GPIO*/
+#ifndef CONFIG_MACH_TRANSFORMER
 	switch_config_gpio(); /*Config uart and headphone switch*/
+#endif
 	jack_config_gpio();/*Config jack detection GPIO*/
 	INIT_WORK(&lineout_work, lineout_work_queue);
+#ifndef CONFIG_MACH_TRANSFORMER
 	INIT_WORK(&dock_work, dock_work_queue);
 	dockin_config_gpio();
+#endif
 
 	printk(KERN_INFO "%s- #####\n", __func__);
 	return 0;
@@ -566,8 +723,10 @@ static void __exit headset_exit(void)
 	free_irq(hs_data->irq, 0);
 	destroy_workqueue(g_detection_work_queue);
 	switch_dev_unregister(&hs_data->sdev);
+#ifndef CONFIG_MACH_TRANSFORMER
 	switch_dev_unregister(&dock_switch);
 	switch_dev_unregister(&audio_switch);
+#endif
 }
 
 module_init(headset_init);
