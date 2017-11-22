@@ -56,7 +56,7 @@
 
 #define MAX_RETRY 				(5)
 
-/*extern*/ static bool headset_alive = false; // sound/soc/tegra/headset.c
+extern bool headset_alive;
 
 struct i2c_client *fm34_client;
 struct fm34_chip *dsp_chip;
