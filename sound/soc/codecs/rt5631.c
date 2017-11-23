@@ -1633,9 +1633,7 @@ static int rt5631_probe(struct snd_soc_codec *codec)
 	}
 
 	codec->dapm.bias_level = SND_SOC_BIAS_STANDBY;
-#ifdef CONFIG_AUDIO_DOCK
     rt5631_audio_codec = codec;
-#endif
 
 	return 0;
 }
