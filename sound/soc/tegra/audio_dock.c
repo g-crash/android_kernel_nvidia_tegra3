@@ -33,6 +33,7 @@ extern struct snd_soc_codec *wm8903_codec;
 extern struct snd_soc_codec *rt5631_audio_codec;
 
 static bool audio_dock_in = false;
+static bool audio_stand_in = false;
 static struct snd_soc_codec *audio_codec;
 
 extern bool lineout_alive;
@@ -65,7 +66,6 @@ int audio_stand_route(bool status)
 	}
 	return 0;
 }
-
 EXPORT_SYMBOL(audio_stand_route);
 
 int audio_dock_in_out(u8 status)
@@ -73,6 +73,7 @@ int audio_dock_in_out(u8 status)
 	struct snd_soc_dapm_context *dapm = NULL;
 
 	audio_dock_in = (status == AUDIO_DOCK) ? true : false;
+	audio_stand_in = (status == AUDIO_STAND) ? true : false;
 
 	if(audio_codec == NULL){
 		printk("%s: audio_codec is NULL\n", __func__);
@@ -118,19 +119,13 @@ int audio_dock_in_out(u8 status)
 			set_lineout_state(false);
 		}
 	}
-
 	return 0;
 }
-
 EXPORT_SYMBOL(audio_dock_in_out);
 
 void audio_dock_init(void)
 {
-	unsigned int project_info = 0;
-
-	project_info = tegra3_get_project_id();
-
-        switch(project_info){
+        switch(tegra3_get_project_id()){
 		case TEGRA3_PROJECT_TF201:
 		case TEGRA3_PROJECT_TF300TG:
 		case TEGRA3_PROJECT_TF300TL:
@@ -143,9 +138,7 @@ void audio_dock_init(void)
 		default:
 			break;
 	}
-
 }
-
 EXPORT_SYMBOL(audio_dock_init);
 
 MODULE_DESCRIPTION("Audio Dock utility code");
