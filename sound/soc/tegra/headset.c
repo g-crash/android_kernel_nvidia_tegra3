@@ -71,7 +71,9 @@ static void __exit	headset_exit(void);
 static irqreturn_t   	detect_irq_handler(int irq, void *dev_id);
 static void 		detection_work(struct work_struct *work);
 static int		jack_config_gpio(void);
+#ifdef CONFIG_MACH_TRANSFORMER
 static irqreturn_t 	lineout_irq_handler(int irq, void *dev_id);
+#endif
 static void 		lineout_work_queue(struct work_struct *work);
 static int              lineout_config_gpio(u32 project_info);
 static void 		detection_work(struct work_struct *work);
