@@ -31,9 +31,6 @@
 
 extern struct snd_soc_codec *wm8903_codec;
 extern struct snd_soc_codec *rt5631_audio_codec;
-
-static bool audio_dock_in = false;
-static bool audio_stand_in = false;
 static struct snd_soc_codec *audio_codec;
 
 extern bool lineout_alive;
@@ -72,9 +69,6 @@ int audio_dock_in_out(u8 status)
 {
 	struct snd_soc_dapm_context *dapm = NULL;
 
-	audio_dock_in = (status == AUDIO_DOCK) ? true : false;
-	audio_stand_in = (status == AUDIO_STAND) ? true : false;
-
 	if(audio_codec == NULL){
 		printk("%s: audio_codec is NULL\n", __func__);
 		return 0;
@@ -85,10 +79,10 @@ int audio_dock_in_out(u8 status)
 	if(snd_soc_dapm_get_pin_status(dapm, "Int Spk") ||
 			snd_soc_dapm_get_pin_status(dapm, "AUX")){
 		if(status == AUDIO_DOCK ){
-                	printk("%s: audio_dock_in\n", __func__);
-	                snd_soc_dapm_enable_pin(dapm, "AUX");
-        	        snd_soc_dapm_disable_pin(dapm, "Int Spk");
-                	snd_soc_dapm_sync(dapm);
+            printk("%s: audio_dock_in\n", __func__);
+	        snd_soc_dapm_enable_pin(dapm, "AUX");
+        	snd_soc_dapm_disable_pin(dapm, "Int Spk");
+            snd_soc_dapm_sync(dapm);
 		}else if(status == AUDIO_STAND ){
 			if(gpio_get_value(TEGRA_GPIO_PX3) == 0){
 				lineout_alive = true;
@@ -100,10 +94,10 @@ int audio_dock_in_out(u8 status)
 				set_lineout_state(false);
 			}
 		}else{
-                	printk("%s: audio_stand_dock_out\n", __func__);
-	                snd_soc_dapm_disable_pin(dapm, "AUX");
-	                snd_soc_dapm_enable_pin(dapm, "Int Spk");
-        	        snd_soc_dapm_sync(dapm);
+            printk("%s: audio_stand_dock_out\n", __func__);
+	        snd_soc_dapm_disable_pin(dapm, "AUX");
+	        snd_soc_dapm_enable_pin(dapm, "Int Spk");
+        	snd_soc_dapm_sync(dapm);
 		}
 	}else if (snd_soc_dapm_get_pin_status(dapm, "Headphone Jack")){
 		printk("%s: headphone is inserted\n", __func__);
