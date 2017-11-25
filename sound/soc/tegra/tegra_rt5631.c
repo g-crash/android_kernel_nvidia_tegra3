@@ -10,9 +10,6 @@
 #include <linux/slab.h>
 #include <linux/gpio.h>
 #include <linux/regulator/consumer.h>
-#if defined(CONFIG_SWITCH) && !defined(CONFIG_HEADSET_FUNCTION)
-#include <linux/switch.h>
-#endif
 
 #include <sound/core.h>
 #include <sound/jack.h>
@@ -34,9 +31,6 @@ struct tegra_rt5631 {
 	struct regulator *spk_reg;
 	struct regulator *dmic_reg;
 	int gpio_requested;
-#if defined(CONFIG_SWITCH) && !defined(CONFIG_HEADSET_FUNCTION)
-	int jack_status;
-#endif
 };
 
 extern void audio_dock_init(void);

@@ -78,7 +78,7 @@ static void 		lineout_work_queue(struct work_struct *work);
 static int              lineout_config_gpio(u32 project_info);
 static void 		detection_work(struct work_struct *work);
 static int              btn_config_gpio(void);
-int 			hs_micbias_power(int on);
+static int 		hs_micbias_power(int on);
 #ifndef CONFIG_MACH_TRANSFORMER
 static void		dock_work_queue(struct work_struct *work);
 static int              switch_config_gpio(void);
@@ -378,7 +378,6 @@ static int jack_config_gpio()
 		insert_headset();
 	}else {
 		hs_micbias_power(OFF);
-		headset_alive = false;
 		switch_set_state(&hs_data->sdev, NO_DEVICE);
 		remove_headset();
 	}
@@ -560,12 +559,12 @@ static int codec_micbias_power(int on)
 	case TEGRA3_PROJECT_TF700T:
 		if(on){
 			if(rt5631_audio_codec == NULL){
-				printk("%s: No rt5631 rt5631_audio_codec - set micbias on fail\n", __func__);
+				printk("HEADSET: %s: No rt5631 rt5631_audio_codec - set micbias on fail\n", __func__);
 				return 0;
 			}
 		}else{
 			if(rt5631_audio_codec == NULL){
-				printk("%s: No rt5631 rt5631_audio_codec - set micbias off fail\n", __func__);
+				printk("HEADSET: %s: No rt5631 rt5631_audio_codec - set micbias off fail\n", __func__);
 				return 0;
 			}
 			snd_soc_update_bits(rt5631_audio_codec, RT5631_PWR_MANAG_ADD2, RT5631_PWR_MICBIAS1_VOL, 0); /* Disable MicBias1 */
@@ -574,12 +573,12 @@ static int codec_micbias_power(int on)
 	case TEGRA3_PROJECT_TF300T:
 		if(on){
 			if(wm8903_codec == NULL){
-					printk("%s: No wm8903_codec - set micbias on fail\n", __func__);
+					printk("HEADSET: %s: No wm8903_codec - set micbias on fail\n", __func__);
 					return 0;
 				}
 		}else{
 			if(wm8903_codec == NULL){
-					printk("%s: No wm8903_codec - set micbias off fail\n", __func__);
+					printk("HEADSET: %s: No wm8903_codec - set micbias off fail\n", __func__);
 					return 0;
 				}
 			snd_soc_update_bits(wm8903_codec, WM8903_MIC_BIAS_CONTROL_0, 0, 0); /* Disable MicBias1 */
@@ -607,7 +606,7 @@ static int codec_micbias_power(int on)
 }
 
 
-int hs_micbias_power(int on)
+static int hs_micbias_power(int on)
 {
 	static int nLastVregStatus = -1;
 
@@ -623,7 +622,6 @@ int hs_micbias_power(int on)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(hs_micbias_power);
 
 /**********************************************************
 **  Function: Headset driver init function
