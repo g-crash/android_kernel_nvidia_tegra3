@@ -30,7 +30,11 @@ snd-soc-max98088-objs := max98088.o
 snd-soc-max98095-objs := max98095.o
 snd-soc-max9850-objs := max9850.o
 snd-soc-pcm3008-objs := pcm3008.o
+ifeq ($(CONFIG_MACH_TRANSFORMER),y)
+snd-soc-rt5631-objs := rt5631_tf.o rt56xx_ioctl.o
+else
 snd-soc-rt5631-objs := rt5631.o
+endif
 snd-soc-sgtl5000-objs := sgtl5000.o
 snd-soc-alc5623-objs := alc5623.o
 snd-soc-alc5632-objs := alc5632.o
