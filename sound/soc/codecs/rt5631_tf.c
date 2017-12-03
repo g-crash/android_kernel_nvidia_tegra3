@@ -31,13 +31,12 @@
 #include <mach/board-asus-t30-misc.h>
 
 #include "rt5631_tf.h"
+#if defined(CONFIG_SND_HWDEP) || defined(CONFIG_SND_HWDEP_MODULE)
+#include "rt56xx_ioctl.h"
+#endif
 
 #include <../board-asus-t30.h>
 
-#define RTK_IOCTL
-#if defined(RTK_IOCTL)
-#include "rt56xx_ioctl.h"
-#endif //RTK_IOCTL
 #define VIRTUAL_REG_FOR_MISC_FUNC 0x90
 #define RT5631_PWR_ADC_L_CLK (1 << 11)
 
@@ -71,8 +70,6 @@
 #define RETRY_MAX (5)
 #define TF700T_PCB_ER1 (0x3)
 #define DEPOP_DELAY (1)
-
-#define CODEC_SPKVDD_POWER_5V0_EN_GPIO TPS6591X_GPIO_8
 
 struct rt5631_priv {
 	int codec_version;
@@ -2506,19 +2503,6 @@ static int rt5631_probe(struct snd_soc_codec *codec)
 	unsigned int val;
 	int ret;
 
-	ret = gpio_request(CODEC_SPKVDD_POWER_5V0_EN_GPIO, "RT5631_5V");
-	if (ret) {
-		printk("gpio_request failed for input %d\n", CODEC_SPKVDD_POWER_5V0_EN_GPIO);
-	}
-	ret = gpio_direction_output(CODEC_SPKVDD_POWER_5V0_EN_GPIO, 1) ;
-	if (ret) {
-		printk("gpio_direction_output failed for input %d\n", CODEC_SPKVDD_POWER_5V0_EN_GPIO);
-	}
-	printk("GPIO = %d , state = %d\n", CODEC_SPKVDD_POWER_5V0_EN_GPIO,
-			gpio_get_value(CODEC_SPKVDD_POWER_5V0_EN_GPIO));
-	gpio_set_value(CODEC_SPKVDD_POWER_5V0_EN_GPIO, 1);
-
-	project_id = tegra3_get_project_id();
 	ret = snd_soc_codec_set_cache_io(codec, 8, 16, SND_SOC_I2C);
 	if (ret != 0) {
 		dev_err(codec->dev, "Failed to set cache I/O: %d\n", ret);
@@ -2628,7 +2612,7 @@ static int rt5631_probe(struct snd_soc_codec *codec)
 #if defined(CONFIG_SND_HWDEP) || defined(CONFIG_SND_HWDEP_MODULE)
        printk("************************realtek_ce_init_hwdep*************************************\n");
        realtek_ce_init_hwdep(rt5631_codec);
-#endif //RTK_IOCTL
+#endif
 
 	return 0;
 }
