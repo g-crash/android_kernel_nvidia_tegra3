@@ -54,7 +54,7 @@
 #include <linux/jiffies.h>
 #endif
 
-#ifdef BCMDHD_TF_NVRAM_DIR
+#ifdef CONFIG_BCMDHD_TF_NVRAM_DIR
 #include <mach/board-asus-t30-misc.h>
 #endif
 
@@ -199,10 +199,10 @@ dhd_common_init(osl_t *osh)
         case TEGRA3_PROJECT_TF300T:
 	    case TEGRA3_PROJECT_TF300TG:
 	    case TEGRA3_PROJECT_TF300TL:
-	        sprintf(nv_path, "%s/nvram_nh615.txt", CONFIG_BCMDHD_NVRAM_DIR, MOD_PARAM_PATHLEN-1);
+	        sprintf(nv_path, "%s/nvram_nh615.txt", CONFIG_BCMDHD_TF_NVRAM_DIR, MOD_PARAM_PATHLEN-1);
 		    break;
 	    case TEGRA3_PROJECT_TF700T:
-            sprintf(nv_path, "%s/nvram_nh665.txt", CONFIG_BCMDHD_NVRAM_DIR, MOD_PARAM_PATHLEN-1);
+            sprintf(nv_path, "%s/nvram_nh665.txt", CONFIG_BCMDHD_TF_NVRAM_DIR, MOD_PARAM_PATHLEN-1);
 		    break;
     }
 #else /* CONFIG_BCMDHD_NVRAM_PATH */
