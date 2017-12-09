@@ -1170,7 +1170,6 @@ static int cardhu_nct1008_init(void)
 {
 	int nct1008_port = -1;
 	int ret = 0;
-	u32 project_info = tegra3_get_project_id();
 
 	if ((board_info.board_id == BOARD_E1198) ||
 		(board_info.board_id == BOARD_E1291) ||
@@ -1513,8 +1512,6 @@ static struct i2c_board_info cardhu_i2c1_board_info_al3010[] = {
 int __init cardhu_sensors_init(void)
 {
 	int err;
-	int ret = 0;
-	u32 project_info = tegra3_get_project_id();
 
 	tegra_get_board_info(&board_info);
 
@@ -1583,10 +1580,6 @@ int __init cardhu_sensors_init(void)
 /* iCatch7002a - */
 #endif /* CONFIG_VIDEO_YUV */
 	pmu_tca6416_init();
-
-	if (board_info.board_id == BOARD_E1291)
-		i2c_register_board_info(4, cardhu_i2c4_bq27510_board_info,
-			ARRAY_SIZE(cardhu_i2c4_bq27510_board_info));
 
 	i2c_register_board_info(4, cardhu_i2c4_pad_bat_board_info,
 			ARRAY_SIZE(cardhu_i2c4_pad_bat_board_info));

@@ -275,7 +275,9 @@ static struct wm8903_platform_data cardhu_wm8903_pdata = {
 };
 #ifdef CONFIG_DSP_FM34
 static const struct i2c_board_info cardhu_dsp_board_info[] = {
-		I2C_BOARD_INFO("dsp_fm34", 0x60),
+	{
+        I2C_BOARD_INFO("dsp_fm34", 0x60),
+    },
 };
 #endif
 
@@ -1287,7 +1289,6 @@ extern void tegra_booting_info(void );
 
 static void __init tegra_cardhu_init(void)
 {
-        u32 project_info = tegra3_get_project_id();
 	/* input chip uid for initialization of kernel misc module */
 	tegra_clk_init_from_table(cardhu_clk_init_table);
 	tegra_enable_pinmux();

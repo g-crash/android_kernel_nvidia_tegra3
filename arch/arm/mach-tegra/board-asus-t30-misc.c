@@ -311,15 +311,6 @@ static ssize_t cardhu_projectname_show(struct kobject *kobj,
         return (s - buf);
 }
 
-static ssize_t cardhu_nfc_show(struct kobject *kobj,
-        struct kobj_attribute *attr, char *buf)
-{
-        char *s = buf;
-
-        s += sprintf(s, "%x\n", tegra3_query_nfc_module());
-        return (s - buf);
-}
-
 CARDHU_MISC_ATTR(cardhu_chipid);
 CARDHU_MISC_ATTR(cardhu_pcbid);
 CARDHU_MISC_ATTR(cardhu_projectid);

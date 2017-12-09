@@ -694,23 +694,6 @@ static struct tegra_dc_mode panel_19X12_modes[] = {
 	},
 };
 
-static struct tegra_dc_mode cardhu_panel_modes_800_1280[] = {
-	{
-		/* 1280x800@60Hz */
-		.pclk = 68000000,
-		.h_ref_to_sync = 1,
-		.v_ref_to_sync = 1,
-		.h_sync_width = 24,
-		.v_sync_width = 1,
-		.h_back_porch = 32,
-		.v_back_porch = 2,
-		.h_active = 800,
-		.v_active = 1280,
-		.h_front_porch = 24,
-		.v_front_porch = 5,
-		},
-};
-
 static struct tegra_dc_mode cardhu_panel_modes[] = {
 	{
 		/* 1366x768@60Hz */
@@ -887,14 +870,6 @@ static struct tegra_fb_data cardhu_hdmi_fb_data = {
 #else
 	.bits_per_pixel	= 32,
 #endif
-//	.flags		= TEGRA_FB_FLIP_ON_PROBE,
-};
-
-static struct tegra_fb_data cardhu_fb_data_800_1280 = {
-	.win		= 0,
-	.xres		= 800,
-	.yres		= 1280,
-	.bits_per_pixel	= 32,
 //	.flags		= TEGRA_FB_FLIP_ON_PROBE,
 };
 

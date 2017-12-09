@@ -759,7 +759,6 @@ FIXED_REG(14, dis_5v_switch_e118x,	dis_5v_switch,	FIXED_SUPPLY(en_5v0), 	0,     
 
 /* E1291-A04/A05 specific */
 FIXED_REG(1, en_5v0_a04,	en_5v0,		NULL,				1,      0,      TPS6591X_GPIO_8,	true,	1, 5000);
-FIXED_REG(1, en_5v0_me301,	en_5v0,		NULL,				1,      0,      TPS6591X_GPIO_8,	true,	1, 5000);
 FIXED_REG(2, en_ddr_a04,	en_ddr,		NULL,				1,      0,      TPS6591X_GPIO_7,	true,	1, 1500);
 FIXED_REG(3, en_3v3_sys_a04,	en_3v3_sys,	NULL,				0,      0,      TPS6591X_GPIO_6,	true,	1, 3300);
 
@@ -782,12 +781,8 @@ FIXED_REG(22, en_vbrtr,		en_vbrtr,	FIXED_SUPPLY(en_3v3_sys),	0,      0,      PMU
 FIXED_REG(4, en_vdd_bl_pm313,   en_vdd_bl,      NULL,				0,      0,      TEGRA_GPIO_PK3,		true,  1, 5000);
 FIXED_REG(6, en_vdd_pnl1_pm313, en_vdd_pnl1,    FIXED_SUPPLY(en_3v3_sys),	0,      0,      TEGRA_GPIO_PH3,		true,  1, 3300);
 
-#if 0       /* Unused */
-/****************** Open collector Load switches *******/
-/*Specific to pm269*/
-FIXED_REG_OD(17, en_vddio_vid_oc_pm269,	en_vddio_vid_oc,	FIXED_SUPPLY(dis_5v_switch),	0,      0,	TEGRA_GPIO_PP2,		true,	0, 5000, true);
-#endif
 
+/****************** Open collector Load switches *******/
 /* Specific to pm311 */
 FIXED_REG_OD(15, en_usb1_vbus_oc_pm311,	en_usb1_vbus_oc,	FIXED_SUPPLY(dis_5v_switch), 	0,      0,      TEGRA_GPIO_PCC7,	true,	0, 5000, true);
 FIXED_REG_OD(16, en_usb3_vbus_oc_pm311,	en_usb3_vbus_oc,	FIXED_SUPPLY(dis_5v_switch), 	0,      0,      TEGRA_GPIO_PCC6,	true,	0, 5000, true);
@@ -856,20 +851,6 @@ FIXED_REG_OD(17, en_vddio_vid_oc,	en_vddio_vid_oc,	FIXED_SUPPLY(en_5v0), 		0,   
 	ADD_FIXED_REG(en_3v3_emmc),		\
 	ADD_FIXED_REG(en_1v8_cam),		\
 	ADD_FIXED_REG(en_vbrtr),		
-
-#define PM269_FIXED_REG_ME301				\
-	ADD_FIXED_REG(en_5v_cp),		\
-	ADD_FIXED_REG(en_5v0_me301),		\
-	ADD_FIXED_REG(en_ddr_a04),		\
-	ADD_FIXED_REG(en_3v3_sys_a04),		\
-	ADD_FIXED_REG(en_3v3_modem),		\
-	ADD_FIXED_REG(cam1_ldo_en),		\
-	ADD_FIXED_REG(cam3_ldo_en),		\
-	ADD_FIXED_REG(en_vdd_com),		\
-	ADD_FIXED_REG(en_3v3_fuse_pm269),	\
-	ADD_FIXED_REG(en_3v3_emmc),		\
-	ADD_FIXED_REG(en_1v8_cam),		\
-	ADD_FIXED_REG(en_usb1_vbus_oc_e118x),
 
 #define PM311_FIXED_REG				\
 	ADD_FIXED_REG(en_5v_cp),		\
@@ -983,11 +964,6 @@ static struct platform_device *fixed_reg_devs_pm269[] = {
 	E1247_DISPLAY_FIXED_REG
 };
 
-static struct platform_device *fixed_reg_devs_pm269_me301[] = {
-	PM269_FIXED_REG_ME301
-	E1247_DISPLAY_FIXED_REG
-};
-
 static struct platform_device *fixed_reg_devs_pm269_dsi[] = {
 	PM269_FIXED_REG
 	E1247_DSI_DISPLAY_FIXED_REG
@@ -1044,7 +1020,6 @@ int __init cardhu_fixed_regulator_init(void)
 	struct board_info display_board_info;
 	struct platform_device **fixed_reg_devs;
 	int    nfixreg_devs;
-	unsigned int project_id = tegra3_get_project_id();
 
 	tegra_get_board_info(&board_info);
 	tegra_get_pmu_board_info(&pmu_board_info);
