@@ -1106,18 +1106,8 @@ int __init cardhu_fixed_regulator_init(void)
 			nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269_dsi);
 			fixed_reg_devs = fixed_reg_devs_pm269_dsi;
 		} else {
-
-			if(TEGRA3_PROJECT_ME301T != project_id)
-			{
-				nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269);
-				fixed_reg_devs = fixed_reg_devs_pm269;
-			}
-			else
-			{
-				nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269_me301);
-				fixed_reg_devs = fixed_reg_devs_pm269_me301;
-			}
-
+			nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269);
+			fixed_reg_devs = fixed_reg_devs_pm269;
 		}
 		break;
 
@@ -1257,16 +1247,9 @@ int __init cardhu_edp_init(void)
 	case TEGRA3_PROJECT_TF300T:
 	case TEGRA3_PROJECT_TF300TG:
 	case TEGRA3_PROJECT_TF300TL:
-	case TEGRA3_PROJECT_TF500T:
-	case TEGRA3_PROJECT_ME301T:
-	case TEGRA3_PROJECT_ME301TL:
 		current_mA = 6000;
 		break;
-	case TEGRA3_PROJECT_ME570T:
-		current_mA = 8200;
-		break;
 	case TEGRA3_PROJECT_TF700T:
-	case TEGRA3_PROJECT_P1801:
 		current_mA = 10000;
 		break;
 	default:

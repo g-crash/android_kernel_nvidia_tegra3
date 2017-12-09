@@ -392,7 +392,6 @@ obj-${CONFIG_ARCH_ACER_T30}             += board-acer-t30-memory.o
 
 obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30.o
 obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-kbc.o
-obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-irda.o
 obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-panel.o
 obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-pinmux.o
 obj-${CONFIG_ARCH_ASUS_T30}             += board-asus-t30-power.o

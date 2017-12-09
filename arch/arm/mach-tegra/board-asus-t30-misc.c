@@ -258,23 +258,6 @@ unsigned int tegra3_query_wifi_module_pcbid(void)
 }
 EXPORT_SYMBOL(tegra3_query_wifi_module_pcbid);
 
-unsigned int tegra3_query_nfc_module(void)
-{
-	unsigned int nfc_pcbid = 0;
-	unsigned int project = tegra3_get_project_id();
-	unsigned int ret = TEGRA3_NFC_NONE;
-
-	/* Check if running target platform is valid */
-	if (project == TEGRA3_PROJECT_ME570T) {
-		nfc_pcbid = HW_DRF_VAL(TEGRA3_DEVKIT, MISC_HW, NFC,
-			cardhu_extended_pcbid);
-		ret = nfc_pcbid;
-	}
-
-	return ret;
-}
-EXPORT_SYMBOL(tegra3_query_nfc_module);
-
 static ssize_t cardhu_chipid_show(struct kobject *kobj,
 	struct kobj_attribute *attr, char *buf)
 {
@@ -341,14 +324,12 @@ CARDHU_MISC_ATTR(cardhu_chipid);
 CARDHU_MISC_ATTR(cardhu_pcbid);
 CARDHU_MISC_ATTR(cardhu_projectid);
 CARDHU_MISC_ATTR(cardhu_projectname);
-CARDHU_MISC_ATTR(cardhu_nfc);
 
 static struct attribute *attr_list[] = {
 	&cardhu_chipid_attr.attr,
 	&cardhu_pcbid_attr.attr,
 	&cardhu_projectid_attr.attr,
 	&cardhu_projectname_attr.attr,
-	&cardhu_nfc_attr.attr,
 	NULL,
 };
 

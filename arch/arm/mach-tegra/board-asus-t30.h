@@ -285,29 +285,6 @@ extern struct tegra_uart_platform_data cardhu_irda_pdata;
 #define TF300TL_ACCEL_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
 #define TF300TL_COMPASS_ORIENTATION	{ -1, 0, 0, 0, -1, 0, 0, 0, 1 }
 
-/*
-#define MPU6050_GYRO_NAME		"mpu6050"
-#define MPU6050_GYRO_ADDR		0x69
-#define MPU6050_TF500T_GYRO_ADDR		0x68
-
-//Sensors orientation matrix for TF500T
-#define TF500T_GYRO_ORIENTATION		{ 0, -1, 0, 1, 0, 0, 0, 0, 1 }
-#define TF500T_COMPASS_ORIENTATION	{ 0, -1, 0, 1, 0, 0, 0, 0, 1 }
-
-//Sensors orientation matrix for ME301T and ME301TL
-#define ME301T_GYRO_ORIENTATION		{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
-#define ME301T_COMPASS_ORIENTATION	{ 0, 1, 0, 1, 0, 0, 0, 0, -1 }
-
-//Kionix Accel sensor Definitions
-#define KIONIX_ACCEL_NAME	"KXT_9"
-#define KIONIX_ACCEL_IRQ_GPIO	TEGRA_GPIO_PO5
-#define KIONIX_ACCEL_ADDR		0x0F
-#define KIONIX_ACCEL_BUS_NUM	2
-
-//Sensors orientation matrix for P1801
-#define P1801_ACCEL_ORIENTATION		{ 0, -1, 0, -1, 0, 0, 0, 0, -1 }
-*/
-
 /* Baseband GPIO addresses */
 /*#define BB_GPIO_BB_EN			TEGRA_GPIO_PR5
 #define BB_GPIO_BB_RST			TEGRA_GPIO_PS4

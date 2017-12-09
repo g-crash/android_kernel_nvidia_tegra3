@@ -241,7 +241,6 @@ static struct tegra_i2c_platform_data cardhu_i2c3_platform_data_for_TF300 = {
 };
 
 /* Higher freq could be applied for TF300T/TF300TG/TF300TL Camera FW update*/
-
 static struct tegra_i2c_platform_data cardhu_i2c4_platform_data = {
 	.adapter_nr	= 3,
 	.bus_count	= 1,
@@ -260,15 +259,6 @@ static struct tegra_i2c_platform_data cardhu_i2c5_platform_data = {
 	.arb_recovery = arb_lost_recovery,
 };
 
-
-#if 0
-struct tegra_wired_jack_conf audio_wr_jack_conf = {
-	.hp_det_n = TEGRA_GPIO_PW2,
-	.en_mic_ext = TEGRA_GPIO_PX1,
-	.en_mic_int = TEGRA_GPIO_PX0,
-};
-#endif
-
 static struct wm8903_platform_data cardhu_wm8903_pdata = {
 	.irq_active_low = 0,
 	.micdet_cfg = 0,
@@ -285,130 +275,18 @@ static struct wm8903_platform_data cardhu_wm8903_pdata = {
 };
 #ifdef CONFIG_DSP_FM34
 static const struct i2c_board_info cardhu_dsp_board_info[] = {
-	{
 		I2C_BOARD_INFO("dsp_fm34", 0x60),
-	},
 };
 #endif
+
 static struct i2c_board_info __initdata rt5631_board_info = {
 	I2C_BOARD_INFO("rt5631", 0x1a),
 };
+
 static struct i2c_board_info __initdata wm8903_board_info = {
 	I2C_BOARD_INFO("wm8903", 0x1a),
 	.platform_data = &cardhu_wm8903_pdata,
 };
-static struct i2c_board_info __initdata rt5642_board_info = {
-	I2C_BOARD_INFO("rt5640", 0x1c),
-};
-
-
-#if 0
-/* Equalizer filter coefs generated from the MAXIM MAX98095
- * evkit software tool */
-static struct max98095_eq_cfg max98095_eq_cfg[] = {
-	{
-		.name = "FLAT",
-		.rate = 44100,
-		.band1 = {0x2000, 0xC002, 0x4000, 0x00E9, 0x0000},
-		.band2 = {0x2000, 0xC00F, 0x4000, 0x02BC, 0x0000},
-		.band3 = {0x2000, 0xC0A7, 0x4000, 0x0916, 0x0000},
-		.band4 = {0x2000, 0xC5C2, 0x4000, 0x1A87, 0x0000},
-		.band5 = {0x2000, 0xF6B0, 0x4000, 0x3F51, 0x0000},
-	},
-	{
-		.name = "LOWPASS1K",
-		.rate = 44100,
-		.band1 = {0x205D, 0xC001, 0x3FEF, 0x002E, 0x02E0},
-		.band2 = {0x5B9A, 0xC093, 0x3AB2, 0x088B, 0x1981},
-		.band3 = {0x0D22, 0xC170, 0x26EA, 0x0D79, 0x32CF},
-		.band4 = {0x0894, 0xC612, 0x01B3, 0x1B34, 0x3FFA},
-		.band5 = {0x0815, 0x3FFF, 0xCF78, 0x0000, 0x29B7},
-	},
-	{ /* BASS=-12dB, TREBLE=+9dB, Fc=5KHz */
-		.name = "HIBOOST",
-		.rate = 44100,
-		.band1 = {0x0815, 0xC001, 0x3AA4, 0x0003, 0x19A2},
-		.band2 = {0x0815, 0xC103, 0x092F, 0x0B55, 0x3F56},
-		.band3 = {0x0E0A, 0xC306, 0x1E5C, 0x136E, 0x3856},
-		.band4 = {0x2459, 0xF665, 0x0CAA, 0x3F46, 0x3EBB},
-		.band5 = {0x5BBB, 0x3FFF, 0xCEB0, 0x0000, 0x28CA},
-	},
-	{ /* BASS=12dB, TREBLE=+12dB */
-		.name = "LOUD12DB",
-		.rate = 44100,
-		.band1 = {0x7FC1, 0xC001, 0x3EE8, 0x0020, 0x0BC7},
-		.band2 = {0x51E9, 0xC016, 0x3C7C, 0x033F, 0x14E9},
-		.band3 = {0x1745, 0xC12C, 0x1680, 0x0C2F, 0x3BE9},
-		.band4 = {0x4536, 0xD7E2, 0x0ED4, 0x31DD, 0x3E42},
-		.band5 = {0x7FEF, 0x3FFF, 0x0BAB, 0x0000, 0x3EED},
-	},
-	{
-		.name = "FLAT",
-		.rate = 16000,
-		.band1 = {0x2000, 0xC004, 0x4000, 0x0141, 0x0000},
-		.band2 = {0x2000, 0xC033, 0x4000, 0x0505, 0x0000},
-		.band3 = {0x2000, 0xC268, 0x4000, 0x115F, 0x0000},
-		.band4 = {0x2000, 0xDA62, 0x4000, 0x33C6, 0x0000},
-		.band5 = {0x2000, 0x4000, 0x4000, 0x0000, 0x0000},
-	},
-	{
-		.name = "LOWPASS1K",
-		.rate = 16000,
-		.band1 = {0x2000, 0xC004, 0x4000, 0x0141, 0x0000},
-		.band2 = {0x5BE8, 0xC3E0, 0x3307, 0x15ED, 0x26A0},
-		.band3 = {0x0F71, 0xD15A, 0x08B3, 0x2BD0, 0x3F67},
-		.band4 = {0x0815, 0x3FFF, 0xCF78, 0x0000, 0x29B7},
-		.band5 = {0x0815, 0x3FFF, 0xCF78, 0x0000, 0x29B7},
-	},
-	{ /* BASS=-12dB, TREBLE=+9dB, Fc=2KHz */
-		.name = "HIBOOST",
-		.rate = 16000,
-		.band1 = {0x0815, 0xC001, 0x3BD2, 0x0009, 0x16BF},
-		.band2 = {0x080E, 0xC17E, 0xF653, 0x0DBD, 0x3F43},
-		.band3 = {0x0F80, 0xDF45, 0xEE33, 0x36FE, 0x3D79},
-		.band4 = {0x590B, 0x3FF0, 0xE882, 0x02BD, 0x3B87},
-		.band5 = {0x4C87, 0xF3D0, 0x063F, 0x3ED4, 0x3FB1},
-	},
-	{ /* BASS=12dB, TREBLE=+12dB */
-		.name = "LOUD12DB",
-		.rate = 16000,
-		.band1 = {0x7FC1, 0xC001, 0x3D07, 0x0058, 0x1344},
-		.band2 = {0x2DA6, 0xC013, 0x3CF1, 0x02FF, 0x138B},
-		.band3 = {0x18F1, 0xC08E, 0x244D, 0x0863, 0x34B5},
-		.band4 = {0x2BE0, 0xF385, 0x04FD, 0x3EC5, 0x3FCE},
-		.band5 = {0x7FEF, 0x4000, 0x0BAB, 0x0000, 0x3EED},
-	},
-};
-
-static struct max98095_pdata cardhu_max98095_pdata = {
-	/* equalizer configuration */
-	.eq_cfg = max98095_eq_cfg,
-	.eq_cfgcnt = ARRAY_SIZE(max98095_eq_cfg),
-
-	/* Biquad filter response configuration */
-	.bq_cfg = NULL,
-	.bq_cfgcnt = 0,
-
-	/* microphone configuration */
-	.digmic_left_mode = 1,
-	.digmic_right_mode = 1,
-};
-
-static struct i2c_board_info __initdata cardhu_codec_wm8903_info = {
-	I2C_BOARD_INFO("wm8903", 0x1a),
-	.platform_data = &cardhu_wm8903_pdata,
-};
-
-static struct i2c_board_info __initdata cardhu_codec_aic326x_info = {
-	I2C_BOARD_INFO("aic3262-codec", 0x18),
-};
-
-static struct i2c_board_info __initdata cardhu_codec_max98095_info = {
-	I2C_BOARD_INFO("max98095", 0x10),
-	.platform_data = &cardhu_max98095_pdata,
-};
-#endif
-
 
 static struct i2c_board_info __initdata cardhu_i2c_asuspec_info[] = {
 	{
@@ -419,32 +297,15 @@ static struct i2c_board_info __initdata cardhu_i2c_asuspec_info[] = {
 	},
 };
 
-static struct i2c_board_info __initdata cardhu_i2c_aw8ec_info[] = {
-        {
-                I2C_BOARD_INFO("asuspec", 0x15),
-        },
-        {
-                I2C_BOARD_INFO("aw8ec", 0x19),
-        },
-};
-
-
 static void cardhu_i2c_init(void)
 {
 	u32 project_info = tegra3_get_project_id();
-
-	if (project_info == TEGRA3_PROJECT_P1801) {
-		cardhu_i2c1_platform_data.bus_clk_rate[0] = 280000;
-		cardhu_i2c4_platform_data.bus_clk_rate[0] = 33000;
-	}
 
 	tegra_i2c_device1.dev.platform_data = &cardhu_i2c1_platform_data;
 	tegra_i2c_device2.dev.platform_data = &cardhu_i2c2_platform_data;
 	if ((project_info == TEGRA3_PROJECT_TF300T) ||
 		(project_info == TEGRA3_PROJECT_TF300TG) ||
-		(project_info == TEGRA3_PROJECT_TF300TL) ||
-		(project_info == TEGRA3_PROJECT_ME301T)  ||
-		(project_info == TEGRA3_PROJECT_ME301TL)) {
+		(project_info == TEGRA3_PROJECT_TF300TL)) {
 		tegra_i2c_device3.dev.platform_data = &cardhu_i2c3_platform_data_for_TF300;
 	} else {
 		tegra_i2c_device3.dev.platform_data = &cardhu_i2c3_platform_data;
@@ -459,26 +320,7 @@ static void cardhu_i2c_init(void)
 	platform_device_register(&tegra_i2c_device2);
 	platform_device_register(&tegra_i2c_device1);
 
-	//cardhu_codec_wm8903_info.irq = gpio_to_irq(TEGRA_GPIO_CDC_IRQ);
-	//i2c_register_board_info(4, &cardhu_codec_wm8903_info, 1);
-	//cardhu_codec_max98095_info.irq = gpio_to_irq(TEGRA_GPIO_CDC_IRQ);
-	//i2c_register_board_info(4, &cardhu_codec_max98095_info, 1);
-	//cardhu_codec_aic326x_info.irq = gpio_to_irq(TEGRA_GPIO_CDC_IRQ);
-	//i2c_register_board_info(4, &cardhu_codec_aic326x_info, 1);
-
-	switch(project_info){
-	case TEGRA3_PROJECT_TF201:
-	case TEGRA3_PROJECT_TF300TG:
-	case TEGRA3_PROJECT_TF700T:
-	case TEGRA3_PROJECT_TF300TL:
-	case TEGRA3_PROJECT_TF300T:
-	case TEGRA3_PROJECT_TF500T:
-		i2c_register_board_info(1, cardhu_i2c_asuspec_info, ARRAY_SIZE(cardhu_i2c_asuspec_info));
-	break;
-	case TEGRA3_PROJECT_P1801:
-		i2c_register_board_info(1, cardhu_i2c_aw8ec_info, ARRAY_SIZE(cardhu_i2c_aw8ec_info));
-	default:;
-	}
+	i2c_register_board_info(1, cardhu_i2c_asuspec_info, ARRAY_SIZE(cardhu_i2c_asuspec_info));
 
 	switch (project_info) {
 		case TEGRA3_PROJECT_TF201:
@@ -489,10 +331,6 @@ static void cardhu_i2c_init(void)
 			break;
 		case TEGRA3_PROJECT_TF300T:
 			i2c_register_board_info(4, &wm8903_board_info, 1);
-			break;
-		case TEGRA3_PROJECT_ME301T:
-		case TEGRA3_PROJECT_P1801:
-			i2c_register_board_info(4, &rt5642_board_info, 1);
 			break;
 		default:
 			break;
@@ -615,18 +453,6 @@ static void __init cardhu_uart_init(void)
 					debug_uart_clk->name);
 		}
 	}
-
-#ifdef CONFIG_TEGRA_IRDA
-	if (((board_info.board_id == BOARD_E1186) ||
-		(board_info.board_id == BOARD_E1198)) &&
-			cardhu_irda_pdata.is_irda) {
-		cardhu_irda_pdata.parent_clk_list = uart_parent_clk;
-		cardhu_irda_pdata.parent_clk_count =
-					ARRAY_SIZE(uart_parent_clk);
-
-		tegra_uartb_device.dev.platform_data = &cardhu_irda_pdata;
-	}
-#endif
 
 	tegra_serial_debug_init(debug_uart_port_base, debug_uart_port_irq,
 				debug_uart_clk, -1, -1);
@@ -756,74 +582,6 @@ static struct platform_device cardhu_audio_device = {
         },
 };
 
-#if 0
-static struct tegra_asoc_platform_data cardhu_audio_max98095_pdata = {
-	.gpio_spkr_en		= -1,
-	.gpio_hp_det		= TEGRA_GPIO_HP_DET,
-	.gpio_hp_mute		= -1,
-	.gpio_int_mic_en	= -1,
-	.gpio_ext_mic_en	= -1,
-	.i2s_param[HIFI_CODEC]	= {
-		.audio_port_id	= 0,
-		.is_i2s_master	= 1,
-		.i2s_mode	= TEGRA_DAIFMT_I2S,
-	},
-	.i2s_param[BASEBAND]	= {
-		.audio_port_id	= -1,
-	},
-	.i2s_param[BT_SCO]	= {
-		.audio_port_id	= 3,
-		.is_i2s_master	= 1,
-		.i2s_mode	= TEGRA_DAIFMT_DSP_A,
-	},
-};
-
-static struct platform_device cardhu_audio_wm8903_device = {
-	.name	= "tegra-snd-wm8903",
-	.id	= 0,
-	.dev	= {
-		.platform_data = &cardhu_audio_wm8903_pdata,
-	},
-};
-
-static struct platform_device cardhu_audio_max98095_device = {
-	.name	= "tegra-snd-max98095",
-	.id	= 0,
-	.dev	= {
-		.platform_data = &cardhu_audio_max98095_pdata,
-	},
-};
-
-static struct tegra_asoc_platform_data cardhu_audio_aic326x_pdata = {
-	.gpio_spkr_en		= -1,
-	.gpio_hp_det		= TEGRA_GPIO_HP_DET,
-	.gpio_hp_mute		= -1,
-	.gpio_int_mic_en	= -1,
-	.gpio_ext_mic_en	= -1,
-	/*defaults for Verbier-Cardhu board with TI AIC326X codec*/
-	.i2s_param[HIFI_CODEC]	= {
-		.audio_port_id	= 0,
-		.is_i2s_master	= 1,
-		.i2s_mode	= TEGRA_DAIFMT_I2S,
-		.sample_size	= 16,
-	},
-	.i2s_param[BT_SCO]	= {
-		.sample_size	= 16,
-		.audio_port_id	= 3,
-		.is_i2s_master	= 1,
-		.i2s_mode	= TEGRA_DAIFMT_DSP_A,
-	},
-};
-
-static struct platform_device cardhu_audio_aic326x_device = {
-	.name	= "tegra-snd-aic326x",
-	.id	= 0,
-	.dev	= {
-		.platform_data  = &cardhu_audio_aic326x_pdata,
-	},
-};
-#endif
-
 static struct platform_device *cardhu_devices[] __initdata = {
 	&tegra_pmu_device,
 	&tegra_rtc_device,
@@ -851,8 +609,6 @@ static struct platform_device *cardhu_devices[] __initdata = {
 #endif
 	&tegra_pcm_device,
 	&cardhu_audio_device,
-	//&cardhu_audio_max98095_device,
-	//&cardhu_audio_aic326x_device,
 	&tegra_hda_device,
 	&tegra_cec_device,
 #if defined(CONFIG_CRYPTO_DEV_TEGRA_AES)
@@ -877,14 +633,6 @@ static struct i2c_board_info __initdata atmel_i2c_info[] = {
 		.flags = I2C_CLIENT_WAKE,
 		.platform_data = &atmel_mxt_info,
 	}
-};
-#endif
-
-#if defined(CONFIG_TOUCHSCREEN_RM31080A)
-static __initdata struct tegra_clk_init_table spi_clk_init_table[] = {
-	/* name         parent          rate            enabled */
-	{ "sbc1",       "pll_p",        52000000,       true},
-	{ NULL,         NULL,           0,              0},
 };
 #endif
 
@@ -917,15 +665,6 @@ static struct i2c_board_info elan_i2c_devices[] = {
 };
 #endif
 
-#if defined(CONFIG_TOUCHSCREEN_SIS_I2C)
-static struct i2c_board_info  sis9200_i2c2_boardinfo[] =
-{
-	{
-		I2C_BOARD_INFO("sis_i2c_ts", 0x5C),
-	},
-};
-#endif
-
 static int __init cardhu_touch_init(void)
 {
 	struct board_info BoardInfo, DisplayBoardInfo;
@@ -938,11 +677,8 @@ static int __init cardhu_touch_init(void)
 	tegra_get_display_board_info(&DisplayBoardInfo);
 	project_id = tegra3_get_project_id();
  
-        if(project_id != TEGRA3_PROJECT_P1801){
-            gpio_request(TEGRA_GPIO_PH4, "touch-irq");
-            gpio_direction_input(TEGRA_GPIO_PH4);
-        }
-
+        gpio_request(TEGRA_GPIO_PH4, "touch-irq");
+        gpio_direction_input(TEGRA_GPIO_PH4);
         gpio_request(TEGRA_GPIO_PH6, "touch-reset");
         gpio_direction_output(TEGRA_GPIO_PH6, 0);
         msleep(1);
@@ -955,28 +691,11 @@ static int __init cardhu_touch_init(void)
 	        i2c_register_board_info(1, atmel_i2c_info, 1);
 #endif
 	        break;
-	    case TEGRA3_PROJECT_P1801:
-	        gpio_request(TEGRA_GPIO_PS0, "tp_power");
-	        gpio_direction_output(TEGRA_GPIO_PS0, 1);
-	        gpio_request(TEGRA_GPIO_PR6, "tp_vendor");
-	        gpio_direction_input(TEGRA_GPIO_PR6);
-	        break;
 	    case TEGRA3_PROJECT_TF300T:
 	    case TEGRA3_PROJECT_TF300TG:
 	    case TEGRA3_PROJECT_TF300TL:
 #if defined(CONFIG_TOUCHSCREEN_ELAN_TF_3K)
 	        i2c_register_board_info(1, elan_i2c_devices, 1);
-#endif
-	        break;
-        case TEGRA3_PROJECT_ME301T:
-	        gpio_request(TEGRA_GPIO_PH5, "ts_power");
-	        gpio_direction_output(TEGRA_GPIO_PH5,0);
-	        gpio_request(TEGRA_GPIO_PI2, "tp_vendor_ID0");
-	        gpio_direction_input(TEGRA_GPIO_PI2);
-	        gpio_request(TEGRA_GPIO_PI4, "tp_vendor_ID1");
-	        gpio_direction_input(TEGRA_GPIO_PI4);
-#if defined(CONFIG_TOUCHSCREEN_SIS_I2C)
-	        i2c_register_board_info(1, sis9200_i2c2_boardinfo, 1);
 #endif
 	        break;
 	case TEGRA3_PROJECT_TF700T:
@@ -1390,12 +1109,7 @@ static void cardhu_usb_init(void)
 		printk("[TF300TL] register tegra_ehci2_device\n");
 		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_utmi_pdata;
 		platform_device_register(&tegra_ehci2_device);
-	} else if (project_info == TEGRA3_PROJECT_P1801) {
-		printk("[P1801] register tegra_ehci2_device\n");
-		tegra_ehci2_utmi_pdata.u_data.host.hot_plug = true;
-		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_utmi_pdata;
-		platform_device_register(&tegra_ehci2_device);
-	}else if (project_info == TEGRA3_PROJECT_TF300TG) {
+	} else if (project_info == TEGRA3_PROJECT_TF300TG) {
 		printk("[TF300TG] register tegra_ehci2_device\n");
 		tegra_ehci2_utmi_pdata.u_data.host.power_off_on_suspend = false;
 		tegra_ehci2_device.dev.platform_data =  &tegra_ehci2_hsic_xmm_pdata;
@@ -1409,17 +1123,6 @@ static void cardhu_usb_init(void)
 #else
 static void cardhu_usb_init(void) { }
 #endif
-
-static void cardhu_audio_init(void)
-{
-	unsigned int project_id = tegra3_get_project_id();
-
-	if (project_id == TEGRA3_PROJECT_ME301T) {
-		/* Set codec rt5642 in normal mode */
-		gpio_request(CODEC_RT5642_RESET, "codec_rt5642_reset");
-		gpio_direction_output(CODEC_RT5642_RESET, 1);
-	}
-}
 
 #if 0
 static struct baseband_power_platform_data tegra_baseband_power_data = {
@@ -1581,19 +1284,6 @@ static void cardhu_sata_init(void) { }
 #endif
 
 extern void tegra_booting_info(void );
-static void ME301T_HWid_init(void)
-{
-        gpio_request(TEGRA_GPIO_PQ1, "ME301T_HW_ID0");//KBC_COL1
-        gpio_direction_input(TEGRA_GPIO_PQ1);
-
-        gpio_request(TEGRA_GPIO_PQ6, "ME301T_HW_ID1");//KBC_COL6
-        gpio_direction_input(TEGRA_GPIO_PQ6);
-
-        gpio_request(TEGRA_GPIO_PS5, "ME301T_HW_ID2");//KBC_ROW13
-        gpio_direction_input(TEGRA_GPIO_PS5);
-        printk("%s: HW_ID[2:0] = (%d, %d, %d)\n", __func__, gpio_get_value(TEGRA_GPIO_PS5), \
-                gpio_get_value(TEGRA_GPIO_PQ6), gpio_get_value(TEGRA_GPIO_PQ1));
-}
 
 static void __init tegra_cardhu_init(void)
 {
@@ -1624,7 +1314,6 @@ static void __init tegra_cardhu_init(void)
 	cardhu_dtv_init();
 	cardhu_suspend_init();
 	cardhu_touch_init();
-	cardhu_audio_init();
 //	if (project_info == TEGRA3_PROJECT_TF300TG)
 //		cardhu_modem_init();
 	cardhu_keys_init();
@@ -1637,13 +1326,10 @@ static void __init tegra_cardhu_init(void)
 	cardhu_setup_bluedroid_pm();
 #endif
 	cardhu_sata_init();
-	//audio_wired_jack_init();
 	cardhu_pins_state_init();
 	cardhu_emc_init();
 	tegra_release_bootloader_fb();
 	cardhu_pci_init();
-	if(project_info == TEGRA3_PROJECT_ME301T)
-		ME301T_HWid_init();
 #ifdef CONFIG_TEGRA_WDT_RECOVERY
 	tegra_wdt_recovery_init();
 	tegra_register_fuse();

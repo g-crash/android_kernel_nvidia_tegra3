@@ -67,27 +67,9 @@ static struct platform_device cardhu_int_keys_device = {
 	},
 };
 
-static struct gpio_keys_button cardhu_int_aw8ec_keys[] = {
-	[0] = GPIO_KEY(KEY_MODE, PK2, 1),
-};
-
-static struct gpio_keys_platform_data cardhu_int_aw8ec_keys_pdata = {
-	.buttons        = cardhu_int_aw8ec_keys,
-	.nbuttons       = ARRAY_SIZE(cardhu_int_aw8ec_keys),
-};
-
-static struct platform_device cardhu_int_aw8ec_keys_device = {
-	.name   = "gpio-keys",
-	.id     = 1,
-	.dev    = {
-		.platform_data  = &cardhu_int_aw8ec_keys_pdata,
-	},
-};
-
 int __init cardhu_keys_init(void)
 {
 	struct board_info board_info;
-	u32 project_info = tegra3_get_project_id();
 
 	tegra_get_board_info(&board_info);
 	BUG_ON(board_info.board_id != BOARD_PM269);
@@ -95,10 +77,6 @@ int __init cardhu_keys_init(void)
 	pr_info("Registering gpio keys\n");
 
 	platform_device_register(&cardhu_int_keys_device);
-
-	if(project_info == TEGRA3_PROJECT_P1801){
-		platform_device_register(&cardhu_int_aw8ec_keys_device);
-	}
 
 	return 0;
 }

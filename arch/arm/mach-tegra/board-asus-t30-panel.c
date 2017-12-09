@@ -108,12 +108,6 @@ static struct board_info board_info;
 static struct board_info display_board_info;
 extern bool isRecording;
 
-static struct i2c_board_info scalar_i2c1_board_info[] = {
-    {
-        I2C_BOARD_INFO("scalar", 0x49),
-    },
-};
-
 static tegra_dc_bl_output cardhu_bl_output_measured = {
 	0, 1, 2, 3, 4, 5, 6, 7,
 	8, 9, 10, 11, 12, 13, 14, 15,
@@ -617,15 +611,6 @@ static int cardhu_hdmi_disable(void)
                 regulator_put(cardhu_hdmi_pll);
                 cardhu_hdmi_pll = NULL;
         }
-
-        //do not power off scalar when scalar firmware is updating
-        //or is recording
-        if ( tegra3_get_project_id() == TEGRA3_PROJECT_P1801
-                        && !isRecording){
-                msleep(300);
-                gpio_set_value(EN_VDD_BL, 0);
-        }
-
         return 0;
 }
 
@@ -663,33 +648,6 @@ static struct resource cardhu_disp1_resources[] = {
 		.flags	= IORESOURCE_MEM,
 	},
 #endif
-};
-
-static struct resource cardhu_disp1_resources_P1801[] = {
-	{
-		.name	= "irq",
-		.start	= INT_DISPLAY_GENERAL,
-		.end	= INT_DISPLAY_GENERAL,
-		.flags	= IORESOURCE_IRQ,
-	},
-	{
-		.name	= "regs",
-		.start	= TEGRA_DISPLAY_BASE,
-		.end	= TEGRA_DISPLAY_BASE + TEGRA_DISPLAY_SIZE-1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.name	= "fbmem",
-		.start	= 0,	/* Filled in by cardhu_panel_init() */
-		.end	= 0,	/* Filled in by cardhu_panel_init() */
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.name   = "hdmi_regs",
-		.start  = TEGRA_HDMI_BASE,
-		.end    = TEGRA_HDMI_BASE + TEGRA_HDMI_SIZE - 1,
-		.flags  = IORESOURCE_MEM,
-	},
 };
 
 static struct resource cardhu_disp2_resources[] = {
@@ -733,22 +691,6 @@ static struct tegra_dc_mode panel_19X12_modes[] = {
 		.v_active = 1200,
 		.h_front_porch = 48,
 		.v_front_porch = 3,
-	},
-};
-
-static struct tegra_dc_mode cardhu_panel_modes_P1801[] = {
-	{
-		.pclk = 148500000,
-		.h_ref_to_sync = 1,
-		.v_ref_to_sync = 1,
-		.h_sync_width = 44,
-		.v_sync_width = 5,
-		.h_back_porch = 148,
-		.v_back_porch = 36,
-		.h_active = 1920,
-		.v_active = 1080,
-		.h_front_porch = 88,
-		.v_front_porch = 4,
 	},
 };
 
@@ -1331,30 +1273,6 @@ static struct tegra_dc_out cardhu_disp1_out = {
 	.parent_clk	= "pll_p",
 };
 
-static struct tegra_dc_out cardhu_disp1_out_P1801 = {
-	.align		= TEGRA_DC_ALIGN_MSB,
-	.order		= TEGRA_DC_ORDER_RED_BLUE,
-	.sd_settings	= &cardhu_sd_settings,
-	.parent_clk	= "pll_d_out0",
-
-	.depth		= 24,
-
-	.modes		= cardhu_panel_modes_P1801,
-	.n_modes	= ARRAY_SIZE(cardhu_panel_modes_P1801),
-
-	.type		= TEGRA_DC_OUT_HDMI,
-	.flags		= TEGRA_DC_OUT_HOTPLUG_HIGH,
-	.dcc_bus	= 3,
-	.hotplug_gpio	= cardhu_hdmi_hpd,
-	.max_pixclock	= KHZ2PICOS(148500),
-
-	.enable		= cardhu_hdmi_enable,
-	.disable	= cardhu_hdmi_disable,
-
-	.postsuspend	= cardhu_hdmi_vddio_disable,
-	.hotplug_init	= cardhu_hdmi_vddio_enable,
-};
-
 #ifdef CONFIG_TEGRA_DC
 static struct tegra_dc_platform_data cardhu_disp1_pdata = {
 	.flags		= TEGRA_DC_FLAG_ENABLED,
@@ -1498,30 +1416,20 @@ static void cardhu_panel_preinit(void)
 		cardhu_disp1_out.type = TEGRA_DC_OUT_RGB;
 		cardhu_disp1_out.depth = 18;
 		cardhu_disp1_out.dither = TEGRA_DC_ORDERED_DITHER;
-		if (tegra3_get_project_id() == TEGRA3_PROJECT_ME570T){
-			cardhu_disp1_out.modes = cardhu_panel_modes_800_1280;
-			cardhu_disp1_out.n_modes = ARRAY_SIZE(cardhu_panel_modes_800_1280);
-			cardhu_disp1_pdata.fb = &cardhu_fb_data_800_1280;
-		}
-		else{
-			cardhu_disp1_out.modes = cardhu_panel_modes;
-			cardhu_disp1_out.n_modes = ARRAY_SIZE(cardhu_panel_modes);
-			cardhu_disp1_pdata.fb = &cardhu_fb_data;
-		}
+		cardhu_disp1_out.modes = cardhu_panel_modes;
+		cardhu_disp1_out.n_modes = ARRAY_SIZE(cardhu_panel_modes);
+		cardhu_disp1_pdata.fb = &cardhu_fb_data;
 
-		if (tegra3_get_project_id()!=0x4 ){
+		if (tegra3_get_project_id() != TEGRA3_PROJECT_TF700T){
 			cardhu_disp1_out.enable = cardhu_panel_enable;
 			cardhu_disp1_out.postpoweron = cardhu_panel_postpoweron;
-		} else {
-		        cardhu_disp1_out.enable = cardhu_panel_enable_tf700t;
-		}
-
-		if (tegra3_get_project_id()!=0x4 ){
 			cardhu_disp1_out.disable = cardhu_panel_disable;
 			cardhu_disp1_out.prepoweroff = cardhu_panel_prepoweroff;
 		} else {
-			cardhu_disp1_out.disable = cardhu_panel_disable_tf700t;
+		        cardhu_disp1_out.enable = cardhu_panel_enable_tf700t;
+				cardhu_disp1_out.disable = cardhu_panel_disable_tf700t;
 		}
+
 		/* Set height and width in mm. */
 		cardhu_disp1_out.height = 127;
 		cardhu_disp1_out.width = 216;
@@ -1662,39 +1570,7 @@ int __init cardhu_panel_init(void)
 		printk("TF300TG: Set LCD pclk as %d Hz, cn_vf_sku=%d\n", cardhu_disp1_out.modes->pclk, cn_vf_sku);
 	}
 
-	if ( tegra3_get_project_id() == TEGRA3_PROJECT_P1801 ){
-		printk("P1801 display setting, set HDMI as main display\n ");
-		cardhu_fb_data.xres = 1920;
-		cardhu_fb_data.yres = 1080;
-
-		cardhu_disp1_out_P1801.sd_settings->panel_min_brightness = 77;
-		cardhu_disp1_out_P1801.sd_settings->enable = 0;
-
-		cardhu_disp1_pdata.default_out = &cardhu_disp1_out_P1801;
-		cardhu_disp1_device.resource	= cardhu_disp1_resources_P1801;
-		cardhu_disp1_device.num_resources = ARRAY_SIZE(cardhu_disp1_resources_P1801);
-
-		pr_info("scalar i2c_register_board_info");
-		i2c_register_board_info(0, scalar_i2c1_board_info, ARRAY_SIZE(scalar_i2c1_board_info));
-
-                gpio_request(EN_VDD_BL, "EN_VDD_BL");
-                gpio_direction_output(EN_VDD_BL, 1);
-	}
-
-	if ( tegra3_get_project_id() == TEGRA3_PROJECT_ME301T){
-		cardhu_disp1_out.sd_settings->panel_min_brightness = 28;
-
-		//take effect for ER2/PR/MP
-		gpio_request(ME301T_panel_type_ID1, "ME301T_panel_type_ID1");
-		gpio_direction_input(ME301T_panel_type_ID1);
-
-		gpio_request(ME301T_panel_type_ID2, "ME301T_panel_type_ID2");
-		gpio_direction_input(ME301T_panel_type_ID2);
-
-		printk("%s: panel_type_ID = (%d, %d)\n", __func__, gpio_get_value(ME301T_panel_type_ID1), gpio_get_value(ME301T_panel_type_ID2));
-	}
-
-	if (tegra3_get_project_id()==0x4 ){
+	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF700T){
 		printk("Check TF700T setting \n ");
 		cardhu_disp1_out.modes = panel_19X12_modes;
 		cardhu_disp1_out.n_modes = ARRAY_SIZE(panel_19X12_modes);
@@ -1714,18 +1590,12 @@ int __init cardhu_panel_init(void)
 		gpio_request(TEGRA_GPIO_PX0, "TF700T_I2C_Switch");
 		gpio_request(TEGRA_GPIO_PD2, "TF700T_OSC");
 	}
-
 #endif
-	if (tegra3_get_project_id()==0x4 ){
+
+	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF700T){
 		gpio_request(cardhu_hdmi_enb, "hdmi_5v_en");
 		gpio_direction_output(cardhu_hdmi_enb, 0);
-	}
-	else if (tegra3_get_project_id() == TEGRA3_PROJECT_ME570T ||
-		tegra3_get_project_id() == TEGRA3_PROJECT_ME301T){
-		gpio_request(cardhu_hdmi_enb_ME570T_ME301T, "hdmi_5v_en");
-		gpio_direction_output(cardhu_hdmi_enb_ME570T_ME301T, 1);
-	}
-	else {
+	} else {
 		gpio_request(cardhu_hdmi_enb, "hdmi_5v_en");
 		gpio_direction_output(cardhu_hdmi_enb, 1);
 	}
@@ -1765,21 +1635,18 @@ skip_lvds:
 		err = platform_device_register(&cardhu_disp1_device);
 	}
 	
-	if ( tegra3_get_project_id() != TEGRA3_PROJECT_P1801 ){
+	res = platform_get_resource_byname(&cardhu_disp2_device,
+					 IORESOURCE_MEM, "fbmem");
+	res->start = tegra_fb2_start;
+	res->end = tegra_fb2_start + tegra_fb2_size - 1;
 
-		res = platform_get_resource_byname(&cardhu_disp2_device,
-						 IORESOURCE_MEM, "fbmem");
-		res->start = tegra_fb2_start;
-		res->end = tegra_fb2_start + tegra_fb2_size - 1;
+	/* Copy the bootloader fb to the fb2. */
+	tegra_move_framebuffer(tegra_fb2_start, tegra_bootloader_fb_start,
+				min(tegra_fb2_size, tegra_bootloader_fb_size));
 
-		/* Copy the bootloader fb to the fb2. */
-		tegra_move_framebuffer(tegra_fb2_start, tegra_bootloader_fb_start,
-					min(tegra_fb2_size, tegra_bootloader_fb_size));
-
-		if (!err) {
-		cardhu_disp2_device.dev.parent = &phost1x->dev;
-		err = platform_device_register(&cardhu_disp2_device);
-		}
+	if (!err) {
+	cardhu_disp2_device.dev.parent = &phost1x->dev;
+	err = platform_device_register(&cardhu_disp2_device);
 	}
 
 #endif
