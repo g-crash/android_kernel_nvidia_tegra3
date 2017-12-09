@@ -551,7 +551,7 @@ static __initdata struct tegra_pingroup_config pinmux_TF300TG[] = {
 };
 
 
-static __initdata struct tegra_pingroup_config gmi_pins_300T[] = {
+static __initdata struct tegra_pingroup_config gmi_pins_not_700T[] = {
 	DEFAULT_PINMUX(LCD_PWR2,        DISPLAYA,        NORMAL,    TRISTATE,     INPUT),
 	DEFAULT_PINMUX(LCD_DC1,         DISPLAYA,        NORMAL,    TRISTATE,     INPUT),
 	DEFAULT_PINMUX(GPIO_PBB3,       VGP3,            NORMAL,    NORMAL,     INPUT),
@@ -728,6 +728,8 @@ int __init cardhu_pinmux_init(void)
 	tegra_drive_pinmux_config_table(cardhu_drive_pinmux,
 					ARRAY_SIZE(cardhu_drive_pinmux));
 
+	tegra_pinmux_config_table(cardhu_pinmux_e118x,
+				    ARRAY_SIZE(cardhu_pinmux_e118x));
 	tegra_pinmux_config_table(unused_pins_lowpower,
 					ARRAY_SIZE(unused_pins_lowpower));
 	tegra_pinmux_config_table(gmi_pins_269,
@@ -737,13 +739,10 @@ int __init cardhu_pinmux_init(void)
         printk("Check TF700T pinmux \n");
         tegra_pinmux_config_table(gmi_pins_700T,
                     ARRAY_SIZE(gmi_pins_700T));
-    } else if (project_info == TEGRA3_PROJECT_TF300T) {
-        tegra_pinmux_config_table(gmi_pins_300T,
-                    ARRAY_SIZE(gmi_pins_300T));
-    } else if (project_info == TEGRA3_PROJECT_TF201) {
-		tegra_pinmux_config_table(cardhu_pinmux_e118x,
-				ARRAY_SIZE(cardhu_pinmux_e118x));
-	}
+    } else {
+        tegra_pinmux_config_table(gmi_pins_not_700T,
+                    ARRAY_SIZE(gmi_pins_not_700T));
+    }
 
 	// Config the pinmux of 3G version
 	if (project_info == TEGRA3_PROJECT_TF300TL) {
