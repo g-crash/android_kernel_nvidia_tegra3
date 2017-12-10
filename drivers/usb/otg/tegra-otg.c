@@ -774,7 +774,7 @@ static int tegra_otg_suspend(struct device *dev)
 
 	tegra->suspended = true;
 #ifdef CONFIG_MACH_TRANSFORMER
-    usb_vbus_val = otg_readl(tegra, USB_PHY_WAKEUP) & USB_VBUS_STATUS;
+    usb_suspend_tag = otg_readl(tegra, USB_PHY_WAKEUP) & USB_VBUS_STATUS;
 #endif
 
 	DBG("%s(%d) END\n", __func__, __LINE__);

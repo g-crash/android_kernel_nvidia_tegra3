@@ -99,10 +99,8 @@ struct cable_info {
 	* 0011: AC apdater
 	*/
 	unsigned int cable_status;
-	unsigned int p1801_ac_status;
 	int ac_15v_connected;
 	struct delayed_work gpio_limit_set1_detection_work;
-	struct delayed_work p1801_ac_detection_work;
 	struct mutex cable_info_mutex;
 };
 
@@ -204,46 +202,32 @@ static void asus_cable_detection_work(void)
 
 	mutex_lock(&s_cable_info.cable_info_mutex);
 	s_cable_info.cable_status = 0x0; //0000
-	if (tegra3_get_project_id() != TEGRA3_PROJECT_ME301T) {
-		dock_in = !(gpio_get_value(TEGRA_GPIO_PU4));
-		adapter_in = gpio_get_value(TEGRA_GPIO_PH5);
-	}
+	dock_in = !(gpio_get_value(TEGRA_GPIO_PU4));
+	adapter_in = gpio_get_value(TEGRA_GPIO_PH5);
 
 	switch (the_udc->connect_type) {
 	case CONNECT_TYPE_NONE:
 		printk(KERN_INFO "The USB/AC cable is disconnected.\n");
-		if (tegra3_get_project_id() == TEGRA3_PROJECT_ME301T) {
-			s_cable_info.cable_status = 0x0; //0000
-		} else {
-			s_cable_info.ac_15v_connected = 0;
-			s_cable_info.cable_status = 0x0; //0000
-			if(tegra3_get_project_id() != TEGRA3_PROJECT_P1801) gpio_limit_set0_set(0);
-		}
+		s_cable_info.ac_15v_connected = 0;
+		s_cable_info.cable_status = 0x0; //0000
+		gpio_limit_set0_set(0);
 		break;
 	case CONNECT_TYPE_SDP:
 		pr_info("detected SDP port\n");
-		if (tegra3_get_project_id() == TEGRA3_PROJECT_ME301T) {
-			s_cable_info.cable_status = 0x1; //0000
+		if (adapter_in == 0) {
+			printk(KERN_INFO "The USB cable is connected (0.5A)\n");
+			s_cable_info.cable_status = 0x1; //0001
+			s_cable_info.ac_15v_connected = 0;
+			gpio_limit_set0_set(0);
 		} else {
-			if (adapter_in == 0) {
-				printk(KERN_INFO "The USB cable is connected (0.5A)\n");
-				s_cable_info.cable_status = 0x1; //0001
-				s_cable_info.ac_15v_connected = 0;
-				if(tegra3_get_project_id() != TEGRA3_PROJECT_P1801) gpio_limit_set0_set(0);
-			} else {
-				printk(KERN_INFO "USB cable + AC adapter 15V connect (1A)\n");
-				s_cable_info.cable_status = 0x3; //0011
-				s_cable_info.ac_15v_connected = 1;
-				if(tegra3_get_project_id() != TEGRA3_PROJECT_P1801) gpio_limit_set0_set(1);
-			}
+			printk(KERN_INFO "USB cable + AC adapter 15V connect (1A)\n");
+			s_cable_info.cable_status = 0x3; //0011
+			s_cable_info.ac_15v_connected = 1;
+			gpio_limit_set0_set(1);
 		}
 		break;
 	case CONNECT_TYPE_DCP:
 		pr_info("detected DCP port(wall charger)\n");
-		if (tegra3_get_project_id() == TEGRA3_PROJECT_ME301T) {
-			printk(KERN_INFO "AC adapter 5V connect (1A)\n");
-			s_cable_info.cable_status = 0x3;
-		} else {
 			if (dock_in == 0) {//no dock in
 				if (adapter_in == 1) {
 					printk(KERN_INFO "AC adapter 15V connect (1A)\n");
@@ -289,69 +273,30 @@ static void asus_cable_detection_work(void)
 						continue;
 					}
 				}
-			}
-			else {
+			} else {
 				printk(KERN_ERR "No define the USB status\n");
 			}
-			if(tegra3_get_project_id() != TEGRA3_PROJECT_P1801) gpio_limit_set0_set(1);
-		}
+			gpio_limit_set0_set(1);
 		break;
 	case CONNECT_TYPE_CDP:
 		pr_info("detected CDP port(1A USB port)\n");
-		if (tegra3_get_project_id() == TEGRA3_PROJECT_ME301T) {
-			s_cable_info.cable_status = 0x1;
-		} else {
-			s_cable_info.cable_status = 0x1; //0001
-			s_cable_info.ac_15v_connected = 0;
-			if(tegra3_get_project_id() != TEGRA3_PROJECT_P1801) gpio_limit_set0_set(1);	//(5V/1.0A)
-		}
+		s_cable_info.cable_status = 0x1; //0001
+		s_cable_info.ac_15v_connected = 0;
+		gpio_limit_set0_set(1);	//(5V/1.0A)
 		break;
 	case CONNECT_TYPE_NON_STANDARD_CHARGER:
 		pr_info("detected non-standard charging port\n");
-		if (tegra3_get_project_id() == TEGRA3_PROJECT_ME301T) {
-			s_cable_info.cable_status = 0x1;
-		} else {
-			s_cable_info.cable_status = 0x1; //0001
-			s_cable_info.ac_15v_connected = 0;
-			if(tegra3_get_project_id() != TEGRA3_PROJECT_P1801) gpio_limit_set0_set(0);	//(5V/0.5A)
-		}
+		s_cable_info.cable_status = 0x1; //0001
+		s_cable_info.ac_15v_connected = 0;
+		gpio_limit_set0_set(0);	//(5V/0.5A)
 		break;
 	default:
 		pr_info("detected USB charging type is unknown\n");
-		if (tegra3_get_project_id() == TEGRA3_PROJECT_ME301T) {
-			s_cable_info.cable_status = 0x1;
-		} else {
-			s_cable_info.cable_status = 0x1; //0001
-			s_cable_info.ac_15v_connected = 0;
-			if(tegra3_get_project_id() != TEGRA3_PROJECT_P1801) gpio_limit_set0_set(0);	//(5V/0.5A)
-		}
+		s_cable_info.cable_status = 0x1; //0001
+		s_cable_info.ac_15v_connected = 0;
+		gpio_limit_set0_set(0);	//(5V/0.5A)
 	}
 	mutex_unlock(&s_cable_info.cable_info_mutex);
-}
-
-static void p1801_ac_detection_work_handler(struct work_struct *w)
-{
-	int adapter_in = 0;
-	adapter_in = gpio_get_value(TEGRA_GPIO_PH5);
-	if(adapter_in) {
-		printk(KERN_INFO "P1801 AC Connected\n");
-		s_cable_info.p1801_ac_status = 0x3; //0011;
-#if BATTERY_CALLBACK_ENABLED
-		battery_callback(s_cable_info.p1801_ac_status);
-#endif
-	}
-	else {
-		printk(KERN_INFO "P1801 AC Disconnected\n");
-		s_cable_info.p1801_ac_status = 0x0; //0000
-#if BATTERY_CALLBACK_ENABLED
-		if(s_cable_info.cable_status == 0x0)
-			battery_callback(s_cable_info.p1801_ac_status);
-		else {
-			s_cable_info.cable_status = 0x1; //0001;
-			battery_callback(s_cable_info.cable_status);
-		}
-#endif
-	}
 }
 
 static void charging_gpios_init(void)
@@ -378,7 +323,7 @@ static void charging_gpios_init(void)
 	if (ret)
 		printk(KERN_ERR "gpio_direction_input failed for input %d\n", TEGRA_GPIO_PU4);
 
-	if(tegra3_get_project_id() != TEGRA3_PROJECT_P1801) gpio_limit_set0_set(0);
+	gpio_limit_set0_set(0);
 }
 
 static void charging_gpios_free(void)
@@ -401,11 +346,9 @@ static void cable_status_init(void)
 	usb_suspend_tag = 0;
 	previous_cable_status = 0;
 	mutex_init(&s_cable_info.cable_info_mutex);
-	s_cable_info.p1801_ac_status = 0x0;
 	s_cable_info.cable_status = 0x0;
 	s_cable_info.ac_15v_connected = 0;
 	INIT_DELAYED_WORK(&s_cable_info.gpio_limit_set1_detection_work, gpio_limit_set1_detection_work_handler);
-	INIT_DELAYED_WORK(&s_cable_info.p1801_ac_detection_work, p1801_ac_detection_work_handler);
 }
 #endif /* CONFIG_MACH_TRANSFORMER */
 
@@ -1738,12 +1681,10 @@ void fsl_dock_ec_callback(void)
 {
 	int dock_in = 0;
 
-	if(tegra3_get_project_id() != TEGRA3_PROJECT_ME301T) {
-		dock_in = !(gpio_get_value(TEGRA_GPIO_PU4));
-		printk(KERN_INFO "%s cable_status=%d\n", __func__, s_cable_info.cable_status);
-		if(dock_in == 1 && (s_cable_info.cable_status != 0) && (the_udc->connect_type == CONNECT_TYPE_NON_STANDARD_CHARGER)) {//dock in
-			schedule_delayed_work(&s_cable_info.gpio_limit_set1_detection_work, 0*HZ);
-		}
+	dock_in = !(gpio_get_value(TEGRA_GPIO_PU4));
+	printk(KERN_INFO "%s cable_status=%d\n", __func__, s_cable_info.cable_status);
+	if(dock_in == 1 && (s_cable_info.cable_status != 0) && (the_udc->connect_type == CONNECT_TYPE_NON_STANDARD_CHARGER)) {//dock in
+	    schedule_delayed_work(&s_cable_info.gpio_limit_set1_detection_work, 0*HZ);
 	}
 }
 EXPORT_SYMBOL(fsl_dock_ec_callback);
@@ -1759,9 +1700,7 @@ static irqreturn_t gpio_limit_set1_irq_handler(int irq, void *dev_id)
 
 	printk(KERN_INFO "%s gpio_limit_set1=%d, ac_15v_connected=%d\n", __func__, adapter_in, s_cable_info.ac_15v_connected);
 
-	if(tegra3_get_project_id() == TEGRA3_PROJECT_P1801) {
-		schedule_delayed_work(&s_cable_info.p1801_ac_detection_work, 0.2*HZ);
-	} else if(dock_in == 0 && (adapter_in != s_cable_info.ac_15v_connected) && (the_udc->connect_type == CONNECT_TYPE_NON_STANDARD_CHARGER)) {//no dock in
+	if(dock_in == 0 && (adapter_in != s_cable_info.ac_15v_connected) && (the_udc->connect_type == CONNECT_TYPE_NON_STANDARD_CHARGER)) {//no dock in
 		schedule_delayed_work(&s_cable_info.gpio_limit_set1_detection_work, 0.2*HZ);
 	}
 	return IRQ_HANDLED;
@@ -1867,15 +1806,8 @@ static int tegra_vbus_session(struct usb_gadget *gadget, int is_active)
 
 #ifdef CONFIG_MACH_TRANSFORMER
 #if BATTERY_CALLBACK_ENABLED
-	if(previous_cable_status != udc->connect_type && tegra3_get_project_id() != TEGRA3_PROJECT_ME301T) {
-		if(tegra3_get_project_id() == TEGRA3_PROJECT_P1801) {
-			if(s_cable_info.p1801_ac_status == 0x0)
-				battery_callback(s_cable_info.cable_status);
-			else
-				battery_callback(s_cable_info.p1801_ac_status);
-		}
-		else
-			battery_callback(s_cable_info.cable_status);
+	if(previous_cable_status != udc->connect_type) {
+	    battery_callback(s_cable_info.cable_status);
 	}
 #endif
 	previous_cable_status = udc->connect_type;
@@ -3216,6 +3148,9 @@ static int __init tegra_udc_probe(struct platform_device *pdev)
 	udc->has_hostpc = pdata->has_hostpc;
 	udc->support_pmu_vbus = pdata->support_pmu_vbus;
 	platform_set_drvdata(pdev, udc);
+#ifdef CONFIG_MACH_TRANSFORMER
+    register_usb_cable_status_cb(tegra_get_usb_cable_status);
+#endif
 
 	/* Initialize the udc structure including QH members */
 	err = tegra_udc_setup_qh(udc);
