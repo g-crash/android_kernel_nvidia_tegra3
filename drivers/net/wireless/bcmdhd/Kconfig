@@ -31,14 +31,6 @@ config BCMDHD_NVRAM_PATH
 	---help---
 	  Path to the calibration file.
 
-config BCMDHD_TF_NVRAM_DIR
-  	depends on BCMDHD
-	depends on !BCMDHD_NVRAM_PATH
-  	string "NVRAM path"
-	default "/system/etc"
-  	---help---
-  	  Path to the transformers calibration file.
-
 config BCMDHD_WEXT
 	bool "Enable WEXT support"
 	depends on BCMDHD && CFG80211 = n
