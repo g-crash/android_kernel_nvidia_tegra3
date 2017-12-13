@@ -1297,7 +1297,6 @@ static void __init tegra_cardhu_init(void)
 	cardhu_pinmux_init_early();
     cardhu_misc_init(tegra_chip_uid());
 	cardhu_pinmux_init();
-	tegra_ram_console_debug_init();
 	cardhu_gpio_init();
 	cardhu_misc_reset();
 	tegra_booting_info();
@@ -1309,6 +1308,7 @@ static void __init tegra_cardhu_init(void)
 #endif
 	cardhu_uart_init();
 	platform_add_devices(cardhu_devices, ARRAY_SIZE(cardhu_devices));
+	tegra_ram_console_debug_init();
 	tegra_io_dpd_init();
 	cardhu_sdhci_init();
 	cardhu_regulator_init();
@@ -1333,8 +1333,8 @@ static void __init tegra_cardhu_init(void)
 	cardhu_pci_init();
 #ifdef CONFIG_TEGRA_WDT_RECOVERY
 	tegra_wdt_recovery_init();
-	tegra_register_fuse();
 #endif
+	tegra_register_fuse();
 }
 
 static void __init tegra_cardhu_reserve(void)
