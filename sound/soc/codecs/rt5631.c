@@ -1634,6 +1634,7 @@ static int rt5631_probe(struct snd_soc_codec *codec)
 
 	codec->dapm.bias_level = SND_SOC_BIAS_STANDBY;
     rt5631_audio_codec = codec;
+	pr_info("RT5631 initial ok!\n");
 
 	return 0;
 }
@@ -1647,13 +1648,17 @@ static int rt5631_remove(struct snd_soc_codec *codec)
 #ifdef CONFIG_PM
 static int rt5631_suspend(struct snd_soc_codec *codec)
 {
+	printk(KERN_INFO "%s+ #####\n", __func__);
 	rt5631_set_bias_level(codec, SND_SOC_BIAS_OFF);
+	printk(KERN_INFO "%s- #####\n", __func__);
 	return 0;
 }
 
 static int rt5631_resume(struct snd_soc_codec *codec)
 {
+	printk(KERN_INFO "%s+ #####\n", __func__);
 	rt5631_set_bias_level(codec, SND_SOC_BIAS_STANDBY);
+	printk(KERN_INFO "%s- #####\n", __func__);
 	return 0;
 }
 #else
@@ -1728,6 +1733,9 @@ static int rt5631_i2c_probe(struct i2c_client *i2c,
 	struct rt5631_priv *rt5631;
 	int ret;
 
+	printk("%s+\n", __func__);
+	pr_info("RT5631 Audio Codec %s\n", RT5631_VERSION);
+
 	rt5631 = devm_kzalloc(&i2c->dev, sizeof(struct rt5631_priv),
 			      GFP_KERNEL);
 	if (NULL == rt5631)
@@ -1737,12 +1745,16 @@ static int rt5631_i2c_probe(struct i2c_client *i2c,
 
 	ret = snd_soc_register_codec(&i2c->dev, &soc_codec_dev_rt5631,
 			rt5631_dai, ARRAY_SIZE(rt5631_dai));
+	if (ret < 0)
+		kfree(rt5631);
+	printk("%s-\n", __func__);
 	return ret;
 }
 
 static __devexit int rt5631_i2c_remove(struct i2c_client *client)
 {
 	snd_soc_unregister_codec(&client->dev);
+	kfree(i2c_get_clientdata(client));
 	return 0;
 }
 
@@ -1758,12 +1770,14 @@ static struct i2c_driver rt5631_i2c_driver = {
 
 static int __init rt5631_modinit(void)
 {
+	printk(KERN_INFO "%s+ #####\n", __func__);
 	return i2c_add_driver(&rt5631_i2c_driver);
 }
 module_init(rt5631_modinit);
 
 static void __exit rt5631_modexit(void)
 {
+	printk(KERN_INFO "%s+ #####\n", __func__);
 	i2c_del_driver(&rt5631_i2c_driver);
 }
 module_exit(rt5631_modexit);
