@@ -108,7 +108,7 @@ static struct snd_soc_ops tegra_rt5631_ops = {
 
 static struct snd_soc_ops tegra_spdif_ops;
 
-#ifdef CONFIG_MACH_TRANSFORMER
+
 static const struct snd_soc_dapm_widget cardhu_dapm_widgets[] = {
 	SND_SOC_DAPM_SPK("Int Spk", NULL),
 	SND_SOC_DAPM_HP("Headphone Jack", NULL),
@@ -118,27 +118,12 @@ static const struct snd_soc_dapm_widget cardhu_dapm_widgets[] = {
 
 };
 
-static const struct snd_kcontrol_new cardhu_controls[] = {
-	SOC_DAPM_PIN_SWITCH("Int Spk"),
-	SOC_DAPM_PIN_SWITCH("Headphone Jack"),
-	SOC_DAPM_PIN_SWITCH("Mic Jack"),
-	SOC_DAPM_PIN_SWITCH("Int Mic"),
-	SOC_DAPM_PIN_SWITCH("AUX"),
-};
-
-#else
-
 static const struct snd_soc_dapm_widget tegra_rt5631_default_dapm_widgets[] = {
 	SND_SOC_DAPM_SPK("Int Spk", NULL),
 	SND_SOC_DAPM_HP("Headphone Jack", NULL),
 	SND_SOC_DAPM_MIC("Mic Jack", NULL),
 	SND_SOC_DAPM_MIC("Int Mic", NULL),
 };
-
-static const struct snd_kcontrol_new tegra_rt5631_default_controls[] = {
-	SOC_DAPM_PIN_SWITCH("Int Spk"),
-};
-#endif /* CONFIG_MACH_TRANSFORMER */
 
 static const struct snd_soc_dapm_route cardhu_audio_map[] = {
 	{"Headphone Jack", NULL, "HPOL"},
@@ -151,6 +136,18 @@ static const struct snd_soc_dapm_route cardhu_audio_map[] = {
 	{"AUX", NULL, "AUXO2"},
 };
 
+static const struct snd_kcontrol_new cardhu_controls[] = {
+	SOC_DAPM_PIN_SWITCH("Int Spk"),
+	SOC_DAPM_PIN_SWITCH("Headphone Jack"),
+	SOC_DAPM_PIN_SWITCH("Mic Jack"),
+	SOC_DAPM_PIN_SWITCH("Int Mic"),
+	SOC_DAPM_PIN_SWITCH("AUX"),
+};
+
+static const struct snd_kcontrol_new tegra_rt5631_default_controls[] = {
+	SOC_DAPM_PIN_SWITCH("Int Spk"),
+};
+
 static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_codec *codec = rtd->codec;
@@ -158,7 +155,7 @@ static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 
 	int ret;
 	printk("%s+\n", __func__);
-#ifdef CONFIG_MACH_TRANSFORMER
+	if (machine_is_transformer()) {
 		ret = snd_soc_add_codec_controls(codec, cardhu_controls,
 				ARRAY_SIZE(cardhu_controls));
 		if (ret < 0)
@@ -166,7 +163,8 @@ static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 
 		snd_soc_dapm_new_controls(dapm, cardhu_dapm_widgets,
 				ARRAY_SIZE(cardhu_dapm_widgets));
-#else
+	}
+	else {
 		ret = snd_soc_add_codec_controls(codec,
 				tegra_rt5631_default_controls,
 				ARRAY_SIZE(tegra_rt5631_default_controls));
@@ -176,7 +174,7 @@ static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 		snd_soc_dapm_new_controls(dapm,
 				tegra_rt5631_default_dapm_widgets,
 				ARRAY_SIZE(tegra_rt5631_default_dapm_widgets));
-#endif /* CONFIG_MACH_TRANSFORMER */
+	}
 
 	snd_soc_dapm_add_routes(dapm, cardhu_audio_map,
 					ARRAY_SIZE(cardhu_audio_map));
@@ -221,18 +219,8 @@ static struct snd_soc_dai_link tegra_rt5631_dai[] = {
 
 static struct snd_soc_card snd_soc_tegra_rt5631 = {
 	.name = "tegra-codec",
-	.owner = THIS_MODULE,
 	.dai_link = tegra_rt5631_dai,
 	.num_links = ARRAY_SIZE(tegra_rt5631_dai),
-#ifdef CONFIG_MACH_TRANSFORMER
-	.controls = cardhu_controls,
-	.num_controls = ARRAY_SIZE(cardhu_controls),
-	.dapm_widgets = cardhu_dapm_widgets,
-	.num_dapm_widgets = ARRAY_SIZE(cardhu_dapm_widgets),
-	.dapm_routes = cardhu_audio_map,
-	.num_dapm_routes = ARRAY_SIZE(cardhu_audio_map),
-	.fully_routed = true,
-#endif
 };
 
 static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
@@ -299,7 +287,9 @@ static int __devexit tegra_rt5631_driver_remove(struct platform_device *pdev)
 	struct tegra_rt5631 *machine = snd_soc_card_get_drvdata(card);
 
 	snd_soc_unregister_card(card);
+
 	tegra_asoc_utils_fini(&machine->util_data);
+
 	kfree(machine);
 
 	return 0;
@@ -322,7 +312,7 @@ static int __init tegra_rt5631_modinit(void)
 
     printk(KERN_INFO "%s+ #####\n", __func__);
 	if(project_info == TEGRA3_PROJECT_TF201 || project_info == TEGRA3_PROJECT_TF300TG ||
-       project_info == TEGRA3_PROJECT_TF700T || project_info == TEGRA3_PROJECT_TF300TL)
+                project_info == TEGRA3_PROJECT_TF700T || project_info == TEGRA3_PROJECT_TF300TL)
 	{
 		printk("%s(): support codec rt5631\n", __func__);
 	}else{
