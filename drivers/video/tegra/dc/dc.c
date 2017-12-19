@@ -1785,6 +1785,13 @@ static int tegra_dc_init(struct tegra_dc *dc)
 
 	tegra_dc_writel(dc, 0x00000000, DC_DISP_BORDER_COLOR);
 
+#ifdef CONFIG_MACH_TRANSFORMER
+	// for TF300T and TF300TG
+	if (dc->ndev->id == 0 && (tegra3_get_project_id() == 0x2 || tegra3_get_project_id() == 0x3) ) {
+		dc->out->depth = 18;
+		dc->out->dither = TEGRA_DC_ORDERED_DITHER;
+	}
+#endif
 #ifdef CONFIG_TEGRA_DC_CMU
 	if (dc->pdata->cmu)
 		_tegra_dc_update_cmu(dc, dc->pdata->cmu);
@@ -1980,6 +1987,18 @@ int tegra_dc_set_default_videomode(struct tegra_dc *dc)
 
 static bool _tegra_dc_enable(struct tegra_dc *dc)
 {
+#ifdef CONFIG_MACH_TRANSFORMER
+    if (dc->ndev->id == 0) {
+		struct timeval t_resume;
+		int diff_msec = 0;
+		do_gettimeofday(&t_resume);
+		diff_msec = ((t_resume.tv_sec - t_suspend.tv_sec) * 1000000 +(t_resume.tv_usec - t_suspend.tv_usec)) / 1000;
+		printk("Disp: diff_msec= %d\n", diff_msec);
+        if((diff_msec < 1000) && (diff_msec >= 0))
+            msleep(1000 - diff_msec);
+	}
+#endif
+
 	if (dc->mode.pclk == 0)
 		return false;
 
@@ -1999,6 +2018,13 @@ void tegra_dc_enable(struct tegra_dc *dc)
 {
 	mutex_lock(&dc->lock);
 
+#ifdef CONFIG_MACH_TRANSFORMER
+    if (tegra3_get_project_id() == TEGRA3_PROJECT_TF201
+                    && isRecording) {
+        gpio_set_value(cardhu_bl_enb, 1);
+    }
+#endif
+
 	if (!dc->enabled)
 		dc->enabled = _tegra_dc_enable(dc);
 
@@ -2010,7 +2036,26 @@ static void _tegra_dc_controller_disable(struct tegra_dc *dc)
 {
 	unsigned i;
 
+#ifdef CONFIG_MACH_TRANSFORMER
+	// ensure prepoweroff called after backlight set to 0
+	if ( dc->ndev->id==0 && dc->out->sd_settings && dc->out->sd_settings->bl_device) {
+		struct platform_device *pdev = dc->out->sd_settings->bl_device;
+		struct backlight_device *bl = platform_get_drvdata(pdev);
+		int count = 0;
+		while(bl->props.brightness!=0 && count<4)
+		{
+			count++;
+			msleep(50);
+		}
+	}
+
+        if (dc->ndev->id==0 && gpio_get_value(TEGRA_GPIO_PI6)==1
+                        && tegra3_get_project_id() == TEGRA3_PROJECT_TF700T) {//panel is hydis
+		msleep(200);
+	}
+#else
 	tegra_dc_hold_dc_out(dc);
+#endif
 
 	if (dc->out && dc->out->prepoweroff)
 		dc->out->prepoweroff();
