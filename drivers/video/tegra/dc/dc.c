@@ -58,6 +58,14 @@
 #include "dev.h"
 #include "nvsd.h"
 
+#ifdef CONFIG_MACH_TRANSFORMER
+#include "../gpio-names.h"
+#include <mach/board-asus-t30-misc.h>
+
+extern bool isRecording;
+#define cardhu_bl_enb                          TEGRA_GPIO_PH2
+#endif
+
 #define TEGRA_CRC_LATCHED_DELAY		34
 
 #define DC_COM_PIN_OUTPUT_POLARITY1_INIT_VAL	0x01000000
@@ -1998,6 +2006,13 @@ static bool _tegra_dc_enable(struct tegra_dc *dc)
 void tegra_dc_enable(struct tegra_dc *dc)
 {
 	mutex_lock(&dc->lock);
+
+#ifdef CONFIG_MACH_TRANSFORMER
+    if (tegra3_get_project_id() == TEGRA3_PROJECT_TF201
+                    && isRecording) {
+        gpio_set_value(cardhu_bl_enb, 1);
+    }
+#endif
 
 	if (!dc->enabled)
 		dc->enabled = _tegra_dc_enable(dc);

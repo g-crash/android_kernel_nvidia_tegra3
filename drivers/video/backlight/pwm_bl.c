@@ -31,6 +31,11 @@
 #include <linux/slab.h>
 #include <linux/edp.h>
 
+#ifdef CONFIG_MACH_TRANSFORMER
+#include "../gpio-names.h"
+#define cardhu_bl_enb			TEGRA_GPIO_PH2
+#endif
+
 struct pwm_bl_data {
 	struct pwm_device	*pwm;
 	struct device		*dev;
@@ -89,6 +94,9 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
 			(brightness * (pb->period - pb->lth_brightness) / max);
 		pwm_config(pb->pwm, brightness, pb->period);
 		pwm_enable(pb->pwm);
+#ifdef CONFIG_MACH_TRANSFORMER
+		gpio_set_value(cardhu_bl_enb, !!brightness);
+#endif
 	}
 
 	if (pb->notify_after)
