@@ -109,7 +109,7 @@ static struct board_info display_board_info;
 extern bool isRecording;
 
 static tegra_dc_bl_output cardhu_bl_output_measured = {
-	0, 1, 2, 3, 4, 5, 6, 7,
+	0, 4, 4, 4, 4, 5, 6, 7,
 	8, 9, 10, 11, 12, 13, 14, 15,
 	16, 17, 18, 19, 20, 21, 22, 23,
 	24, 25, 26, 27, 28, 29, 30, 31,
@@ -257,7 +257,7 @@ static int cardhu_backlight_notify(struct device *unused, int brightness)
         }
 
 	/* SD brightness is a percentage, 8-bit value. */
-	brightness = (brightness * cur_sd_brightness) / 255;
+	brightness = DIV_ROUND_CLOSEST((brightness * cur_sd_brightness), 255);
 
 	/* Apply any backlight response curve */
 	if (brightness > 255) {
@@ -1390,7 +1390,7 @@ static void cardhu_panel_preinit(void)
 		cardhu_disp1_out.parent_clk_backup = "pll_d_out0";
 		cardhu_disp1_out.type = TEGRA_DC_OUT_RGB;
 		cardhu_disp1_out.depth = 18;
-		cardhu_disp1_out.dither = TEGRA_DC_ORDERED_DITHER;
+		cardhu_disp1_out.dither = TEGRA_DC_ERRDIFF_DITHER;
 		cardhu_disp1_out.modes = cardhu_panel_modes;
 		cardhu_disp1_out.n_modes = ARRAY_SIZE(cardhu_panel_modes);
 		cardhu_disp1_pdata.fb = &cardhu_fb_data;
@@ -1601,7 +1601,8 @@ skip_lvds:
 #endif
 
 	/* Copy the bootloader fb to the fb. */
-	tegra_move_framebuffer(tegra_fb_start, tegra_bootloader_fb_start,
+	__tegra_move_framebuffer(&cardhu_nvmap_device,
+		tegra_fb_start, tegra_bootloader_fb_start,
 				min(tegra_fb_size, tegra_bootloader_fb_size));
 
 #if defined(CONFIG_TEGRA_GRHOST) && defined(CONFIG_TEGRA_DC)
@@ -1609,21 +1610,6 @@ skip_lvds:
 		cardhu_disp1_device.dev.parent = &phost1x->dev;
 		err = platform_device_register(&cardhu_disp1_device);
 	}
-	
-	res = platform_get_resource_byname(&cardhu_disp2_device,
-					 IORESOURCE_MEM, "fbmem");
-	res->start = tegra_fb2_start;
-	res->end = tegra_fb2_start + tegra_fb2_size - 1;
-
-	/* Copy the bootloader fb to the fb2. */
-	tegra_move_framebuffer(tegra_fb2_start, tegra_bootloader_fb_start,
-				min(tegra_fb2_size, tegra_bootloader_fb_size));
-
-	if (!err) {
-	cardhu_disp2_device.dev.parent = &phost1x->dev;
-	err = platform_device_register(&cardhu_disp2_device);
-	}
-
 #endif
 
 #if defined(CONFIG_TEGRA_GRHOST) && defined(CONFIG_TEGRA_NVAVP)
