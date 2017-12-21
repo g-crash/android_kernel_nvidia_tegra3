@@ -592,9 +592,6 @@ static int cardhu_hdmi_enable(struct device *dev)
 		pr_err("hdmi: couldn't enable regulator avdd_hdmi_pll\n");
 		return ret;
 	}
-        if ( tegra3_get_project_id() == TEGRA3_PROJECT_P1801 ){
-                gpio_set_value(EN_VDD_BL, 1);
-        }
 	return 0;
 }
 
@@ -696,7 +693,7 @@ static struct tegra_dc_mode panel_19X12_modes[] = {
 
 static struct tegra_dc_mode cardhu_panel_modes[] = {
 	{
-		/* 1366x768@60Hz */
+		/* 1280x800@60Hz */
 		.pclk = 68000000,
 		.h_ref_to_sync = 4,
 		.v_ref_to_sync = 2,
@@ -853,24 +850,14 @@ static struct tegra_fb_data cardhu_fb_data = {
 	.win		= 0,
 	.xres		= 1280,
 	.yres		= 800,
-#ifdef CONFIG_TEGRA_DC_USE_HW_BPP
-	.bits_per_pixel = -1,
-#else
 	.bits_per_pixel	= 32,
-#endif
-//	.flags		= TEGRA_FB_FLIP_ON_PROBE,
 };
 
 static struct tegra_fb_data cardhu_hdmi_fb_data = {
 	.win		= 0,
 	.xres		= 1280,
 	.yres		= 800,
-#ifdef CONFIG_TEGRA_DC_USE_HW_BPP
-	.bits_per_pixel = -1,
-#else
 	.bits_per_pixel	= 32,
-#endif
-//	.flags		= TEGRA_FB_FLIP_ON_PROBE,
 };
 
 static struct tegra_dc_out cardhu_disp2_out = {
@@ -1312,66 +1299,9 @@ static struct platform_device cardhu_nvmap_device = {
 };
 #endif
 
-#if defined(CONFIG_ION_TEGRA)
-
-static struct platform_device tegra_iommu_device = {
-	.name = "tegra_iommu_device",
-	.id = -1,
-	.dev = {
-		.platform_data = (void *)((1 << HWGRP_COUNT) - 1),
-	},
-};
-
-static struct ion_platform_data tegra_ion_data = {
-	.nr = 4,
-	.heaps = {
-		{
-			.type = ION_HEAP_TYPE_CARVEOUT,
-			.id = TEGRA_ION_HEAP_CARVEOUT,
-			.name = "carveout",
-			.base = 0,
-			.size = 0,
-		},
-		{
-			.type = ION_HEAP_TYPE_CARVEOUT,
-			.id = TEGRA_ION_HEAP_IRAM,
-			.name = "iram",
-			.base = TEGRA_IRAM_BASE + TEGRA_RESET_HANDLER_SIZE,
-			.size = TEGRA_IRAM_SIZE - TEGRA_RESET_HANDLER_SIZE,
-		},
-		{
-			.type = ION_HEAP_TYPE_CARVEOUT,
-			.id = TEGRA_ION_HEAP_VPR,
-			.name = "vpr",
-			.base = 0,
-			.size = 0,
-		},
-		{
-			.type = ION_HEAP_TYPE_IOMMU,
-			.id = TEGRA_ION_HEAP_IOMMU,
-			.name = "iommu",
-			.base = TEGRA_SMMU_BASE,
-			.size = TEGRA_SMMU_SIZE,
-			.priv = &tegra_iommu_device.dev,
-		},
-	},
-};
-
-static struct platform_device tegra_ion_device = {
-	.name = "ion-tegra",
-	.id = -1,
-	.dev = {
-		.platform_data = &tegra_ion_data,
-	},
-};
-#endif
-
 static struct platform_device *cardhu_gfx_devices[] __initdata = {
 #if defined(CONFIG_TEGRA_NVMAP)
 	&cardhu_nvmap_device,
-#endif
-#if defined(CONFIG_ION_TEGRA)
-	&tegra_ion_device,
 #endif
 	&tegra_pwfm0_device,
 	&cardhu_backlight_device,
@@ -1465,19 +1395,19 @@ int __init cardhu_panel_init(void)
 {
 	int err;
 	struct resource __maybe_unused *res;
+#ifdef CONFIG_TEGRA_GRHOST
 	struct platform_device *phost1x;
+#endif
 
 	tegra_get_board_info(&board_info);
 	tegra_get_display_board_info(&display_board_info);
 
+	pr_info("Panel info: is_panel_218 = %d, is_panel_219 = %d, is_panel_1506 = %d\n", 
+				is_panel_218, is_panel_219, is_panel_1506);
+
 #if defined(CONFIG_TEGRA_NVMAP)
 	cardhu_carveouts[1].base = tegra_carveout_start;
 	cardhu_carveouts[1].size = tegra_carveout_size;
-#endif
-
-#if defined(CONFIG_ION_TEGRA)
-	tegra_ion_data.heaps[0].base = tegra_carveout_start;
-	tegra_ion_data.heaps[0].size = tegra_carveout_size;
 #endif
 
 	cardhu_panel_preinit();
