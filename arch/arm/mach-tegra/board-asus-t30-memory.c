@@ -29,6 +29,9 @@
 #include "gpio-names.h"
 #include <mach/board-asus-t30-misc.h>
 
+#define MEMORY_BOOSTRAP_PIN_AD4 TEGRA_GPIO_PG4
+#define MEMORY_BOOSTRAP_PIN_AD5 TEGRA_GPIO_PG5
+
 static const struct tegra30_emc_table TF700T_Micron_1GB[] = {
 	{
 		0x32,       /* Rev 3.2 */
@@ -8573,14 +8576,10 @@ static struct tegra30_emc_pdata cardhu_emc_chip_TF300TL_Hynix_1GB_667MHZ = {
 
 int __init cardhu_emc_init(void)
 {
-	struct board_info board;
 	struct tegra30_emc_pdata *emc_platdata = NULL;
 
-	int ret=0;
-	int mem_bootstrap_ad4=0, mem_bootstrap_ad5=0;
-	#define MEMORY_BOOSTRAP_PIN_AD4 TEGRA_GPIO_PG4
-	#define MEMORY_BOOSTRAP_PIN_AD5 TEGRA_GPIO_PG5
-	u32 project_info = tegra3_get_project_id();
+	int ret = 0;
+	int mem_bootstrap_ad4 = 0, mem_bootstrap_ad5 = 0;
 
     ret = gpio_request( MEMORY_BOOSTRAP_PIN_AD4, "memory_bootstrap_ad4");
 	if (ret < 0) {
