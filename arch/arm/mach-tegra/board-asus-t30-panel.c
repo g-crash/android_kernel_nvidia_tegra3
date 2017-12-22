@@ -19,21 +19,15 @@
  */
 
 #include <linux/delay.h>
-#include <linux/ion.h>
-#include <linux/tegra_ion.h>
 #include <linux/gpio.h>
 #include <linux/regulator/consumer.h>
-#include <linux/resource.h>
-#include <asm/mach-types.h>
 #include <linux/platform_device.h>
 #include <linux/pwm_backlight.h>
-#include <asm/atomic.h>
 #include <linux/nvhost.h>
 #include <linux/nvmap.h>
-#include <mach/irqs.h>
 #include <mach/iomap.h>
 #include <mach/dc.h>
-#include <mach/fb.h>
+
 #include <mach/board-asus-t30-misc.h>
 
 #include "board.h"

@@ -1211,11 +1211,9 @@ int __init cardhu_suspend_init(void)
 
 int __init cardhu_edp_init(void)
 {
-
-	unsigned int project_id = tegra3_get_project_id();
 	unsigned int current_mA = 0;
 
-	switch (project_id) {
+	switch (tegra3_get_project_id()) {
 	case TEGRA3_PROJECT_TF201:
 		current_mA = 5000;
 		break;
@@ -1230,7 +1228,6 @@ int __init cardhu_edp_init(void)
 	default:
 		pr_info("%s: cannot match edp limit\n", __func__);
 		break;
-
 	}
 
 	pr_info("%s : use asus edp policy with %u mA\n", __func__, current_mA);
@@ -1241,53 +1238,3 @@ int __init cardhu_edp_init(void)
 }
 #endif
 
-/*static char *cardhu_battery[] = {
-	"bq27510-0",
-};
-
-static struct gpio_charger_platform_data cardhu_charger_pdata = {
-	.name = "ac",
-	.type = POWER_SUPPLY_TYPE_MAINS,
-	.gpio = AC_PRESENT_GPIO,
-	.gpio_active_low = 0,
-	.supplied_to = cardhu_battery,
-	.num_supplicants = ARRAY_SIZE(cardhu_battery),
-};
-
-static struct platform_device cardhu_charger_device = {
-	.name = "gpio-charger",
-	.dev = {
-		.platform_data = &cardhu_charger_pdata,
-	},
-};
-
-static int __init cardhu_charger_late_init(void)
-{
-	platform_device_register(&cardhu_charger_device);
-	return 0;
-}
-
-late_initcall(cardhu_charger_late_init);*/
-
-unsigned int boot_reason=0;
-void tegra_booting_info(void )
-{
-	static void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
-	unsigned int reg;
-	#define PMC_RST_STATUS_WDT (1)
-	#define PMC_RST_STATUS_SW   (3)
-
-	reg = readl(pmc +0x1b4);
-	printk("tegra_booting_info reg=%x\n",reg );
-
-	if (reg ==PMC_RST_STATUS_SW){
-		boot_reason=PMC_RST_STATUS_SW;
-		printk("tegra_booting_info-SW reboot\n");
-	} else if (reg ==PMC_RST_STATUS_WDT){
-		boot_reason=PMC_RST_STATUS_WDT;
-		printk("tegra_booting_info-watchdog reboot\n");
-	} else{
-		boot_reason=0;
-		printk("tegra_booting_info-normal\n");
-	}
-}

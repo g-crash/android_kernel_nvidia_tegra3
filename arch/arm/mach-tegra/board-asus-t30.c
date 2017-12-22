@@ -525,16 +525,6 @@ static void __init cardhu_spi_init(void)
 	}
 }
 
-static void __init cardhu_dtv_init(void)
-{
-	struct board_info board_info;
-
-	tegra_get_board_info(&board_info);
-
-	if (board_info.board_id == BOARD_E1186)
-		platform_device_register(&tegra_dtv_device);
-}
-
 static struct resource tegra_rtc_resources[] = {
 	[0] = {
 		.start = TEGRA_RTC_BASE,
@@ -641,15 +631,13 @@ static struct i2c_board_info __initdata atmel_i2c_info[] = {
 #if defined(CONFIG_TOUCHSCREEN_ELAN_TF_3K)
 // Interrupt pin: TEGRA_GPIO_PH4
 // Reset pin: TEGRA_GPIO_PH6
-// Power pin:
 
 #include <linux/i2c/ektf3k.h>
-#define TOUCH_BUS_ATMEL_T9		1
 
 struct elan_ktf3k_i2c_platform_data ts_elan_ktf3k_data[] = {
         {
                 .version = 0x0001,
-		.abs_x_min = 0,
+		        .abs_x_min = 0,
                 .abs_x_max = ELAN_X_MAX,   //LG 9.7" Dpin 2368, Spin 2112
                 .abs_y_min = 0,
                 .abs_y_max = ELAN_Y_MAX,   //LG 9.7" Dpin 1728, Spin 1600
@@ -657,11 +645,11 @@ struct elan_ktf3k_i2c_platform_data ts_elan_ktf3k_data[] = {
                 .rst_gpio = TEGRA_GPIO_PH6,
         },
 };
+
 static struct i2c_board_info elan_i2c_devices[] = {
         {
                 I2C_BOARD_INFO(ELAN_KTF3K_NAME, 0x10),
                 .platform_data = &ts_elan_ktf3k_data,
-                .irq = (INT_GPIO_BASE + TEGRA_GPIO_PH4),
         },
 
 };
@@ -689,14 +677,15 @@ static int __init cardhu_touch_init(void)
         switch(project_id){
 	    case TEGRA3_PROJECT_TF201:
 #ifdef CONFIG_TOUCHSCREEN_ATMEL_MXT
-		atmel_i2c_info[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
-	        i2c_register_board_info(1, atmel_i2c_info, 1);
+            atmel_i2c_info[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
+            i2c_register_board_info(1, atmel_i2c_info, 1);
 #endif
 	        break;
 	    case TEGRA3_PROJECT_TF300T:
 	    case TEGRA3_PROJECT_TF300TG:
 	    case TEGRA3_PROJECT_TF300TL:
 #if defined(CONFIG_TOUCHSCREEN_ELAN_TF_3K)
+            elan_i2c_devices[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
 	        i2c_register_board_info(1, elan_i2c_devices, 1);
 #endif
 	        break;
@@ -707,7 +696,8 @@ static int __init cardhu_touch_init(void)
 	        platform = (struct elan_ktf3k_i2c_platform_data *)elan_i2c_devices[0].platform_data;
 	        platform->abs_x_max = ELAN_X_MAX_202T;
 	        platform->abs_y_max = ELAN_Y_MAX_202T;
-	        i2c_register_board_info(TOUCH_BUS_ATMEL_T9, elan_i2c_devices, 1);
+            elan_i2c_devices[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
+	        i2c_register_board_info(1, elan_i2c_devices, 1);
 #endif
 	        break;
 	    }
@@ -899,7 +889,6 @@ static struct tegra_usb_platform_data tegra_ehci3_utmi_pdata = {
 	.op_mode = TEGRA_USB_OPMODE_HOST,
 	.u_data.host = {
 		.vbus_gpio = -1,
-//		.vbus_reg = "vdd_vbus_typea_usb",
 		.hot_plug = true,
 		.remote_wakeup_supported = true,
 		.power_off_on_suspend = true,
@@ -924,7 +913,6 @@ static struct tegra_usb_platform_data tegra_ehci1_utmi_pdata = {
 	.op_mode = TEGRA_USB_OPMODE_HOST,
 	.u_data.host = {
 		.vbus_gpio = -1,
-		//.vbus_reg = "vdd_vbus_micro_usb",
 		.hot_plug = true,
 		.remote_wakeup_supported = true,
 		.power_off_on_suspend = true,
@@ -1285,7 +1273,24 @@ static void cardhu_sata_init(void)
 static void cardhu_sata_init(void) { }
 #endif
 
-extern void tegra_booting_info(void );
+static void __init cardhu_booting_info(void)
+{
+	static void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
+	unsigned int reg;
+	#define PMC_RST_STATUS_WDT (1)
+	#define PMC_RST_STATUS_SW   (3)
+
+	reg = readl(pmc +0x1b4);
+	pr_info("tegra_booting_info reg=%x\n",reg );
+
+	if (reg ==PMC_RST_STATUS_SW){
+		pr_info("tegra_booting_info-SW reboot\n");
+	} else if (reg ==PMC_RST_STATUS_WDT){
+		pr_info("tegra_booting_info-watchdog reboot\n");
+	} else{
+		pr_info("tegra_booting_info-normal\n");
+	}
+}
 
 static void __init tegra_cardhu_init(void)
 {
@@ -1295,11 +1300,11 @@ static void __init tegra_cardhu_init(void)
 	tegra_smmu_init();
 	tegra_soc_device_init("cardhu");
 	cardhu_pinmux_init_early();
+	cardhu_booting_info();
     cardhu_misc_init(tegra_chip_uid());
 	cardhu_pinmux_init();
 	cardhu_gpio_init();
 	cardhu_misc_reset();
-	tegra_booting_info();
 	cardhu_i2c_init();
 	cardhu_spi_init();
 	cardhu_usb_init();
@@ -1312,7 +1317,6 @@ static void __init tegra_cardhu_init(void)
 	tegra_io_dpd_init();
 	cardhu_sdhci_init();
 	cardhu_regulator_init();
-	cardhu_dtv_init();
 	cardhu_suspend_init();
 	cardhu_touch_init();
 //	if (project_info == TEGRA3_PROJECT_TF300TG)

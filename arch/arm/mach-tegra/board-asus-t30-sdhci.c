@@ -15,17 +15,12 @@
  *
  */
 
-#include <linux/resource.h>
 #include <linux/platform_device.h>
 #include <linux/wlan_plat.h>
 #include <linux/delay.h>
 #include <linux/gpio.h>
-#include <linux/clk.h>
-#include <linux/err.h>
-#include <linux/mmc/host.h>
 
 #include <asm/mach-types.h>
-#include <mach/irqs.h>
 #include <mach/iomap.h>
 #include <mach/sdhci.h>
 #include <mach/pinmux.h>
@@ -39,8 +34,6 @@
 #define CARDHU_WLAN_RST	TEGRA_GPIO_PD3
 #define CARDHU_WLAN_WOW	TEGRA_GPIO_PO4
 #define CARDHU_SD_CD TEGRA_GPIO_PI5
-#define CARDHU_SD_WP TEGRA_GPIO_PT3
-#define PM269_SD_WP -1
 
 static void (*wifi_status_cb)(int card_present, void *dev_id);
 static void *wifi_status_cb_devid;
@@ -154,27 +147,13 @@ static struct tegra_sdhci_platform_data tegra_sdhci_platform_data2 = {
 	.wp_gpio = -1,
 	.power_gpio = -1,
 	.tap_delay = 0x0F,
-/*	.is_voltage_switch_supported = false,
-	.vdd_rail_name = NULL,
-	.slot_rail_name = NULL,
-	.vdd_max_uv = -1,
-	.vdd_min_uv = -1,
-	.max_clk = 0,
-	.is_8bit_supported = false, */
 };
 
 static struct tegra_sdhci_platform_data tegra_sdhci_platform_data0 = {
 	.cd_gpio = CARDHU_SD_CD,
-	.wp_gpio = CARDHU_SD_WP,
+	.wp_gpio = -1,
 	.power_gpio = -1,
 	.tap_delay = 0x0F,
-/*	.is_voltage_switch_supported = true,
-	.vdd_rail_name = "vddio_sdmmc1",
-	.slot_rail_name = "vddio_sd_slot",
-	.vdd_max_uv = 3320000,
-	.vdd_min_uv = 3280000,
-	.max_clk = 208000000,
-	.is_8bit_supported = false, */
 };
 
 static struct tegra_sdhci_platform_data tegra_sdhci_platform_data3 = {
@@ -186,13 +165,6 @@ static struct tegra_sdhci_platform_data tegra_sdhci_platform_data3 = {
 	.mmc_data = {
 		.built_in = 1,
 	}
-/*	.is_voltage_switch_supported = false,
-	.vdd_rail_name = NULL,
-	.slot_rail_name = NULL,
-	.vdd_max_uv = -1,
-	.vdd_min_uv = -1,
-	.max_clk = 48000000,
-	.is_8bit_supported = true, */
 };
 
 static struct platform_device tegra_sdhci_device0 = {
@@ -313,15 +285,6 @@ subsys_initcall_sync(cardhu_wifi_prepower);
 
 int __init cardhu_sdhci_init(void)
 {
-	struct board_info board_info;
-	tegra_get_board_info(&board_info);
-	if ((board_info.board_id == BOARD_PM269) ||
-		(board_info.board_id == BOARD_E1257) ||
-		(board_info.board_id == BOARD_PM305) ||
-		(board_info.board_id == BOARD_PM311)) {
-			tegra_sdhci_platform_data0.wp_gpio = PM269_SD_WP;
-	}
-
 	platform_device_register(&tegra_sdhci_device3);
 	platform_device_register(&tegra_sdhci_device2);
 	platform_device_register(&tegra_sdhci_device0);

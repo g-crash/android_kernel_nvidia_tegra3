@@ -14,16 +14,10 @@
  *
  */
 
-#include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/gpio.h>
-#include <mach/pinmux.h>
 #include <mach/pinmux-tegra30.h>
-#include <mach/gpio-tegra.h>
 #include <mach/board-asus-t30-misc.h>
-#include "board.h"
 #include "board-asus-t30.h"
-#include "devices.h"
 #include "gpio-names.h"
 
 #define DEFAULT_DRIVE(_name)					\

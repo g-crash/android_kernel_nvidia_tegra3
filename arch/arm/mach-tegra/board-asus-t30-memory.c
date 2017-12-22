@@ -16,17 +16,14 @@
  * 02111-1307, USA
  */
 
-#include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/gpio.h>
 #include <linux/platform_data/tegra_emc.h>
 
-#include "board.h"
 #include "board-asus-t30.h"
 #include "tegra3_emc.h"
-#include "fuse.h"
 #include "devices.h"
 #include "gpio-names.h"
+
 #include <mach/board-asus-t30-misc.h>
 
 #define MEMORY_BOOSTRAP_PIN_AD4 TEGRA_GPIO_PG4

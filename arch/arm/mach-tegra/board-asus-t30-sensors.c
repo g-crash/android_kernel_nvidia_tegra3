@@ -1168,42 +1168,22 @@ static struct i2c_board_info iCatch7002a_i2c2_board_info[] = {
 
 static int cardhu_nct1008_init(void)
 {
-	int nct1008_port = -1;
 	int ret = 0;
 
-	if ((board_info.board_id == BOARD_E1198) ||
-		(board_info.board_id == BOARD_E1291) ||
-		(board_info.board_id == BOARD_E1257) ||
-		(board_info.board_id == BOARD_PM269) ||
-		(board_info.board_id == BOARD_PM305) ||
-		(board_info.board_id == BOARD_PM311)) {
-			nct1008_port = TEGRA_GPIO_PCC2;
-	} else if ((board_info.board_id == BOARD_E1186) ||
-		(board_info.board_id == BOARD_E1187) ||
-		(board_info.board_id == BOARD_E1256)) {
-		/* FIXME: seems to be conflicting with usb3 vbus on E1186 */
-		/* nct1008_port = TEGRA_GPIO_PH7; */
-	}
+	cardhu_i2c4_nct1008_board_info[0].irq =
+								gpio_to_irq(TEGRA_GPIO_PCC2);
 
-	if (nct1008_port >= 0) {
-		tegra_platform_edp_init(cardhu_nct1008_pdata.trips,
-								&cardhu_nct1008_pdata.num_trips,
-								0); /* edp temperature margin */
-		cardhu_i2c4_nct1008_board_info[0].irq =
-									gpio_to_irq(nct1008_port);
+	ret = gpio_request(TEGRA_GPIO_PCC2, "temp_alert");
+	if (ret < 0)
+		return ret;
 
-		ret = gpio_request(nct1008_port, "temp_alert");
-		if (ret < 0)
-			return ret;
+	ret = gpio_direction_input(TEGRA_GPIO_PCC2);
+	if (ret < 0)
+		gpio_free(TEGRA_GPIO_PCC2);
 
-		ret = gpio_direction_input(nct1008_port);
-		if (ret < 0)
-			gpio_free(nct1008_port);
-	}
-
-	i2c_register_board_info(4, cardhu_i2c4_nct1008_board_info,
-			ARRAY_SIZE(cardhu_i2c4_nct1008_board_info));
-
+	tegra_platform_edp_init(cardhu_nct1008_pdata.trips,
+							&cardhu_nct1008_pdata.num_trips,
+							0); /* edp temperature margin */
 	return ret;
 }
 
@@ -1515,6 +1495,13 @@ int __init cardhu_sensors_init(void)
 
 	tegra_get_board_info(&board_info);
 
+	err = cardhu_nct1008_init();
+	if (err)
+		pr_err("%s: nct1008 init failed\n", __func__);
+	else
+    	i2c_register_board_info(4, cardhu_i2c4_nct1008_board_info,
+			ARRAY_SIZE(cardhu_i2c4_nct1008_board_info));
+
 	cardhu_camera_init();
 	cam_tca6416_init();
 
@@ -1559,9 +1546,9 @@ int __init cardhu_sensors_init(void)
 	}
 	i2c_register_board_info(PCA954x_I2C_BUS2, cardhu_i2c8_board_info,
 		ARRAY_SIZE(cardhu_i2c8_board_info));
-#endif
-#ifdef CONFIG_VIDEO_YUV
+#endif /* CONFIG_I2C_MUX_PCA954x */
 
+#ifdef CONFIG_VIDEO_YUV
 //+ m6mo rear camera
     pr_info("fjm6mo i2c_register_board_info");
     i2c_register_board_info(2, rear_sensor_i2c3_board_info,
@@ -1579,14 +1566,11 @@ int __init cardhu_sensors_init(void)
 		ARRAY_SIZE(iCatch7002a_i2c2_board_info));
 /* iCatch7002a - */
 #endif /* CONFIG_VIDEO_YUV */
+
 	pmu_tca6416_init();
 
 	i2c_register_board_info(4, cardhu_i2c4_pad_bat_board_info,
 			ARRAY_SIZE(cardhu_i2c4_pad_bat_board_info));
-
-	err = cardhu_nct1008_init();
-	if (err)
-		return err;
 
 	mpuirq_init();
 

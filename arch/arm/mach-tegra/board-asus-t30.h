@@ -21,10 +21,10 @@
 #ifndef _MACH_TEGRA_BOARD_CARDHU_H
 #define _MACH_TEGRA_BOARD_CARDHU_H
 
-#include <mach/gpio.h>
 #include <mach/irqs.h>
 #include <linux/mfd/tps6591x.h>
 #include <linux/mfd/ricoh583.h>
+#include "gpio-names.h"
 
 /* Processor Board  ID */
 #define BOARD_E1187   0x0B57
@@ -148,6 +148,7 @@
 #define CAM_FRONT_LDO_SHUTDN_L_GPIO	CAM_TCA6416_GPIO_BASE + 11
 #define CAM_FRONT_LED_EXP			CAM_TCA6416_GPIO_BASE + 12
 #define CAM_SNN_LED_REAR_EXP		CAM_TCA6416_GPIO_BASE + 13
+
 /* PIN 19 NOT USED and is reserved */
 #define CAM_NOT_USED				CAM_TCA6416_GPIO_BASE + 14
 #define CAM_I2C_MUX_RST_EXP			CAM_TCA6416_GPIO_BASE + 15
@@ -191,7 +192,6 @@
 #define ICATCH7002A_VDDIO_EN_GPIO TEGRA_GPIO_PBB4
 #define ICATCH7002A_PWR_DN_GPIO TEGRA_GPIO_PBB5
 #define ICATCH7002A_VDDC_EN_GPIO TEGRA_GPIO_PBB7
-#define ICATCH7002A_ISP_1V2_EN TEGRA_GPIO_PS3   //For TF500T; PBB7 in other porjects
 #define ICATCH7002A_CAM_2V85_EN TEGRA_GPIO_PR7
 
 
@@ -219,30 +219,27 @@
 #define MAX77663_IRQ_BASE	TEGRA_NR_IRQS
 #define MAX77663_IRQ_END	(MAX77663_IRQ_BASE + MAX77663_IRQ_NR)
 
-int cardhu_charge_init(void);
-int cardhu_regulator_init(void);
-int cardhu_suspend_init(void);
-int cardhu_sdhci_init(void);
-int cardhu_pinmux_init(void);
-void cardhu_pinmux_init_early(void);
-int cardhu_gpio_init(void);
-int cardhu_panel_init(void);
-int cardhu_sensors_init(void);
-int cardhu_keys_init(void);
-int cardhu_pins_state_init(void);
-int cardhu_emc_init(void);
-int cardhu_edp_init(void);
-int cardhu_pmon_init(void);
-int cardhu_pm298_gpio_switch_regulator_init(void);
-int cardhu_pm298_regulator_init(void);
-int cardhu_pm299_gpio_switch_regulator_init(void);
-int cardhu_pm299_regulator_init(void);
+int __init cardhu_regulator_init(void);
+int __init cardhu_suspend_init(void);
+int __init cardhu_sdhci_init(void);
+int __init cardhu_pinmux_init(void);
+void __init cardhu_pinmux_init_early(void);
+int __init cardhu_gpio_init(void);
+int __init cardhu_panel_init(void);
+int __init cardhu_sensors_init(void);
+int __init cardhu_keys_init(void);
+int __init cardhu_pins_state_init(void);
+int __init cardhu_emc_init(void);
+int __init cardhu_edp_init(void);
+int __init cardhu_pmon_init(void);
+int __init cardhu_pm298_gpio_switch_regulator_init(void);
+int __init cardhu_pm298_regulator_init(void);
+int __init cardhu_pm299_gpio_switch_regulator_init(void);
+int __init cardhu_pm299_regulator_init(void);
 struct platform_device *tegra_cardhu_usb_utmip_host_register(void);
 void tegra_cardhu_usb_utmip_host_unregister(struct platform_device *pdev);
 struct platform_device *tegra_usb3_utmip_host_register(void);
 void tegra_usb3_utmip_host_unregister(struct platform_device *pdev);
-
-extern struct tegra_uart_platform_data cardhu_irda_pdata;
 
 /* Invensense MPU Definitions */
 #define MPU_GYRO_NAME		"mpu3050"
@@ -286,13 +283,6 @@ extern struct tegra_uart_platform_data cardhu_irda_pdata;
 #define TF300TL_COMPASS_ORIENTATION	{ -1, 0, 0, 0, -1, 0, 0, 0, 1 }
 
 /* Baseband GPIO addresses */
-/*#define BB_GPIO_BB_EN			TEGRA_GPIO_PR5
-#define BB_GPIO_BB_RST			TEGRA_GPIO_PS4
-#define BB_GPIO_SPI_INT			TEGRA_GPIO_PS6
-#define BB_GPIO_SPI_SS			TEGRA_GPIO_PV0
-#define BB_GPIO_AWR			TEGRA_GPIO_PS7
-#define BB_GPIO_CWR			TEGRA_GPIO_PU5
-*/
 #define BB_GPIO_BB_EN			TEGRA_GPIO_PX7 //MODEM_ON
 #define BB_GPIO_BB_RST			TEGRA_GPIO_PU3 //MOD_nRST_PWRDWN
 #define BB_GPIO_SPI_INT			TEGRA_GPIO_PX0 //AP_Active
