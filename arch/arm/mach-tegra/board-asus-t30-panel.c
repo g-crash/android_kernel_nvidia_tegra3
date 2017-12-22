@@ -1547,6 +1547,22 @@ skip_lvds:
 		nvavp_device.dev.parent = &phost1x->dev;
 		err = platform_device_register(&nvavp_device);
 	}
+
+    res = platform_get_resource_byname(&cardhu_disp2_device,
+					 IORESOURCE_MEM, "fbmem");
+	res->start = tegra_fb2_start;
+	res->end = tegra_fb2_start + tegra_fb2_size - 1;
+
+	/* Copy the bootloader fb to the fb2. */
+	__tegra_move_framebuffer(&cardhu_nvmap_device, 
+        tegra_fb2_start, tegra_bootloader_fb_start,
+				min(tegra_fb2_size, tegra_bootloader_fb_size));
+
+	if (!err) {
+	cardhu_disp2_device.dev.parent = &phost1x->dev;
+	err = platform_device_register(&cardhu_disp2_device);
+	}
+
 #endif
 	return err;
 }
