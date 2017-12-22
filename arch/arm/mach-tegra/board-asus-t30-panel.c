@@ -117,33 +117,30 @@ static tegra_dc_bl_output cardhu_bl_output_measured = {
 	248, 249, 250, 251, 252, 253, 254, 255
 };
 
-static p_tegra_dc_bl_output bl_output = cardhu_bl_output_measured;
+static p_tegra_dc_bl_output bl_output;
 
 static int cardhu_backlight_init(struct device *dev)
 {
-	int ret = 0;
+	int ret = 0; 
+	bl_output = cardhu_bl_output_measured;
 
 	if (WARN_ON(ARRAY_SIZE(cardhu_bl_output_measured) != 256))
-		pr_err("bl_output array does not have 256 elements\n");
-
+		pr_err("%s: bl_output array does not have 256 elements\n", __func__);
+	
+	/* Enable back light */
 	ret = gpio_request(cardhu_bl_enb, "backlight_enb");
-	if (ret < 0)
-		return ret;
-
-	ret = gpio_direction_output(cardhu_bl_enb, 1);
-	if (ret < 0)
-		gpio_free(cardhu_bl_enb);
+	if (!ret) {
+		ret = gpio_direction_output(cardhu_bl_enb, 1);
+		if (ret < 0) {
+			gpio_free(cardhu_bl_enb);
+			pr_err("%s: error in setting backlight_enb\n", __func__);
+		}
+	} else {
+		pr_err("%s: error in gpio request for backlight_enb\n", __func__);
+	}
 
 	return ret;
 };
-
-static void cardhu_backlight_exit(struct device *dev)
-{
-	/* int ret; */
-	/*ret = gpio_request(cardhu_bl_enb, "backlight_enb");*/
-	gpio_set_value(cardhu_bl_enb, 0);
-	gpio_free(cardhu_bl_enb);
-}
 
 static int cardhu_backlight_notify(struct device *unused, int brightness)
 {
@@ -162,7 +159,7 @@ static int cardhu_backlight_notify(struct device *unused, int brightness)
 
 	/* Apply any backlight response curve */
 	if (brightness > 255) {
-		pr_info("Error: Brightness > 255!\n");
+		pr_info("%s: error: Brightness > 255!\n", __func__);
 	} else {
 		brightness = bl_output[brightness];
 	}
@@ -178,7 +175,6 @@ static struct platform_pwm_backlight_data cardhu_backlight_data = {
 	.dft_brightness	= 100,
 	.pwm_period_ns	= 4000000,
 	.init		= cardhu_backlight_init,
-	.exit		= cardhu_backlight_exit,
 	.notify		= cardhu_backlight_notify,
 	/* Only toggle backlight on fb blank notifications for disp1 */
 	.check_fb	= cardhu_disp1_check_fb,
@@ -363,11 +359,7 @@ static int cardhu_panel_disable_tf700t(void)
 		regulator_put(cardhu_lvds_vdd_bl);
 		cardhu_lvds_vdd_bl = NULL;
 	}
-	/*
-	   regulator_disable(cardhu_lvds_reg);
-	   regulator_put(cardhu_lvds_reg);
-	   cardhu_lvds_reg = NULL;
-	 */
+
 	return 0;
 }
 
