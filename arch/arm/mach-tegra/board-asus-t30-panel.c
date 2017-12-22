@@ -730,17 +730,17 @@ static struct tegra_dc_out cardhu_disp1_out = {
 	.order		= TEGRA_DC_ORDER_RED_BLUE,
 	.sd_settings	= &cardhu_sd_settings,
 	.parent_clk	= "pll_p",
-	.parent_clk_backup = "pll_d_out0";
+	.parent_clk_backup = "pll_d_out0",
 
-	.type = TEGRA_DC_OUT_RGB;
-	.depth = 18;
-	.dither = TEGRA_DC_ERRDIFF_DITHER;
+	.type = TEGRA_DC_OUT_RGB,
+	.depth = 18,
+	.dither = TEGRA_DC_ERRDIFF_DITHER,
 	
-	.modes = cardhu_panel_modes;
-	.n_modes = ARRAY_SIZE(cardhu_panel_modes);
+	.modes = cardhu_panel_modes,
+	.n_modes = ARRAY_SIZE(cardhu_panel_modes),
 	
-	.height = 127;
-	.width = 216;
+	.height = 127,
+	.width = 216,
 };
 
 #ifdef CONFIG_TEGRA_DC
@@ -755,7 +755,7 @@ static struct tegra_dc_platform_data cardhu_disp1_pdata = {
 	.flags		= TEGRA_DC_FLAG_ENABLED,
 	.default_out	= &cardhu_disp1_out,
 	.emc_clk_rate	= 300000000,
-	.fb = &cardhu_fb_data;
+	.fb = &cardhu_fb_data,
 };
 
 static struct platform_device cardhu_disp1_device = {
