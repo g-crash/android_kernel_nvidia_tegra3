@@ -325,6 +325,8 @@ int __init cardhu_pm299_regulator_init(void)
 	void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
 	u32 pmc_ctrl;
 
+    pr_info("%s()\n", __func__);
+
 	/* configure the power management controller to trigger PMU
 	 * interrupts when low */
 	pmc_ctrl = readl(pmc + PMC_CTRL);
@@ -342,6 +344,7 @@ int __init cardhu_pm299_regulator_init(void)
 	 * not have vdd_core */
 	if ((board_info.sku & SKU_DCDC_TPS62361_SUPPORT) ||
 			(pmu_board_info.sku & SKU_DCDC_TPS62361_SUPPORT)) {
+		pr_info("%s(): DCDC_TPS62361 is supported\n", __func__);
 		pdata_dc1_skubit0_0.regulator.consumer_supplies =
 					ricoh583_dc1_supply_skubit0_1;
 		pdata_dc1_skubit0_0.regulator.num_consumer_supplies =
@@ -352,6 +355,7 @@ int __init cardhu_pm299_regulator_init(void)
 	ricoh_platform.subdevs = ricoh_devs_e118x_dcdc;
 
 	i2c_register_board_info(4, ricoh583_regulators, 1);
+	pr_info("%s(): ricoh583_regulators are registered\n", __func__);
 
 	/* Register the TPS6236x for all boards whose sku bit 0 is set. */
 	if ((board_info.sku & SKU_DCDC_TPS62361_SUPPORT) ||
@@ -682,11 +686,13 @@ int __init cardhu_pm299_gpio_switch_regulator_init(void)
 	case BOARD_PM305:
 	case BOARD_PM311:
 	case BOARD_E1257:
+        pr_info("cardhu_pm299_gpio_switch_regulator_init: BOARD_PM269\n");
 		nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269);
 		fixed_reg_devs = fixed_reg_devs_pm269;
 		break;
 
 	default:
+        pr_info("cardhu_pm299_gpio_switch_regulator_init: fixed_reg_devs_e118x\n");
 		nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_e118x);
 		fixed_reg_devs = fixed_reg_devs_e118x;
 		break;

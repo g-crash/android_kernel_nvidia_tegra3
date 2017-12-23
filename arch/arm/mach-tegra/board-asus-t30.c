@@ -80,8 +80,6 @@
 #include "baseband-xmm-power.h"
 #include "wdt-recovery.h"
 
-#define CODEC_RT5642_RESET	TEGRA_GPIO_PP2
-
 #ifdef CONFIG_BT_BLUESLEEP
 static struct resource cardhu_bcm4329_rfkill_resources[] = {
 	{
@@ -474,10 +472,12 @@ static void __init cardhu_spi_init(void)
 				ARRAY_SIZE(cardhu_spi_devices));
 
 	if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
+        pr_info("%s: display_board_info.board_id == BOARD_DISPLAY_PM313\n", __func__);
 		platform_add_devices(touch_spi_device,
 				ARRAY_SIZE(touch_spi_device));
 	}
 	if (board_info.board_id == BOARD_E1198) {
+        pr_info("%s: board_info.board_id == BOARD_E1198\n", __func__);
 		tegra_spi_device2.dev.platform_data = &cardhu_spi_pdata;
 		platform_device_register(&tegra_spi_device2);
 		tegra_spi_slave_device1.dev.platform_data = &cardhu_spi_pdata;
@@ -622,24 +622,22 @@ static struct i2c_board_info elan_i2c_devices[] = {
 
 static int __init cardhu_touch_init(void)
 {
-	struct board_info BoardInfo, DisplayBoardInfo;
-    unsigned int project_id;
 #ifdef CONFIG_TOUCHSCREEN_ELAN_TF_3K
 	struct elan_ktf3k_i2c_platform_data *platform;
 #endif
 
-	tegra_get_board_info(&BoardInfo);
-	tegra_get_display_board_info(&DisplayBoardInfo);
-	project_id = tegra3_get_project_id();
- 
-        gpio_request(TEGRA_GPIO_PH4, "touch-irq");
-        gpio_direction_input(TEGRA_GPIO_PH4);
-        gpio_request(TEGRA_GPIO_PH6, "touch-reset");
-        gpio_direction_output(TEGRA_GPIO_PH6, 0);
-        msleep(1);
-        gpio_set_value(TEGRA_GPIO_PH6, 1);
-        msleep(100);
-        switch(project_id){
+    gpio_request(TEGRA_GPIO_PH4, "touch-irq");
+    gpio_direction_input(TEGRA_GPIO_PH4);
+    gpio_request(TEGRA_GPIO_PH6, "touch-reset");
+    gpio_direction_output(TEGRA_GPIO_PH6, 0);
+
+    msleep(1);
+
+    gpio_set_value(TEGRA_GPIO_PH6, 1);
+
+    msleep(100);
+
+    switch(tegra3_get_project_id()){
 	    case TEGRA3_PROJECT_TF201:
 #ifdef CONFIG_TOUCHSCREEN_ATMEL_MXT
             atmel_i2c_info[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
@@ -654,7 +652,7 @@ static int __init cardhu_touch_init(void)
 	        i2c_register_board_info(1, elan_i2c_devices, 1);
 #endif
 	        break;
-	case TEGRA3_PROJECT_TF700T:
+	    case TEGRA3_PROJECT_TF700T:
 	        gpio_request(TEGRA_GPIO_PK2, "tp_wake");
 	        gpio_direction_output(TEGRA_GPIO_PK2, 1);
 #ifdef CONFIG_TOUCHSCREEN_ELAN_TF_3K
@@ -1021,20 +1019,10 @@ void tegra_usb3_utmip_host_unregister(struct platform_device *pdev)
 #ifdef CONFIG_USB_SUPPORT
 static void cardhu_usb_init(void)
 {
-	int ret;
 	struct board_info bi;
 	u32 project_info = tegra3_get_project_id();
 
 	tegra_get_board_info(&bi);
-
-	if (project_info == TEGRA3_PROJECT_P1801) {
-		ret = gpio_request(TEGRA_GPIO_PH7, "usb2_vbus_control");
-		if (ret < 0)
-			printk(KERN_ERR "%s: Failed to gpio_request for usb2_vbus_control.\n", __func__);
-		ret = gpio_direction_output(TEGRA_GPIO_PH7, 1);
-		if (ret)
-			printk(KERN_ERR "%s: Failed to gpio_direction_output for usb2_vbus_control.\n", __func__);
-	}
 
 	/* OTG should be the first to be registered */
 	tegra_otg_device.dev.platform_data = &tegra_otg_pdata;
@@ -1044,15 +1032,18 @@ static void cardhu_usb_init(void)
 	tegra_udc_device.dev.platform_data = &tegra_udc_pdata;
 
 	if (bi.board_id == BOARD_PM267) {
+        pr_info("%s: bi.board_id == BOARD_PM267\n", __func__);
 		hsic_enable_gpio = EN_HSIC_GPIO;
 		hsic_reset_gpio = PM267_SMSC4640_HSIC_HUB_RESET_GPIO;
 		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_hsic_pdata;
 		platform_device_register(&tegra_ehci2_device);
 	} else if (bi.board_id == BOARD_E1256) {
+        pr_info("%s: bi.board_id == BOARD_E1256\n", __func__);
 		hsic_enable_gpio = EN_HSIC_GPIO;
 		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_hsic_pdata;
 		platform_device_register(&tegra_ehci2_device);
 	} else if (bi.board_id == BOARD_E1186) {
+        pr_info("%s: bi.board_id == BOARD_E1186\n", __func__);
 		tegra_ehci2_device.dev.platform_data =
 						&tegra_ehci2_hsic_xmm_pdata;
 		/* ehci2 registration happens in baseband-xmm-power  */
@@ -1131,6 +1122,7 @@ static void cardhu_pci_init(void)
 
 	tegra_get_board_info(&board_info);
 	if (board_info.board_id == BOARD_E1291) {
+        pr_info("%s: board_info.board_id == BOARD_E1291\n", __func__);
 		cardhu_pci_platform_data.port_status[0] = 0;
 		cardhu_pci_platform_data.port_status[1] = 0;
 		cardhu_pci_platform_data.port_status[2] = 1;
@@ -1140,6 +1132,7 @@ static void cardhu_pci_init(void)
 	if ((board_info.board_id == BOARD_E1186) ||
 		(board_info.board_id == BOARD_E1187) ||
 		(board_info.board_id == BOARD_E1291)) {
+        pr_info("%s: board_info.board_id == BOARD_E1186 or BOARD_E1187 or BOARD_E1291\n", __func__);
 		tegra_pci_device.dev.platform_data = &cardhu_pci_platform_data;
 		platform_device_register(&tegra_pci_device);
 	}

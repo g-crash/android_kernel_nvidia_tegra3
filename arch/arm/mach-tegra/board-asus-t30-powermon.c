@@ -243,6 +243,7 @@ int __init cardhu_pmon_init(void)
 
 	/* for fab A04 VDD_CORE_IN changed from ina with addr 0x44 to 0x4A */
 	if (bi.fab == BOARD_FAB_A04) {
+        pr_info("%s: bi.fab == BOARD_FAB_A04\n", __func__);
 		cardhu_i2c0_ina219_board_info[INA_I2C_ADDR_44].platform_data =
 			&power_mon_info[UNUSED_RAIL];
 		cardhu_i2c0_ina219_board_info[INA_I2C_ADDR_4A].platform_data =
@@ -250,6 +251,7 @@ int __init cardhu_pmon_init(void)
 	}
 
 	if (bi.board_id != BOARD_PM269) {
+        pr_info("%s: bi.board_id != BOARD_PM269\n", __func__);
 		i2c_register_board_info(0, cardhu_i2c0_ina219_board_info,
 			ARRAY_SIZE(cardhu_i2c0_ina219_board_info));
 	}

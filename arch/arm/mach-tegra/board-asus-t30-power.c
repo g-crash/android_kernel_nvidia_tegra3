@@ -401,17 +401,22 @@ int __init cardhu_regulator_init(void)
 	tegra_get_pmu_board_info(&pmu_board_info);
 	pmu_board_info.sku=1;
 
-	if (pmu_board_info.board_id == BOARD_PMU_PM298)
+	if (pmu_board_info.board_id == BOARD_PMU_PM298) {
+        pr_info("%s: board_id is BOARD_PMU_PM298\n", __func__);
 		return cardhu_pm298_regulator_init();
+    }
 
-	if (pmu_board_info.board_id == BOARD_PMU_PM299)
-		return cardhu_pm299_regulator_init();
+	if (pmu_board_info.board_id == BOARD_PMU_PM299) {
+        pr_info("%s: board_id is BOARD_PMU_PM299\n", __func__);
+    	return cardhu_pm299_regulator_init();
+    }
 
 	/* The regulator details have complete constraints */
 	regulator_has_full_constraints();
 
 	/* PMU-E1208, the ldo2 should be set to 1200mV */
 	if (pmu_board_info.board_id == BOARD_E1208) {
+        pr_info("%s: board_id is BOARD_E1208\n", __func__);
 		pdata_ldo2_0.regulator.constraints.min_uV = 1200000;
 		pdata_ldo2_0.regulator.constraints.max_uV = 1200000;
 	}
@@ -427,6 +432,7 @@ int __init cardhu_regulator_init(void)
 	 */
 	if (board_info.board_id == BOARD_E1198) {
 		int vsels;
+        pr_info("%s: board_id is BOARD_E1198\n", __func__);
 		switch(board_info.fab) {
 		case BOARD_FAB_A00:
 		case BOARD_FAB_A01:
@@ -467,11 +473,14 @@ int __init cardhu_regulator_init(void)
 	}
 
 	if ((board_info.board_id == BOARD_E1291) &&
-		(board_info.sku & SKU_DCDC_TPS62361_SUPPORT))
-		ext_core_regulator = true;
+		(board_info.sku & SKU_DCDC_TPS62361_SUPPORT)) {
+        ext_core_regulator = true;
+        pr_info("%s: ext_core_regulator = true\n", __func__);
+    }
 
 	if ((board_info.board_id == BOARD_E1198) ||
 		(board_info.board_id == BOARD_E1291)) {
+        pr_info("%s: board_id is BOARD_E1198 or BOARD_E1291\n", __func__);
 		if (ext_core_regulator) {
 			tps_platform.num_subdevs =
 					ARRAY_SIZE(tps_devs_e1198_skubit0_1);
@@ -482,8 +491,10 @@ int __init cardhu_regulator_init(void)
 			tps_platform.subdevs = tps_devs_e1198_skubit0_0;
 		}
 	} else {
-		if (board_info.board_id == BOARD_PM269)
+		if (board_info.board_id == BOARD_PM269){
+            pr_info("%s: board_id is BOARD_PM269\n", __func__);
 			pdata_ldo3_e118x.slew_rate_uV_per_us = 250;
+        }
 
 		if (pmu_board_info.sku & SKU_DCDC_TPS62361_SUPPORT) {
 			tps_platform.num_subdevs = ARRAY_SIZE(tps_devs_e118x_skubit0_1);
@@ -1012,14 +1023,19 @@ int __init cardhu_fixed_regulator_init(void)
 	tegra_get_pmu_board_info(&pmu_board_info);
 	tegra_get_display_board_info(&display_board_info);
 
-	if (pmu_board_info.board_id == BOARD_PMU_PM298)
+	if (pmu_board_info.board_id == BOARD_PMU_PM298) {
+        pr_info("%s: cardhu_pm298_gpio_switch_regulator_init()\n", __func__);
 		return cardhu_pm298_gpio_switch_regulator_init();
+    }
 
-	if (pmu_board_info.board_id == BOARD_PMU_PM299)
+	if (pmu_board_info.board_id == BOARD_PMU_PM299) {
+        pr_info("%s: cardhu_pm299_gpio_switch_regulator_init()\n", __func__);
 		return cardhu_pm299_gpio_switch_regulator_init();
+    }
 
 	switch (board_info.board_id) {
 	case BOARD_E1198:
+        pr_info("%s: case BOARD_E1198\n", __func__);
 		if (board_info.fab <= BOARD_FAB_A01) {
 			nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_e1198_base);
 			fixed_reg_devs = fixed_reg_devs_e1198_base;
@@ -1030,6 +1046,7 @@ int __init cardhu_fixed_regulator_init(void)
 		break;
 
 	case BOARD_E1291:
+        pr_info("%s: case BOARD_E1291\n", __func__);
 		if (board_info.fab == BOARD_FAB_A03) {
 			nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_e1291_a03);
 			fixed_reg_devs = fixed_reg_devs_e1291_a03;
@@ -1046,6 +1063,7 @@ int __init cardhu_fixed_regulator_init(void)
 
 	case BOARD_PM311:
 	case BOARD_PM305:
+        pr_info("%s: case BOARD_PM311 or BOARD_PM305\n", __func__);
 		nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm311);
 		fixed_reg_devs = fixed_reg_devs_pm311;
 		if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
@@ -1059,6 +1077,7 @@ int __init cardhu_fixed_regulator_init(void)
 
 	case BOARD_PM269:
 	case BOARD_E1257:
+        pr_info("%s: case BOARD_PM269 or BOARD_E1257\n", __func__);
 		nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269);
 		fixed_reg_devs = fixed_reg_devs_pm269;
 		if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
@@ -1074,6 +1093,7 @@ int __init cardhu_fixed_regulator_init(void)
 		break;
 
 	default:
+        pr_info("%s: case default\n", __func__);
 		if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
 			nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_e118x_pm313);
 			fixed_reg_devs = fixed_reg_devs_e118x_pm313;
@@ -1137,8 +1157,10 @@ int __init cardhu_suspend_init(void)
 	/* For PMU Fab A03, A04 and A05 make core_pwr_req to high */
 	if ((pmu_board_info.fab == BOARD_FAB_A03) ||
 		(pmu_board_info.fab == BOARD_FAB_A04) ||
-		 (pmu_board_info.fab == BOARD_FAB_A05))
+		 (pmu_board_info.fab == BOARD_FAB_A05)) {
+        pr_info("%s: BOARD_FAB_A03 or A04 or A05\n", __func__);
 		cardhu_suspend_data.corereq_high = true;
+    }
 
 	/* CORE_PWR_REQ to be high for all processor/pmu board whose sku bit 0
 	 * is set. This is require to enable the dc-dc converter tps62361x */
@@ -1147,6 +1169,7 @@ int __init cardhu_suspend_init(void)
 
 	switch (board_info.board_id) {
 	case BOARD_E1291:
+        pr_info("%s: case BOARD_E1291\n", __func__);
 		/* CORE_PWR_REQ to be high for E1291-A03 */
 		if (board_info.fab == BOARD_FAB_A03)
 			cardhu_suspend_data.corereq_high = true;
@@ -1155,11 +1178,13 @@ int __init cardhu_suspend_init(void)
 			tegra_disable_wake_source(TEGRA_WAKE_USB1_VBUS);
 		break;
 	case BOARD_E1198:
+        pr_info("%s: case BOARD_E1198\n", __func__);
 		if (board_info.fab < BOARD_FAB_A02)
 			/* post E1198-A01 revisions VBUS wake supported */
 			tegra_disable_wake_source(TEGRA_WAKE_USB1_VBUS);
 		break;
 	case BOARD_PM269:
+        pr_info("%s: case BOARD_PM269\n", __func__);
 #ifdef CONFIG_TEGRA_LP1_LOW_COREVOLTAGE
 		/* AP37 board supports the LP1_950mV feature */
 		if (is_display_board_dsi(display_board_info.board_id)) {
@@ -1173,14 +1198,17 @@ int __init cardhu_suspend_init(void)
 #endif
 	case BOARD_PM305:
 	case BOARD_PM311:
+        pr_info("%s: case BOARD_PM305 or BOARD_PM311\n", __func__);
 		break;
 	case BOARD_E1256:
 	case BOARD_E1257:
+        pr_info("%s: case BOARD_E1256 or BOARD_E1257\n", __func__);
 		cardhu_suspend_data.cpu_timer = 5000;
 		cardhu_suspend_data.cpu_off_timer = 5000;
 		break;
 	case BOARD_E1187:
 	case BOARD_E1186:
+        pr_info("%s: case BOARD_E1187 or BOARD_E1186\n", __func__);
 		/* VBUS repeated wakeup seen on older E1186 boards */
 		tegra_disable_wake_source(TEGRA_WAKE_USB1_VBUS);
 		cardhu_suspend_data.cpu_timer = 5000;
