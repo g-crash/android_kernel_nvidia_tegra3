@@ -360,7 +360,6 @@ static int cardhu_panel_disable_tf700t(void)
 static int cardhu_panel_postpoweron(void)
 {
 	//tf700t not get involved
-	//printk("Check cardhu_panel_postpoweron \n");
 
 	if (cardhu_lvds_reg == NULL) {
 		cardhu_lvds_reg = regulator_get(NULL, "vdd_lvds");
@@ -389,7 +388,6 @@ static int cardhu_panel_postpoweron(void)
 static int cardhu_panel_prepoweroff(void)
 {
 	//tf700t not get involved
-	//printk("Check cardhu_panel_prepoweroff \n");
 
 	// For TF300T EN_VDD_BL (TEGRA_GPIO_PH3) is always on, no need to control cardhu_lvds_vdd_bl
 	// But for TF300TG/TL, EN_VDD_BL is BL_EN, need to control it
@@ -480,7 +478,6 @@ static int cardhu_hdmi_enable(struct device *dev)
 
 static int cardhu_hdmi_disable(void)
 {
-	//printk("%s: hdmi power off\n", __func__);
         if (cardhu_hdmi_reg) {
                 regulator_disable(cardhu_hdmi_reg);
                 regulator_put(cardhu_hdmi_reg);
@@ -513,21 +510,12 @@ static struct resource cardhu_disp1_resources[] = {
 		.end	= 0,	/* Filled in by cardhu_panel_init() */
 		.flags	= IORESOURCE_MEM,
 	},
-#ifdef CONFIG_TEGRA_DSI_INSTANCE_1
-	{
-		.name	= "dsi_regs",
-		.start	= TEGRA_DSIB_BASE,
-		.end	= TEGRA_DSIB_BASE + TEGRA_DSIB_SIZE - 1,
-		.flags	= IORESOURCE_MEM,
-	},
-#else
 	{
 		.name	= "dsi_regs",
 		.start	= TEGRA_DSI_BASE,
 		.end	= TEGRA_DSI_BASE + TEGRA_DSI_SIZE - 1,
 		.flags	= IORESOURCE_MEM,
 	},
-#endif
 };
 
 static struct resource cardhu_disp2_resources[] = {
@@ -556,7 +544,7 @@ static struct resource cardhu_disp2_resources[] = {
 		.flags	= IORESOURCE_MEM,
 	},
 };
-#endif
+#endif /* CONFIG_TEGRA_DC */
 
 static struct tegra_dc_mode panel_19X12_modes[] = {
 	{
@@ -783,7 +771,7 @@ static int cardhu_disp1_check_fb(struct device *dev, struct fb_info *info)
 }
 #endif
 
-#if defined(CONFIG_TEGRA_NVMAP)
+#ifdef CONFIG_TEGRA_NVMAP
 static struct nvmap_platform_carveout cardhu_carveouts[] = {
 	[0] = NVMAP_HEAP_CARVEOUT_IRAM_INIT,
 	[1] = {
@@ -810,7 +798,7 @@ static struct platform_device cardhu_nvmap_device = {
 #endif
 
 static struct platform_device *cardhu_gfx_devices[] __initdata = {
-#if defined(CONFIG_TEGRA_NVMAP)
+#ifdef CONFIG_TEGRA_NVMAP
 	&cardhu_nvmap_device,
 #endif
 	&tegra_pwfm0_device,
@@ -827,7 +815,7 @@ int __init cardhu_panel_init(void)
 
 	tegra_get_display_board_info(&display_board_info);
 
-#if defined(CONFIG_TEGRA_NVMAP)
+#ifdef CONFIG_TEGRA_NVMAP
 	cardhu_carveouts[1].base = tegra_carveout_start;
 	cardhu_carveouts[1].size = tegra_carveout_size;
 #endif
@@ -842,7 +830,7 @@ int __init cardhu_panel_init(void)
 		cardhu_disp1_out.disable = cardhu_panel_disable_tf700t;
 	}
 
-#if defined(CONFIG_TEGRA_DC)
+#ifdef CONFIG_TEGRA_DC
 	if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
 		/* initialize the values */
 

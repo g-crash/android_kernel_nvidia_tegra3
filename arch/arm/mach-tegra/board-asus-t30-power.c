@@ -219,7 +219,7 @@ TPS_PDATA_INIT(ldo6, 0,         1200, 1200, tps6591x_rails(VIO), 0, 0, 1, -1, 0,
 TPS_PDATA_INIT(ldo7, 0,         1200, 1200, tps6591x_rails(VIO), 1, 1, 1, -1, 0, 0, EXT_CTRL_SLEEP_OFF, LDO_LOW_POWER_ON_SUSPEND, false);
 TPS_PDATA_INIT(ldo8, 0,         1000, 3300, tps6591x_rails(VIO), 1, 0, 0, -1, 0, 0, EXT_CTRL_SLEEP_OFF, LDO_LOW_POWER_ON_SUSPEND, false);
 
-#if defined(CONFIG_RTC_DRV_TPS6591x)
+#ifdef CONFIG_RTC_DRV_TPS6591x
 static struct tps6591x_rtc_platform_data rtc_data = {
 	.irq = TEGRA_NR_IRQS + TPS6591X_INT_RTC_ALARM,
 	.time = {
@@ -263,7 +263,7 @@ static struct tps6591x_subdev_info tps_devs_e118x_skubit0_0[] = {
 	TPS_REG(VIO, vio, 0),
 	TPS_REG(VDD_1, vdd1, skubit0_0),
 	TPS6591X_DEV_COMMON_E118X,
-#if defined(CONFIG_RTC_DRV_TPS6591x)
+#ifdef CONFIG_RTC_DRV_TPS6591x
 	TPS_RTC_REG(),
 #endif
 };
@@ -272,7 +272,7 @@ static struct tps6591x_subdev_info tps_devs_e118x_skubit0_1[] = {
 	TPS_REG(VIO, vio, 0),
 	TPS_REG(VDD_1, vdd1, skubit0_1),
 	TPS6591X_DEV_COMMON_E118X,
-#if defined(CONFIG_RTC_DRV_TPS6591x)
+#ifdef CONFIG_RTC_DRV_TPS6591x
 	TPS_RTC_REG(),
 #endif
 };
@@ -293,7 +293,7 @@ static struct tps6591x_subdev_info tps_devs_e1198_skubit0_0[] = {
 	TPS_REG(VIO, vio, 0),
 	TPS_REG(VDD_1, vdd1, skubit0_0),
 	TPS6591X_DEV_COMMON_CARDHU,
-#if defined(CONFIG_RTC_DRV_TPS6591x)
+#ifdef CONFIG_RTC_DRV_TPS6591x
 	TPS_RTC_REG(),
 #endif
 };
@@ -302,7 +302,7 @@ static struct tps6591x_subdev_info tps_devs_e1198_skubit0_1[] = {
 	TPS_REG(VIO, vio, 0),
 	TPS_REG(VDD_1, vdd1, skubit0_1),
 	TPS6591X_DEV_COMMON_CARDHU,
-#if defined(CONFIG_RTC_DRV_TPS6591x)
+#ifdef CONFIG_RTC_DRV_TPS6591x
 	TPS_RTC_REG(),
 #endif
 };
@@ -522,7 +522,6 @@ int __init cardhu_regulator_init(void)
 	return 0;
 }
 
-
 /**************** GPIO based fixed regulator *****************/
 /* EN_5V_CP from PMU GP0 */
 static struct regulator_consumer_supply fixed_reg_en_5v_cp_supply[] = {
@@ -628,15 +627,6 @@ static struct regulator_consumer_supply fixed_reg_cam1_ldo_en_supply[] = {
 	REGULATOR_SUPPLY("avdd", "6-0072"),
 	REGULATOR_SUPPLY("vdd", "6-000e"),
 };
-
-#if 0       /* Unused */
-/* CAM2_LDO_EN from AP GPIO KB_ROW7 R07*/
-static struct regulator_consumer_supply fixed_reg_cam2_ldo_en_supply[] = {
-	REGULATOR_SUPPLY("vdd_2v8_cam2", NULL),
-	REGULATOR_SUPPLY("avdd", "7-0072"),
-	REGULATOR_SUPPLY("vdd", "7-000e"),
-};
-#endif
 
 /* CAM3_LDO_EN from AP GPIO KB_ROW8 S00*/
 static struct regulator_consumer_supply fixed_reg_cam3_ldo_en_supply[] = {
@@ -766,11 +756,9 @@ FIXED_REG(3, en_3v3_sys_a04,	en_3v3_sys,	NULL,				0,      0,      TPS6591X_GPIO_
 FIXED_REG(4, en_vdd_bl_pm269,		en_vdd_bl,		NULL, 				0,      0,      TEGRA_GPIO_PH3,	true,	1, 5000);
 FIXED_REG(6, en_vdd_pnl1_pm269,		en_vdd_pnl1,		FIXED_SUPPLY(en_3v3_sys),	0,      0,      TEGRA_GPIO_PW1,	true,	1, 3300);
 FIXED_REG(9, en_3v3_fuse_pm269,		en_3v3_fuse,		FIXED_SUPPLY(en_3v3_sys), 	0,      0,      TEGRA_GPIO_PC1,	true,	0, 3300);
-//FIXED_REG(12, en_3v3_pex_hvdd_pm269,	en_3v3_pex_hvdd,	FIXED_SUPPLY(en_3v3_sys), 	0,      0,      TEGRA_GPIO_PC6,	true,	0, 3300);
 
 /* E1198/E1291 specific*/
 FIXED_REG(18, cam1_ldo_en,	cam1_ldo_en,	FIXED_SUPPLY(en_3v3_sys),	0,      0,      TEGRA_GPIO_PR6,		true,	0, 2800);
-//FIXED_REG(19, cam2_ldo_en,	cam2_ldo_en,	FIXED_SUPPLY(en_3v3_sys),	0,      0,      TEGRA_GPIO_PR7,		true,	0, 2800);
 
 /* E1291 A03 specific */
 FIXED_REG(20, en_vdd_bl1_a03,	en_vdd_bl,	NULL,				0,      0,      TEGRA_GPIO_PDD2,	true,	1, 5000);
@@ -780,7 +768,6 @@ FIXED_REG(22, en_vbrtr,		en_vbrtr,	FIXED_SUPPLY(en_3v3_sys),	0,      0,      PMU
 /* PM313 display board specific */
 FIXED_REG(4, en_vdd_bl_pm313,   en_vdd_bl,      NULL,				0,      0,      TEGRA_GPIO_PK3,		true,  1, 5000);
 FIXED_REG(6, en_vdd_pnl1_pm313, en_vdd_pnl1,    FIXED_SUPPLY(en_3v3_sys),	0,      0,      TEGRA_GPIO_PH3,		true,  1, 3300);
-
 
 /****************** Open collector Load switches *******/
 /* Specific to pm311 */

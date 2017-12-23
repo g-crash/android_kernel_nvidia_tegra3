@@ -134,46 +134,6 @@ static noinline void __init cardhu_setup_bluesleep(void)
         bluesleep_setup_uart_port(&tegra_uartc_device);
         return;
 }
-#elif defined CONFIG_BLUEDROID_PM
-static struct resource cardhu_bluedroid_pm_resources[] = {
-	[0] = {
-		.name   = "shutdown_gpio",
-		.start  = TEGRA_GPIO_PU0,
-		.end    = TEGRA_GPIO_PU0,
-		.flags  = IORESOURCE_IO,
-	},
-	[1] = {
-		.name = "host_wake",
-		.flags  = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
-	},
-	[2] = {
-		.name = "gpio_ext_wake",
-		.start  = TEGRA_GPIO_PU1,
-		.end    = TEGRA_GPIO_PU1,
-		.flags  = IORESOURCE_IO,
-	},
-	[3] = {
-		.name = "gpio_host_wake",
-		.start  = TEGRA_GPIO_PU6,
-		.end    = TEGRA_GPIO_PU6,
-		.flags  = IORESOURCE_IO,
-	},
-};
-
-static struct platform_device cardhu_bluedroid_pm_device = {
-	.name = "bluedroid_pm",
-	.id             = 0,
-	.num_resources  = ARRAY_SIZE(cardhu_bluedroid_pm_resources),
-	.resource       = cardhu_bluedroid_pm_resources,
-};
-
-static noinline void __init cardhu_setup_bluedroid_pm(void)
-{
-	cardhu_bluedroid_pm_device.resources[1].start = gpio_to_irq(TEGRA_GPIO_PU6);
-	cardhu_bluedroid_pm_device.resources[1].end = gpio_to_irq(TEGRA_GPIO_PU6);
-	platform_device_register(&cardhu_bluedroid_pm_device);
-	return;
-}
 #endif
 
 static __initdata struct tegra_clk_init_table cardhu_clk_init_table[] = {
@@ -579,10 +539,10 @@ static struct platform_device *cardhu_devices[] __initdata = {
 	&tegra_rtc_device,
 	&tegra_udc_device,
 	&tegra_wdt0_device,
-#if defined(CONFIG_TEGRA_AVP)
+#ifdef CONFIG_TEGRA_AVP
 	&tegra_avp_device,
 #endif
-#if defined(CONFIG_CRYPTO_DEV_TEGRA_SE)
+#ifdef CONFIG_CRYPTO_DEV_TEGRA_SE
 	&tegra_se_device,
 #endif
 	&tegra_ahub_device,
@@ -603,7 +563,7 @@ static struct platform_device *cardhu_devices[] __initdata = {
 	&cardhu_audio_device,
 	&tegra_hda_device,
 	&tegra_cec_device,
-#if defined(CONFIG_CRYPTO_DEV_TEGRA_AES)
+#ifdef CONFIG_CRYPTO_DEV_TEGRA_AES
 	&tegra_aes_device,
 #endif
 };
@@ -628,11 +588,16 @@ static struct i2c_board_info __initdata atmel_i2c_info[] = {
 };
 #endif
 
-#if defined(CONFIG_TOUCHSCREEN_ELAN_TF_3K)
+#ifdef CONFIG_TOUCHSCREEN_ELAN_TF_3K
 // Interrupt pin: TEGRA_GPIO_PH4
 // Reset pin: TEGRA_GPIO_PH6
 
 #include <linux/i2c/ektf3k.h>
+
+#define ELAN_X_MAX 	2240
+#define ELAN_Y_MAX	1408
+#define ELAN_X_MAX_202T  2944
+#define ELAN_Y_MAX_202T  1856
 
 struct elan_ktf3k_i2c_platform_data ts_elan_ktf3k_data[] = {
         {
@@ -659,7 +624,7 @@ static int __init cardhu_touch_init(void)
 {
 	struct board_info BoardInfo, DisplayBoardInfo;
     unsigned int project_id;
-#if defined(CONFIG_TOUCHSCREEN_ELAN_TF_3K)
+#ifdef CONFIG_TOUCHSCREEN_ELAN_TF_3K
 	struct elan_ktf3k_i2c_platform_data *platform;
 #endif
 
@@ -684,7 +649,7 @@ static int __init cardhu_touch_init(void)
 	    case TEGRA3_PROJECT_TF300T:
 	    case TEGRA3_PROJECT_TF300TG:
 	    case TEGRA3_PROJECT_TF300TL:
-#if defined(CONFIG_TOUCHSCREEN_ELAN_TF_3K)
+#ifdef CONFIG_TOUCHSCREEN_ELAN_TF_3K
             elan_i2c_devices[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
 	        i2c_register_board_info(1, elan_i2c_devices, 1);
 #endif
@@ -692,7 +657,7 @@ static int __init cardhu_touch_init(void)
 	case TEGRA3_PROJECT_TF700T:
 	        gpio_request(TEGRA_GPIO_PK2, "tp_wake");
 	        gpio_direction_output(TEGRA_GPIO_PK2, 1);
-#if defined(CONFIG_TOUCHSCREEN_ELAN_TF_3K)
+#ifdef CONFIG_TOUCHSCREEN_ELAN_TF_3K
 	        platform = (struct elan_ktf3k_i2c_platform_data *)elan_i2c_devices[0].platform_data;
 	        platform->abs_x_max = ELAN_X_MAX_202T;
 	        platform->abs_y_max = ELAN_Y_MAX_202T;
@@ -704,8 +669,7 @@ static int __init cardhu_touch_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_USB_SUPPORT)
-
+#ifdef CONFIG_USB_SUPPORT
 static void cardu_usb_hsic_postsupend(void)
 {
 #ifdef CONFIG_TEGRA_BB_XMM_POWER
@@ -754,7 +718,7 @@ static struct tegra_usb_platform_data tegra_ehci2_hsic_xmm_pdata = {
 	},
 	.ops = &hsic_xmm_plat_ops,
 };
-#endif
+#endif /* CONFIG_USB_SUPPORT */
 
 static int hsic_enable_gpio = -1;
 static int hsic_reset_gpio = -1;
@@ -812,7 +776,7 @@ void hsic_power_off(void)
 	}
 }
 
-#if defined(CONFIG_USB_SUPPORT)
+#ifdef CONFIG_USB_SUPPORT
 static struct tegra_usb_phy_platform_ops hsic_plat_ops = {
 	.open = hsic_platform_open,
 	.close = hsic_platform_close,
@@ -934,7 +898,7 @@ static struct tegra_usb_otg_data tegra_otg_pdata = {
 	.ehci_device = &tegra_ehci1_device,
 	.ehci_pdata = &tegra_ehci1_utmi_pdata,
 };
-#endif
+#endif /* CONFIG_USB_SUPPORT */
 
 struct platform_device *tegra_cardhu_usb_hsic_host_register(void)
 {
@@ -1019,7 +983,6 @@ void tegra_cardhu_usb_utmip_host_unregister(struct platform_device *pdev)
 struct platform_device *tegra_usb3_utmip_host_register(void)
 {
 	struct platform_device *pdev;
-//	void *platform_data;
 	int val;
 
 	pdev = platform_device_alloc(tegra_ehci3_device.name, tegra_ehci3_device.id);
@@ -1055,7 +1018,7 @@ void tegra_usb3_utmip_host_unregister(struct platform_device *pdev)
 	platform_device_unregister(pdev);
 }
 
-#if defined(CONFIG_USB_SUPPORT)
+#ifdef CONFIG_USB_SUPPORT
 static void cardhu_usb_init(void)
 {
 	int ret;
@@ -1112,7 +1075,7 @@ static void cardhu_usb_init(void)
 }
 #else
 static void cardhu_usb_init(void) { }
-#endif
+#endif /* CONFIG_USB_SUPPORT */
 
 #if 0
 static struct baseband_power_platform_data tegra_baseband_power_data = {
@@ -1264,15 +1227,6 @@ static void cardhu_modem_init(void)
 }
 #endif
 
-#ifdef CONFIG_SATA_AHCI_TEGRA
-static void cardhu_sata_init(void)
-{
-	platform_device_register(&tegra_sata_device);
-}
-#else
-static void cardhu_sata_init(void) { }
-#endif
-
 static void __init cardhu_booting_info(void)
 {
 	static void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
@@ -1327,10 +1281,7 @@ static void __init tegra_cardhu_init(void)
 	cardhu_sensors_init();
 #ifdef CONFIG_BT_BLUESLEEP
 	cardhu_setup_bluesleep();
-#elif defined CONFIG_BLUEDROID_PM
-	cardhu_setup_bluedroid_pm();
 #endif
-	cardhu_sata_init();
 	cardhu_pins_state_init();
 	cardhu_emc_init();
 	tegra_release_bootloader_fb();
@@ -1343,7 +1294,7 @@ static void __init tegra_cardhu_init(void)
 
 static void __init tegra_cardhu_reserve(void)
 {
-#if defined(CONFIG_NVMAP_CONVERT_CARVEOUT_TO_IOVMM)
+#ifdef CONFIG_NVMAP_CONVERT_CARVEOUT_TO_IOVMM
 	/* support 1920X1200 with 24bpp */
 	tegra_reserve(0, SZ_8M + SZ_1M, SZ_8M + SZ_1M);
 #else

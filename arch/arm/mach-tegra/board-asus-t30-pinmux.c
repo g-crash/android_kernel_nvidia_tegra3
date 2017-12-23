@@ -60,7 +60,7 @@
 		.slew_falling = TEGRA_SLEW_##_pullup_slew,	\
 	}
 
-/* !!!FIXME!!!! POPULATE THIS TABLE */
+
 static __initdata struct tegra_drive_pingroup_config cardhu_drive_pinmux[] = {
 	/* DEFAULT_DRIVE(<pin_group>), */
 	/* SET_DRIVE(ATA, DISABLE, DISABLE, DIV_1, 31, 31, FAST, FAST) */
@@ -705,7 +705,7 @@ int __init cardhu_gpio_init(void)
 {
 	cardhu_gpio_init_configure();
 
-/* Asus: TEGRA_GPIO_PW3 is used in TF300TG/TL for SIM detection */
+    /* Asus: TEGRA_GPIO_PW3 is used in TF300TG/TL for SIM detection */
 	if (tegra3_get_project_id() != TEGRA3_PROJECT_TF300TG &&
 			tegra3_get_project_id() != TEGRA3_PROJECT_TF300TL) {
 	cardhu_audio_gpio_init();
