@@ -106,6 +106,7 @@ static int check_fw_version(struct ektf3k_ts_data *ts,
 		return 0; // this buffer doesn't contain the touch firmware
 }
 
+#ifdef CONFIG_MACH_GROUPER
 static void process_firmware(const struct firmware *fw, void *context)
 {
 	struct ektf3k_ts_data *ts = context;
@@ -139,6 +140,7 @@ static void update_firmware(struct ektf3k_ts_data *ts) {
 	if (ret)
 		dev_err(&ts->client->dev, "request_firmware_nowait failed (%d)\n", ret);
 }
+#endif
 
 static int ektf3k_ts_poll(struct i2c_client *client)
 {
@@ -936,7 +938,9 @@ static int ektf3k_ts_probe(struct i2c_client *client,
 
 	private_ts = ts;
 
+#ifdef CONFIG_MACH_GROUPER
 	update_firmware(ts);
+#endif
 
 	update_power_source();
 
