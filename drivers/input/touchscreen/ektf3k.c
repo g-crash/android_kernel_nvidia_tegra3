@@ -48,10 +48,6 @@
 
 #define ABS_MT_POSITION		0x2a /* Group a set of X and Y */
 
-#define FIRMWARE_UPDATE_WITH_HEADER 1 
-#define FIRMWARE_NAME "elan/ektf3k.fw"
-MODULE_FIRMWARE(FIRMWARE_NAME);
-
 static uint8_t firmware_recovery = 0x00;
 static uint8_t work_lock = 0;
 static uint8_t power_source = 0;
@@ -74,73 +70,8 @@ struct ektf3k_ts_data {
 
 static struct ektf3k_ts_data *private_ts = NULL;
 static int ektf3k_ts_hw_reset(struct i2c_client *client);
-#ifdef FIRMWARE_UPDATE_WITH_HEADER
-static int firmware_update_header(struct i2c_client *client,
-	const unsigned char *firmware, unsigned int page_number);
-#endif
 static struct semaphore pSem;
 static uint16_t mTouchStatus[FINGER_NUM] = {0};
-
-#define FIRMWARE_PAGE_SIZE 132
-#define FIRMWARE_ACK_SIZE 2
-
-static int check_fw_version(struct ektf3k_ts_data *ts,
-		const unsigned char*firmware, unsigned int size, int fw_version) {
-	int id, version;
-
-	if (size < 2*FIRMWARE_PAGE_SIZE)
-		return -1;
-
-	version = firmware[size - 2*FIRMWARE_PAGE_SIZE + 120] | 
-		(firmware[size - 2*FIRMWARE_PAGE_SIZE + 121] << 8); 
-	id = firmware[size - 2*FIRMWARE_PAGE_SIZE + 122] | 
-		(firmware[size - 2*FIRMWARE_PAGE_SIZE + 123] << 8);
-	 
-	dev_dbg(&ts->client->dev, "The firmware was version 0x%X and id:0x%X\n",
-		version, id);
-
-	 // if the touch firmware was empty, always update firmware
-	if (id == 0x3021)
-		return fw_version == 0xFFFF ? 1 : version - fw_version;
-	else 
-		return 0; // this buffer doesn't contain the touch firmware
-}
-
-#ifdef CONFIG_MACH_GROUPER
-static void process_firmware(const struct firmware *fw, void *context)
-{
-	struct ektf3k_ts_data *ts = context;
-	int ret, retry = 0;
-
-	if (!fw) {
-		dev_err(&ts->client->dev, "could not load firmware file\n");
-		return;
-	}
-
-	// check the firmware ID and version, and update it if needed
-	if (firmware_recovery || check_fw_version(ts, fw->data,
-		(fw->size / FIRMWARE_PAGE_SIZE) * FIRMWARE_PAGE_SIZE, ts->fw_ver) > 0) {
-		dev_info(&ts->client->dev, "starting firmware update\n");
-		do {
-			ret = firmware_update_header(ts->client, fw->data,
-				fw->size / FIRMWARE_PAGE_SIZE);
-			dev_info(&ts->client->dev, "updating firmware - ret=%d, retry=%d\n",
-				ret, retry);
-			++retry;
-		} while (ret != 0 && retry < 3);
-		if (ret == 0 && firmware_recovery) firmware_recovery = 0;
-	} else
-		dev_info(&ts->client->dev, "firmware is up-to-date\n");
-}
-
-static void update_firmware(struct ektf3k_ts_data *ts) {
-	int ret = request_firmware_nowait(THIS_MODULE, true, FIRMWARE_NAME,
-					&ts->client->dev, GFP_KERNEL,
-					ts, process_firmware);
-	if (ret)
-		dev_err(&ts->client->dev, "request_firmware_nowait failed (%d)\n", ret);
-}
-#endif
 
 static int ektf3k_ts_poll(struct i2c_client *client)
 {
@@ -692,159 +623,6 @@ static int ektf3k_ts_register_interrupt(struct i2c_client *client)
 	return err;
 }
 
-#ifdef FIRMWARE_UPDATE_WITH_HEADER
-#define FIRMWARE_PAGE_SIZE 132
-static unsigned char touch_firmware[] = {
-	#include "fw_data.b"
-}; 
-
-#define SIZE_PER_PACKET 4
-
-static int sendI2CPacket(struct i2c_client *client, const unsigned char *buf, unsigned int length) {
-	 int ret, i, retry_times = 10;
-	 for (i = 0; i < length; i += ret) {
-		ret= i2c_master_send(client, buf + i,length < SIZE_PER_PACKET ? length : SIZE_PER_PACKET);
-		if (ret <= 0) {
-			retry_times--;
-			ret = 0;
-		}
-		if (ret < (length < SIZE_PER_PACKET ? length : SIZE_PER_PACKET))
-			dev_err(&client->dev, "Sending packet broken\n");
-		 	
-		if (retry_times < 0) {
-			dev_err(&client->dev, "Failed sending I2C touch firmware packet.\n");
-			break;
-		}
-	 }
-
-	 return i;
-}
-
-static int recvI2CPacket(struct i2c_client *client, unsigned char *buf, unsigned int length) {
-	 int ret, i, retry_times = 10;
-	 for (i = 0; i < length; i += ret) {
-		ret= i2c_master_recv(client, buf + i,length - i);
-		if (ret <= 0) {
-			--retry_times;
-			ret = 0;
-		}
-				
-		if (retry_times < 0) {
-			dev_err(&client->dev, "Failed sending I2C touch firmware packet.\n");
-			break;
-		}
-	 }
-
-	 return i;
-}
-
-static int firmware_update_header(struct i2c_client *client,
-		const unsigned char *firmware, unsigned int pages_number) {
-	int ret, i;
-	int write_times, sendCount, recvCount; 
-	unsigned char packet_data[8] = {0};
-	unsigned char isp_cmd[4] = {0x54, 0x00, 0x12, 0x34};
-	unsigned char nb_isp_cmd[4] = {0x45, 0x49, 0x41, 0x50};
-	unsigned char *cursor; 
-	int boot_code = 0;
-	struct ektf3k_ts_data *ts = i2c_get_clientdata(client);
-
-	if (ts == NULL) 
-		return -1;
-
-	dev_info(&client->dev, "starting firmware update\n");
-	disable_irq(client->irq);// Blocking call no need to do extra wait
-	wake_lock(&ts->wakelock);
-	work_lock = 1;
-	ektf3k_ts_hw_reset(client);
-	// Step 1: Check boot code version
-	boot_code = gpio_get_value(ts->intr_gpio);
-	if (boot_code == 0) { // if the boot code is old
-		dev_info(&client->dev, "firmware update of old boot code\n");
-		if (recvI2CPacket(client, packet_data, 4) < 0) 
-			goto fw_update_failed;
-
-		dev_info(&client->dev, "received bytes 0x%X 0x%X 0x%X 0x%X\n",
-			packet_data[0], packet_data[1], packet_data[2], packet_data[3]);
-
-		if (packet_data[0] == 0x55 && packet_data[1] == 0x55
-			&& packet_data[2] == 0x80 && packet_data[3] == 0x80)
-			dev_info(&client->dev, "firmware recovery mode\n");
-
-		if (sendI2CPacket(client, isp_cmd, sizeof(isp_cmd)) < 0) // get into ISP mode
-			goto fw_update_failed;	
-	} else { // if the boot code is new
-		dev_info(&client->dev, "firmware update of new boot code\n");
-		if (sendI2CPacket(client, nb_isp_cmd, sizeof(nb_isp_cmd)) < 0) // get into ISP mode
-		goto fw_update_failed;
-	}
-	
-	msleep(100);
-
-	packet_data[0] = 0x10; 
-	if (sendI2CPacket(client, packet_data, 1) < 0) // send dummy byte
-		goto fw_update_failed;
-	
-	cursor = (unsigned char *)firmware;
-	dev_info(&client->dev, "pages_number=%d\n", pages_number);
-	for (i = 0; i < pages_number; i++) {
-		write_times = 0; 
-page_write_retry:
-		dev_dbg(&client->dev, "Update page number %d\n", i);
-
-		if ((sendCount = sendI2CPacket(client, cursor, FIRMWARE_PAGE_SIZE)) != FIRMWARE_PAGE_SIZE) {
-			dev_err(&client->dev, "Fail to Update page number %d\n", i);
-			goto fw_update_failed;
-		}
-		dev_info(&client->dev, "sendI2CPacket send %d bytes\n", sendCount);
-
-		if ((recvCount = recvI2CPacket(client, packet_data, FIRMWARE_ACK_SIZE)) != FIRMWARE_ACK_SIZE) {
-			dev_err(&client->dev, "Fail to Update page number %d\n", i);
-			goto fw_update_failed;
-		}
-		dev_info(&client->dev, "recvI2CPacket recv %d bytes: %x %x\n", recvCount, packet_data[0], packet_data[1]);
-
-		if (packet_data[0] != 0xaa || packet_data[1] != 0xaa) {
-			dev_info(&client->dev, "message received: %02X %02X Page %d rewrite\n",
-				packet_data[0], packet_data[1], i);
-			if (write_times++ > 3)
-				goto fw_update_failed;
-				
-			goto page_write_retry;
-		}
-
-		cursor += FIRMWARE_PAGE_SIZE;
-	}
-	
-	ektf3k_ts_hw_reset(client);
-
-	if (boot_code)
-		msleep(2000);
-	else		
-		msleep(300);
-
-	if (recvI2CPacket(client, packet_data, 4) < 0) 
-		goto fw_update_failed;	
-
-	__fw_packet_handler(ts->client, 1);
-
-	ret = 0;
-
-	goto fw_update_finish;
-
-fw_update_failed:
-	ret = -1;
-
-fw_update_finish:
-	work_lock = 0;
-	wake_unlock(&ts->wakelock);
-	enable_irq(client->irq);
-	dev_info(&client->dev, "firmware update finished\n");
-
-	return ret; 
-}
-#endif
-
 static int ektf3k_ts_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
@@ -929,18 +707,8 @@ static int ektf3k_ts_probe(struct i2c_client *client,
 		dev_info(&client->dev, "%s: handle missed interrupt\n", __func__);
 		ektf3k_ts_irq_handler(client->irq, ts);
 	}
-	
-#ifdef FIRMWARE_UPDATE_WITH_HEADER	
-	if (firmware_recovery || check_fw_version(ts, touch_firmware, sizeof(touch_firmware), ts->fw_ver) > 0)
-		firmware_update_header(client, touch_firmware,
-			sizeof(touch_firmware) / FIRMWARE_PAGE_SIZE);
-#endif
 
 	private_ts = ts;
-
-#ifdef CONFIG_MACH_GROUPER
-	update_firmware(ts);
-#endif
 
 	update_power_source();
 
