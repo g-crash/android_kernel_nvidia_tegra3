@@ -108,8 +108,7 @@ static struct snd_soc_ops tegra_rt5631_ops = {
 
 static struct snd_soc_ops tegra_spdif_ops;
 
-
-static const struct snd_soc_dapm_widget cardhu_dapm_widgets[] = {
+static const struct snd_soc_dapm_widget tegra_rt5631_dapm_widgets[] = {
 	SND_SOC_DAPM_SPK("Int Spk", NULL),
 	SND_SOC_DAPM_HP("Headphone Jack", NULL),
 	SND_SOC_DAPM_MIC("Mic Jack", NULL),
@@ -118,14 +117,7 @@ static const struct snd_soc_dapm_widget cardhu_dapm_widgets[] = {
 
 };
 
-static const struct snd_soc_dapm_widget tegra_rt5631_default_dapm_widgets[] = {
-	SND_SOC_DAPM_SPK("Int Spk", NULL),
-	SND_SOC_DAPM_HP("Headphone Jack", NULL),
-	SND_SOC_DAPM_MIC("Mic Jack", NULL),
-	SND_SOC_DAPM_MIC("Int Mic", NULL),
-};
-
-static const struct snd_soc_dapm_route cardhu_audio_map[] = {
+static const struct snd_soc_dapm_route tegra_rt5631_audio_map[] = {
 	{"Headphone Jack", NULL, "HPOL"},
 	{"Headphone Jack", NULL, "HPOR"},
 	{"Int Spk", NULL, "SPOL"},
@@ -136,16 +128,12 @@ static const struct snd_soc_dapm_route cardhu_audio_map[] = {
 	{"AUX", NULL, "AUXO2"},
 };
 
-static const struct snd_kcontrol_new cardhu_controls[] = {
+static const struct snd_kcontrol_new tegra_rt5631_controls[] = {
 	SOC_DAPM_PIN_SWITCH("Int Spk"),
 	SOC_DAPM_PIN_SWITCH("Headphone Jack"),
 	SOC_DAPM_PIN_SWITCH("Mic Jack"),
 	SOC_DAPM_PIN_SWITCH("Int Mic"),
 	SOC_DAPM_PIN_SWITCH("AUX"),
-};
-
-static const struct snd_kcontrol_new tegra_rt5631_default_controls[] = {
-	SOC_DAPM_PIN_SWITCH("Int Spk"),
 };
 
 static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
@@ -155,29 +143,17 @@ static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 
 	int ret;
 	printk("%s+\n", __func__);
-	if (machine_is_transformer()) {
-		ret = snd_soc_add_codec_controls(codec, cardhu_controls,
-				ARRAY_SIZE(cardhu_controls));
-		if (ret < 0)
-			return ret;
 
-		snd_soc_dapm_new_controls(dapm, cardhu_dapm_widgets,
-				ARRAY_SIZE(cardhu_dapm_widgets));
-	}
-	else {
-		ret = snd_soc_add_codec_controls(codec,
-				tegra_rt5631_default_controls,
-				ARRAY_SIZE(tegra_rt5631_default_controls));
-		if (ret < 0)
-			return ret;
+	ret = snd_soc_add_codec_controls(codec, tegra_rt5631_controls,
+			ARRAY_SIZE(tegra_rt5631_controls));
+	if (ret < 0)
+		return ret;
 
-		snd_soc_dapm_new_controls(dapm,
-				tegra_rt5631_default_dapm_widgets,
-				ARRAY_SIZE(tegra_rt5631_default_dapm_widgets));
-	}
+	snd_soc_dapm_new_controls(dapm, tegra_rt5631_dapm_widgets,
+			ARRAY_SIZE(tegra_rt5631_dapm_widgets));
 
-	snd_soc_dapm_add_routes(dapm, cardhu_audio_map,
-					ARRAY_SIZE(cardhu_audio_map));
+	snd_soc_dapm_add_routes(dapm, tegra_rt5631_audio_map,
+			ARRAY_SIZE(tegra_rt5631_audio_map));
 
 	snd_soc_dapm_nc_pin(dapm, "MIC2");
 	snd_soc_dapm_nc_pin(dapm, "AXIL");
@@ -238,11 +214,20 @@ static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
+	if (pdata->codec_name)
+		card->dai_link->codec_name = pdata->codec_name;
+
+	if (pdata->codec_dai_name)
+		card->dai_link->codec_dai_name = pdata->codec_dai_name;
+
 	machine = kzalloc(sizeof(struct tegra_rt5631), GFP_KERNEL);
 	if (!machine) {
 		dev_err(&pdev->dev, "Can't allocate tegra_rt5631 struct\n");
 		return -ENOMEM;
 	}
+
+	machine->pdata = pdata;
+	machine->pcard = card;
 
 	ret = tegra_asoc_utils_init(&machine->util_data, &pdev->dev, card);
 	if (ret)
@@ -255,6 +240,13 @@ static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
 	ret = snd_soc_register_card(card);
 	if (ret) {
 		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n",
+			ret);
+		goto err_fini_utils;
+	}
+
+	if (!card->instantiated) {
+		ret = -ENODEV;
+		dev_err(&pdev->dev, "sound card not instantiated (%d)\n",
 			ret);
 		goto err_fini_utils;
 	}
@@ -312,7 +304,7 @@ static int __init tegra_rt5631_modinit(void)
 
     printk(KERN_INFO "%s+ #####\n", __func__);
 	if(project_info == TEGRA3_PROJECT_TF201 || project_info == TEGRA3_PROJECT_TF300TG ||
-                project_info == TEGRA3_PROJECT_TF700T || project_info == TEGRA3_PROJECT_TF300TL)
+       project_info == TEGRA3_PROJECT_TF700T || project_info == TEGRA3_PROJECT_TF300TL)
 	{
 		printk("%s(): support codec rt5631\n", __func__);
 	}else{
@@ -338,4 +330,3 @@ MODULE_AUTHOR("Stephen Warren <swarren@nvidia.com>");
 MODULE_DESCRIPTION("Tegra+RT5631 machine ASoC driver");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("platform:" DRV_NAME);
-
