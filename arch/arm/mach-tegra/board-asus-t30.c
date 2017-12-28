@@ -27,7 +27,6 @@
 #include <linux/clk.h>
 #include <linux/serial_8250.h>
 #include <linux/i2c.h>
-#include <linux/i2c/panjit_ts.h>
 #include <linux/dma-mapping.h>
 #include <linux/delay.h>
 #include <linux/i2c-tegra.h>
@@ -44,7 +43,6 @@
 #include <linux/rfkill-gpio.h>
 
 #include <sound/wm8903.h>
-#include <sound/max98095.h>
 #include <media/tegra_dtv.h>
 #include <asm/hardware/gic.h>
 
@@ -53,7 +51,6 @@
 #include <mach/iomap.h>
 #include <mach/irqs.h>
 #include <mach/pinmux.h>
-#include <mach/iomap.h>
 #include <mach/io_dpd.h>
 #include <mach/io.h>
 #include <mach/i2s.h>
@@ -81,21 +78,21 @@
 #include "baseband-xmm-power.h"
 #include "wdt-recovery.h"
 
-#ifdef CONFIG_BT_BLUESLEEP
-static struct resource cardhu_bcm4329_rfkill_resources[] = {
+static struct rfkill_gpio_platform_data cardhu_bt_rfkill_pdata[] = {
 	{
-		.name   = "bcm4329_nshutdown_gpio",
-		.start  = TEGRA_GPIO_PU0,
-		.end    = TEGRA_GPIO_PU0,
-		.flags  = IORESOURCE_IO,
+		.name		= "bt_rfkill",
+		.shutdown_gpio	= TEGRA_GPIO_PU0,
+		.reset_gpio	= TEGRA_GPIO_INVALID,
+		.type		= RFKILL_TYPE_BLUETOOTH,
 	},
 };
 
-static struct platform_device cardhu_bcm4329_rfkill_device = {
-	.name           = "bcm4329_rfkill",
+static struct platform_device cardhu_bt_rfkill_device = {
+	.name           = "rfkill_gpio",
 	.id             = -1,
-	.num_resources  = ARRAY_SIZE(cardhu_bcm4329_rfkill_resources),
-	.resource       = cardhu_bcm4329_rfkill_resources,
+	.dev = {
+		.platform_data = &cardhu_bt_rfkill_pdata,
+	},
 };
 
 static struct resource cardhu_bluesleep_resources[] = {
@@ -124,16 +121,19 @@ static struct platform_device cardhu_bluesleep_device = {
 	.resource       = cardhu_bluesleep_resources,
 };
 
+#ifdef CONFIG_BT_BLUESLEEP
 extern void bluesleep_setup_uart_port(struct platform_device *uart_dev);
+#endif
+
 static noinline void __init cardhu_setup_bluesleep(void)
 {
-	cardhu_bluesleep_device.resource[2].start = gpio_to_irq(TEGRA_GPIO_PU6);
-	cardhu_bluesleep_device.resource[2].end = gpio_to_irq(TEGRA_GPIO_PU6);
+	cardhu_bluesleep_resources[2].start = cardhu_bluesleep_resources[2].end =
+		gpio_to_irq(TEGRA_GPIO_PU6);
         platform_device_register(&cardhu_bluesleep_device);
+#ifdef CONFIG_BT_BLUESLEEP
         bluesleep_setup_uart_port(&tegra_uartc_device);
-        return;
-}
 #endif
+}
 
 static __initdata struct tegra_clk_init_table cardhu_clk_init_table[] = {
 	/* name		parent		rate		enabled */
@@ -519,9 +519,7 @@ static struct platform_device *cardhu_devices[] __initdata = {
 	&spdif_dit_device,
 	&bluetooth_dit_device,
 	&baseband_dit_device,
-#ifdef CONFIG_BT_BLUESLEEP
-	&cardhu_bcm4329_rfkill_device,
-#endif
+	&cardhu_bt_rfkill_device,
 	&tegra_pcm_device,
 	&cardhu_audio_device,
 	&tegra_hda_device,
@@ -1235,9 +1233,7 @@ static void __init tegra_cardhu_init(void)
 	cardhu_panel_init();
 	cardhu_pmon_init();
 	cardhu_sensors_init();
-#ifdef CONFIG_BT_BLUESLEEP
 	cardhu_setup_bluesleep();
-#endif
 	cardhu_pins_state_init();
 	cardhu_emc_init();
 	tegra_release_bootloader_fb();
