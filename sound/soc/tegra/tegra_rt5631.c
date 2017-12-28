@@ -214,20 +214,11 @@ static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	if (pdata->codec_name)
-		card->dai_link->codec_name = pdata->codec_name;
-
-	if (pdata->codec_dai_name)
-		card->dai_link->codec_dai_name = pdata->codec_dai_name;
-
 	machine = kzalloc(sizeof(struct tegra_rt5631), GFP_KERNEL);
 	if (!machine) {
 		dev_err(&pdev->dev, "Can't allocate tegra_rt5631 struct\n");
 		return -ENOMEM;
 	}
-
-	machine->pdata = pdata;
-	machine->pcard = card;
 
 	ret = tegra_asoc_utils_init(&machine->util_data, &pdev->dev, card);
 	if (ret)
@@ -240,13 +231,6 @@ static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
 	ret = snd_soc_register_card(card);
 	if (ret) {
 		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n",
-			ret);
-		goto err_fini_utils;
-	}
-
-	if (!card->instantiated) {
-		ret = -ENODEV;
-		dev_err(&pdev->dev, "sound card not instantiated (%d)\n",
 			ret);
 		goto err_fini_utils;
 	}
