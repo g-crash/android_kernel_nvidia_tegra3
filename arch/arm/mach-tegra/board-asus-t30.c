@@ -69,6 +69,7 @@
 #include <asm/mach/arch.h>
 
 #include "board.h"
+#include "board-common.h"
 #include "clock.h"
 #include "common.h"
 #include "board-asus-t30.h"
@@ -320,14 +321,6 @@ static struct tegra_uart_platform_data cardhu_loopback_uart_pdata;
 
 static unsigned int debug_uart_port_irq;
 
-static char *uart_names[] = {
-	"uarta",
-	"uartb",
-	"uartc",
-	"uartd",
-	"uarte",
-};
-
 static struct platform_device *debug_uarts[] = {
 	&debug_uarta_device,
 	&debug_uartb_device,
@@ -339,37 +332,24 @@ static struct platform_device *debug_uarts[] = {
 static void __init uart_debug_init(void)
 {
 	int debug_port_id;
-	struct platform_device *debug_uart;
 
-	debug_port_id = get_tegra_uart_debug_port_id();
+	debug_port_id = uart_console_debug_init(3);
 	if (debug_port_id < 0)
-		debug_port_id = 0;
-	else if (debug_port_id >= ARRAY_SIZE(debug_uarts)) {
+		return;
+	
+	if (debug_port_id >= ARRAY_SIZE(debug_uarts)) {
 		pr_info("The debug console id %d is invalid, Assuming UARTA",
 			debug_port_id);
 		debug_port_id = 0;
 	}
 
-	pr_info("Selecting %s as the debug port\n", uart_names[debug_port_id]);
-
-	debug_uart_clk = clk_get_sys("serial8250.0",
-		uart_names[debug_port_id]);
-	debug_uart = debug_uarts[debug_port_id];
-	debug_uart_port_base = ((struct plat_serial8250_port *)(
-		debug_uart->dev.platform_data))->mapbase;
-	debug_uart_port_irq = ((struct plat_serial8250_port *)(
-		debug_uart->dev.platform_data))->irq;
-
-	return;
+	cardhu_uart_devices[debug_port_id] = uart_console_debug_device;
 }
 
 static void __init cardhu_uart_init(void)
 {
 	struct clk *c;
 	int i;
-	struct board_info board_info;
-
-	tegra_get_board_info(&board_info);
 
 	for (i = 0; i < ARRAY_SIZE(uart_parent_clk); ++i) {
 		c = tegra_get_clock_by_name(uart_parent_clk[i].name);
@@ -394,25 +374,8 @@ static void __init cardhu_uart_init(void)
 	tegra_uarte_device.dev.platform_data = &cardhu_loopback_uart_pdata;
 
 	/* Register low speed only if it is selected */
-	if (!is_tegra_debug_uartport_hs()) {
+	if (!is_tegra_debug_uartport_hs())
 		uart_debug_init();
-		/* Clock enable for the debug channel */
-		if (!IS_ERR_OR_NULL(debug_uart_clk)) {
-			pr_info("The debug console clock name is %s\n",
-						debug_uart_clk->name);
-			c = tegra_get_clock_by_name("pll_p");
-			if (IS_ERR_OR_NULL(c))
-				pr_err("Not getting the parent clock pll_p\n");
-			else
-				clk_set_parent(debug_uart_clk, c);
-
-			clk_enable(debug_uart_clk);
-			clk_set_rate(debug_uart_clk, clk_get_rate(c));
-		} else {
-			pr_err("Not getting the clock %s for debug console\n",
-					debug_uart_clk->name);
-		}
-	}
 
 	tegra_serial_debug_init(debug_uart_port_base, debug_uart_port_irq,
 				debug_uart_clk, -1, -1);
