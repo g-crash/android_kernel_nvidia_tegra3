@@ -1,6 +1,5 @@
 /*
  * tegra_rt5631.c - Tegra machine ASoC driver for boards using RT5631 codec.
- *
  */
 
 #include <asm/mach-types.h>
@@ -24,10 +23,16 @@
 
 #include "../drivers/input/asusec/asusdec.h"
 #include "../gpio-names.h"
+
 #define DRV_NAME "tegra-snd-codec"
+
+#define DAI_LINK_HIFI		0
+#define DAI_LINK_SPDIF		1
+#define NUM_DAI_LINKS		2
 
 struct tegra_rt5631 {
 	struct tegra_asoc_utils_data util_data;
+	struct tegra_asoc_platform_data *pdata;
 	struct regulator *spk_reg;
 	struct regulator *dmic_reg;
 	int gpio_requested;
@@ -72,13 +77,7 @@ static int tegra_rt5631_hw_params(struct snd_pcm_substream *substream,
 	i2s_daifmt = SND_SOC_DAIFMT_NB_NF |
 		     SND_SOC_DAIFMT_CBS_CFS;
 
-	/* Use DSP mode for mono on Tegra20 */
-	if ((params_channels(params) != 2) &&
-	    (machine_is_ventana() || machine_is_harmony() ||
-	    machine_is_kaen() || machine_is_aebl()))
-		i2s_daifmt |= SND_SOC_DAIFMT_DSP_A;
-	else
-		i2s_daifmt |= SND_SOC_DAIFMT_I2S;
+	i2s_daifmt |= SND_SOC_DAIFMT_I2S;
 
 	err = snd_soc_dai_set_fmt(codec_dai, i2s_daifmt);
 	if (err < 0) {
@@ -114,7 +113,6 @@ static const struct snd_soc_dapm_widget tegra_rt5631_dapm_widgets[] = {
 	SND_SOC_DAPM_MIC("Mic Jack", NULL),
 	SND_SOC_DAPM_MIC("Int Mic", NULL),
 	SND_SOC_DAPM_SPK("AUX", NULL),
-
 };
 
 static const struct snd_soc_dapm_route tegra_rt5631_audio_map[] = {
@@ -141,19 +139,7 @@ static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_codec *codec = rtd->codec;
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 
-	int ret;
 	printk("%s+\n", __func__);
-
-	ret = snd_soc_add_codec_controls(codec, tegra_rt5631_controls,
-			ARRAY_SIZE(tegra_rt5631_controls));
-	if (ret < 0)
-		return ret;
-
-	snd_soc_dapm_new_controls(dapm, tegra_rt5631_dapm_widgets,
-			ARRAY_SIZE(tegra_rt5631_dapm_widgets));
-
-	snd_soc_dapm_add_routes(dapm, tegra_rt5631_audio_map,
-			ARRAY_SIZE(tegra_rt5631_audio_map));
 
 	snd_soc_dapm_nc_pin(dapm, "MIC2");
 	snd_soc_dapm_nc_pin(dapm, "AXIL");
@@ -171,8 +157,8 @@ static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 	return 0;
 }
 
-static struct snd_soc_dai_link tegra_rt5631_dai[] = {
-	{
+static struct snd_soc_dai_link tegra_rt5631_dai[NUM_DAI_LINKS] = {
+	[DAI_LINK_HIFI] = {
 		.name = "RT5631",
 		.stream_name = "RT5631 PCM",
 		.codec_name = "rt5631.4-001a",
@@ -182,7 +168,7 @@ static struct snd_soc_dai_link tegra_rt5631_dai[] = {
 		.init = tegra_rt5631_init,
 		.ops = &tegra_rt5631_ops,
 	},
-	{
+	[DAI_LINK_SPDIF] = {
 		.name = "SPDIF",
 		.stream_name = "SPDIF PCM",
 		.codec_name = "spdif-dit.0",
@@ -195,8 +181,15 @@ static struct snd_soc_dai_link tegra_rt5631_dai[] = {
 
 static struct snd_soc_card snd_soc_tegra_rt5631 = {
 	.name = "tegra-codec",
+	.owner = THIS_MODULE,
 	.dai_link = tegra_rt5631_dai,
 	.num_links = ARRAY_SIZE(tegra_rt5631_dai),
+	.controls = tegra_rt5631_controls,
+	.num_controls = ARRAY_SIZE(tegra_rt5631_controls),
+	.dapm_widgets = tegra_rt5631_dapm_widgets,
+	.num_dapm_widgets = ARRAY_SIZE(tegra_rt5631_dapm_widgets),
+	.dapm_routes = tegra_rt5631_audio_map,
+	.num_dapm_routes = ARRAY_SIZE(tegra_rt5631_audio_map),
 };
 
 static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
@@ -214,11 +207,19 @@ static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
+	if (pdata->codec_name)
+		card->dai_link->codec_name = pdata->codec_name;
+
+	if (pdata->codec_dai_name)
+		card->dai_link->codec_dai_name = pdata->codec_dai_name;
+
 	machine = kzalloc(sizeof(struct tegra_rt5631), GFP_KERNEL);
 	if (!machine) {
 		dev_err(&pdev->dev, "Can't allocate tegra_rt5631 struct\n");
 		return -ENOMEM;
 	}
+
+	machine->pdata = pdata;
 
 	ret = tegra_asoc_utils_init(&machine->util_data, &pdev->dev, card);
 	if (ret)
@@ -233,6 +234,13 @@ static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n",
 			ret);
 		goto err_fini_utils;
+	}
+
+	if (!card->instantiated) {
+		ret = -ENODEV;
+		dev_err(&pdev->dev, "sound card not instantiated (%d)\n",
+			ret);
+		goto err_unregister_card;
 	}
 
 #ifndef CONFIG_ARCH_TEGRA_2x_SOC
