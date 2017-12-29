@@ -333,7 +333,7 @@ static void __init uart_debug_init(void)
 {
 	int debug_port_id;
 
-	debug_port_id = uart_console_debug_init(3);
+	debug_port_id = uart_console_debug_init(0);
 	if (debug_port_id < 0)
 		return;
 	
