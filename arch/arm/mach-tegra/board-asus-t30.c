@@ -468,7 +468,7 @@ static struct platform_device tegra_rtc_device = {
 	.num_resources = ARRAY_SIZE(tegra_rtc_resources),
 };
 
-static struct tegra_asoc_platform_data cardhu_audio_wm8903_pdata = {
+static struct tegra_asoc_platform_data cardhu_audio_pdata = {
 	.gpio_spkr_en		= TEGRA_GPIO_SPKR_EN,
 	.gpio_hp_det		= TEGRA_GPIO_HP_DET,
 	.gpio_hp_mute		= -1,
@@ -493,7 +493,7 @@ static struct platform_device cardhu_audio_device = {
 	.name	= "tegra-snd-codec",
         .id     = 0,
         .dev    = {
-                .platform_data = &cardhu_audio_wm8903_pdata,
+                .platform_data = &cardhu_audio_pdata,
         },
 };
 
@@ -1191,9 +1191,9 @@ static void __init cardhu_booting_info(void)
 	reg = readl(pmc +0x1b4);
 	pr_info("tegra_booting_info reg=%x\n",reg );
 
-	if (reg ==PMC_RST_STATUS_SW){
+	if (reg == PMC_RST_STATUS_SW){
 		pr_info("tegra_booting_info-SW reboot\n");
-	} else if (reg ==PMC_RST_STATUS_WDT){
+	} else if (reg == PMC_RST_STATUS_WDT){
 		pr_info("tegra_booting_info-watchdog reboot\n");
 	} else{
 		pr_info("tegra_booting_info-normal\n");
