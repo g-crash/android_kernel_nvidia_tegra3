@@ -236,8 +236,8 @@ int __init cardhu_pm298_gpio_switch_regulator_init(void);
 int __init cardhu_pm298_regulator_init(void);
 int __init cardhu_pm299_gpio_switch_regulator_init(void);
 int __init cardhu_pm299_regulator_init(void);
-struct platform_device *tegra_cardhu_usb_utmip_host_register(void);
-void tegra_cardhu_usb_utmip_host_unregister(struct platform_device *pdev);
+//struct platform_device *tegra_cardhu_usb_utmip_host_register(void);
+//void tegra_cardhu_usb_utmip_host_unregister(struct platform_device *pdev);
 
 /* Invensense MPU Definitions */
 #define MPU_GYRO_NAME		"mpu3050"

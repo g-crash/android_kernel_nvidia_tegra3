@@ -677,7 +677,7 @@ static struct tegra_usb_platform_data tegra_ehci2_hsic_xmm_pdata = {
 static int hsic_enable_gpio = -1;
 static int hsic_reset_gpio = -1;
 
-void hsic_platform_open(void)
+static void hsic_platform_open(void)
 {
 	int reset_gpio = -1, enable_gpio = -1;
 
@@ -702,7 +702,7 @@ void hsic_platform_open(void)
 
 }
 
-void hsic_platform_close(void)
+static void hsic_platform_close(void)
 {
 	if (hsic_enable_gpio != -1) {
 		gpio_set_value(hsic_enable_gpio, 0);
@@ -714,7 +714,7 @@ void hsic_platform_close(void)
 	}
 }
 
-void hsic_power_on(void)
+static void hsic_power_on(void)
 {
 	if (hsic_enable_gpio != -1) {
 		gpio_set_value_cansleep(hsic_enable_gpio, 1);
@@ -722,7 +722,7 @@ void hsic_power_on(void)
 	}
 }
 
-void hsic_power_off(void)
+static void hsic_power_off(void)
 {
 	if (hsic_enable_gpio != -1) {
 		gpio_set_value_cansleep(hsic_enable_gpio, 0);
@@ -851,8 +851,56 @@ static struct tegra_usb_otg_data tegra_otg_pdata = {
 	.ehci_device = &tegra_ehci1_device,
 	.ehci_pdata = &tegra_ehci1_utmi_pdata,
 };
-#endif /* CONFIG_USB_SUPPORT */
 
+static void __init cardhu_usb_init(void)
+{
+	struct board_info bi;
+	u32 project_info = tegra3_get_project_id();
+
+	tegra_get_board_info(&bi);
+
+	/* OTG should be the first to be registered */
+	tegra_otg_device.dev.platform_data = &tegra_otg_pdata;
+	platform_device_register(&tegra_otg_device);
+
+	/* setup the udc platform data */
+	tegra_udc_device.dev.platform_data = &tegra_udc_pdata;
+
+	if (bi.board_id == BOARD_PM267) {
+        pr_info("%s: bi.board_id == BOARD_PM267\n", __func__);
+		hsic_enable_gpio = EN_HSIC_GPIO;
+		hsic_reset_gpio = PM267_SMSC4640_HSIC_HUB_RESET_GPIO;
+		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_hsic_pdata;
+		platform_device_register(&tegra_ehci2_device);
+	} else if (bi.board_id == BOARD_E1256) {
+        pr_info("%s: bi.board_id == BOARD_E1256\n", __func__);
+		hsic_enable_gpio = EN_HSIC_GPIO;
+		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_hsic_pdata;
+		platform_device_register(&tegra_ehci2_device);
+	} else if (bi.board_id == BOARD_E1186) {
+        pr_info("%s: bi.board_id == BOARD_E1186\n", __func__);
+		tegra_ehci2_device.dev.platform_data =
+						&tegra_ehci2_hsic_xmm_pdata;
+		/* ehci2 registration happens in baseband-xmm-power  */
+	}
+
+	if (project_info == TEGRA3_PROJECT_TF300TL) {
+		printk("[TF300TL] register tegra_ehci2_device\n");
+		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_utmi_pdata;
+		platform_device_register(&tegra_ehci2_device);
+	} else if (project_info == TEGRA3_PROJECT_TF300TG) {
+		printk("[TF300TG] register tegra_ehci2_device\n");
+		tegra_ehci2_utmi_pdata.u_data.host.power_off_on_suspend = false;
+		tegra_ehci2_device.dev.platform_data =  &tegra_ehci2_hsic_xmm_pdata;
+		/* ehci2 registration happens in baseband-xmm-power  */
+	}
+
+	tegra_ehci3_device.dev.platform_data = &tegra_ehci3_utmi_pdata;
+	platform_device_register(&tegra_ehci3_device);
+
+}
+
+#if 0
 static struct platform_device *tegra_cardhu_usb_hsic_host_register(void)
 {
 	struct platform_device *pdev;
@@ -939,59 +987,6 @@ void tegra_cardhu_usb_utmip_host_unregister(struct platform_device *pdev)
 	platform_device_unregister(pdev);
 }
 
-#ifdef CONFIG_USB_SUPPORT
-static void cardhu_usb_init(void)
-{
-	struct board_info bi;
-	u32 project_info = tegra3_get_project_id();
-
-	tegra_get_board_info(&bi);
-
-	/* OTG should be the first to be registered */
-	tegra_otg_device.dev.platform_data = &tegra_otg_pdata;
-	platform_device_register(&tegra_otg_device);
-
-	/* setup the udc platform data */
-	tegra_udc_device.dev.platform_data = &tegra_udc_pdata;
-
-	if (bi.board_id == BOARD_PM267) {
-        pr_info("%s: bi.board_id == BOARD_PM267\n", __func__);
-		hsic_enable_gpio = EN_HSIC_GPIO;
-		hsic_reset_gpio = PM267_SMSC4640_HSIC_HUB_RESET_GPIO;
-		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_hsic_pdata;
-		platform_device_register(&tegra_ehci2_device);
-	} else if (bi.board_id == BOARD_E1256) {
-        pr_info("%s: bi.board_id == BOARD_E1256\n", __func__);
-		hsic_enable_gpio = EN_HSIC_GPIO;
-		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_hsic_pdata;
-		platform_device_register(&tegra_ehci2_device);
-	} else if (bi.board_id == BOARD_E1186) {
-        pr_info("%s: bi.board_id == BOARD_E1186\n", __func__);
-		tegra_ehci2_device.dev.platform_data =
-						&tegra_ehci2_hsic_xmm_pdata;
-		/* ehci2 registration happens in baseband-xmm-power  */
-	}
-
-	if (project_info == TEGRA3_PROJECT_TF300TL) {
-		printk("[TF300TL] register tegra_ehci2_device\n");
-		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_utmi_pdata;
-		platform_device_register(&tegra_ehci2_device);
-	} else if (project_info == TEGRA3_PROJECT_TF300TG) {
-		printk("[TF300TG] register tegra_ehci2_device\n");
-		tegra_ehci2_utmi_pdata.u_data.host.power_off_on_suspend = false;
-		tegra_ehci2_device.dev.platform_data =  &tegra_ehci2_hsic_xmm_pdata;
-		/* ehci2 registration happens in baseband-xmm-power  */
-	}
-
-	tegra_ehci3_device.dev.platform_data = &tegra_ehci3_utmi_pdata;
-	platform_device_register(&tegra_ehci3_device);
-
-}
-#else
-static void cardhu_usb_init(void) { }
-#endif /* CONFIG_USB_SUPPORT */
-
-#if 0
 static struct baseband_power_platform_data tegra_baseband_power_data = {
 	.baseband_type = BASEBAND_XMM,
 	.modem = {
@@ -1030,40 +1025,8 @@ static struct platform_device tegra_baseband_power2_device = {
 		.platform_data = &tegra_baseband_power_data,
 	},
 };
-#endif
 
-static struct tegra_pci_platform_data cardhu_pci_platform_data = {
-	.port_status[0]	= 1,
-	.port_status[1]	= 1,
-	.port_status[2]	= 1,
-	.use_dock_detect	= 0,
-	.gpio		= 0,
-};
-
-static void cardhu_pci_init(void)
-{
-	struct board_info board_info;
-
-	tegra_get_board_info(&board_info);
-	if (board_info.board_id == BOARD_E1291) {
-        pr_info("%s: board_info.board_id == BOARD_E1291\n", __func__);
-		cardhu_pci_platform_data.port_status[0] = 0;
-		cardhu_pci_platform_data.port_status[1] = 0;
-		cardhu_pci_platform_data.port_status[2] = 1;
-		cardhu_pci_platform_data.use_dock_detect = 1;
-		cardhu_pci_platform_data.gpio = DOCK_DETECT_GPIO;
-	}
-	if ((board_info.board_id == BOARD_E1186) ||
-		(board_info.board_id == BOARD_E1187) ||
-		(board_info.board_id == BOARD_E1291)) {
-        pr_info("%s: board_info.board_id == BOARD_E1186 or BOARD_E1187 or BOARD_E1291\n", __func__);
-		tegra_pci_device.dev.platform_data = &cardhu_pci_platform_data;
-		platform_device_register(&tegra_pci_device);
-	}
-}
-
-#if 0
-static void cardhu_modem_init(void)
+static void __init cardhu_modem_init(void)
 {
 	struct board_info board_info;
 	int w_disable_gpio, ret;
@@ -1143,6 +1106,41 @@ static void cardhu_modem_init(void)
 	}
 }
 #endif
+
+#else
+static void __init cardhu_usb_init(void)  { }
+//static void __init cardhu_modem_init(void)  { }
+#endif /* CONFIG_USB_SUPPORT */
+
+static struct tegra_pci_platform_data cardhu_pci_platform_data = {
+	.port_status[0]	= 1,
+	.port_status[1]	= 1,
+	.port_status[2]	= 1,
+	.use_dock_detect	= 0,
+	.gpio		= 0,
+};
+
+static void __init cardhu_pci_init(void)
+{
+	struct board_info board_info;
+
+	tegra_get_board_info(&board_info);
+	if (board_info.board_id == BOARD_E1291) {
+        pr_info("%s: board_info.board_id == BOARD_E1291\n", __func__);
+		cardhu_pci_platform_data.port_status[0] = 0;
+		cardhu_pci_platform_data.port_status[1] = 0;
+		cardhu_pci_platform_data.port_status[2] = 1;
+		cardhu_pci_platform_data.use_dock_detect = 1;
+		cardhu_pci_platform_data.gpio = DOCK_DETECT_GPIO;
+	}
+	if ((board_info.board_id == BOARD_E1186) ||
+		(board_info.board_id == BOARD_E1187) ||
+		(board_info.board_id == BOARD_E1291)) {
+        pr_info("%s: board_info.board_id == BOARD_E1186 or BOARD_E1187 or BOARD_E1291\n", __func__);
+		tegra_pci_device.dev.platform_data = &cardhu_pci_platform_data;
+		platform_device_register(&tegra_pci_device);
+	}
+}
 
 static void __init cardhu_booting_info(void)
 {
