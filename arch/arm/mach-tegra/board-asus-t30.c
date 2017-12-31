@@ -631,30 +631,26 @@ static int __init cardhu_touch_init(void)
 #ifdef CONFIG_USB_SUPPORT
 static void cardu_usb_hsic_postsupend(void)
 {
-#ifdef CONFIG_TEGRA_BB_XMM_POWER
+	pr_debug("%s\n", __func__);
 	baseband_xmm_set_power_status(BBXMM_PS_L2);
-#endif
 }
 
 static void cardu_usb_hsic_preresume(void)
 {
-#ifdef CONFIG_TEGRA_BB_XMM_POWER
+	pr_debug("%s\n", __func__);
 	baseband_xmm_set_power_status(BBXMM_PS_L2TOL0);
-#endif
 }
 
 static void cardu_usb_hsic_phy_ready(void)
 {
-#ifdef CONFIG_TEGRA_BB_XMM_POWER
+	pr_debug("%s\n", __func__);
 	baseband_xmm_set_power_status(BBXMM_PS_L0);
-#endif
 }
 
 static void cardu_usb_hsic_phy_off(void)
 {
-#ifdef CONFIG_TEGRA_BB_XMM_POWER
+	pr_debug("%s\n", __func__);
 	baseband_xmm_set_power_status(BBXMM_PS_L3);
-#endif
 }
 
 static struct tegra_usb_phy_platform_ops hsic_xmm_plat_ops = {
@@ -677,7 +673,6 @@ static struct tegra_usb_platform_data tegra_ehci2_hsic_xmm_pdata = {
 	},
 	.ops = &hsic_xmm_plat_ops,
 };
-#endif /* CONFIG_USB_SUPPORT */
 
 static int hsic_enable_gpio = -1;
 static int hsic_reset_gpio = -1;
@@ -735,7 +730,6 @@ void hsic_power_off(void)
 	}
 }
 
-#ifdef CONFIG_USB_SUPPORT
 static struct tegra_usb_phy_platform_ops hsic_plat_ops = {
 	.open = hsic_platform_open,
 	.close = hsic_platform_close,
@@ -859,7 +853,7 @@ static struct tegra_usb_otg_data tegra_otg_pdata = {
 };
 #endif /* CONFIG_USB_SUPPORT */
 
-struct platform_device *tegra_cardhu_usb_hsic_host_register(void)
+static struct platform_device *tegra_cardhu_usb_hsic_host_register(void)
 {
 	struct platform_device *pdev;
 	int val;
@@ -894,9 +888,15 @@ error:
 	return NULL;
 }
 
-void tegra_cardhu_usb_hsic_host_unregister(struct platform_device *pdev)
+static void tegra_cardhu_usb_hsic_host_unregister(struct platform_device *pdev)
 {
 	platform_device_unregister(pdev);
+
+	if (pdev && &pdev->dev) {
+		platform_device_unregister(pdev);
+		*platdev = NULL;
+	} else
+		pr_err("%s: no platform device\n", __func__);
 }
 
 struct platform_device *tegra_cardhu_usb_utmip_host_register(void)
@@ -935,44 +935,6 @@ error:
 }
 
 void tegra_cardhu_usb_utmip_host_unregister(struct platform_device *pdev)
-{
-	platform_device_unregister(pdev);
-}
-
-struct platform_device *tegra_usb3_utmip_host_register(void)
-{
-	struct platform_device *pdev;
-	int val;
-
-	pdev = platform_device_alloc(tegra_ehci3_device.name, tegra_ehci3_device.id);
-	if (!pdev)
-		return NULL;
-
-	val = platform_device_add_resources(pdev, tegra_ehci3_device.resource, tegra_ehci3_device.num_resources);
-	if (val)
-		goto error;
-
-	pdev->dev.dma_mask =  tegra_ehci3_device.dev.dma_mask;
-	pdev->dev.coherent_dma_mask = tegra_ehci3_device.dev.coherent_dma_mask;
-
-	val = platform_device_add_data(pdev, &tegra_ehci3_utmi_pdata, sizeof(struct tegra_usb_platform_data));
-
-	if (val)
-		goto error;
-
-	val = platform_device_add(pdev);
-	if (val)
-		goto error;
-
-	return pdev;
-
-error:
-	pr_err("%s: failed to add the host contoller device\n", __func__);
-	platform_device_put(pdev);
-	return NULL;
-}
-
-void tegra_usb3_utmip_host_unregister(struct platform_device *pdev)
 {
 	platform_device_unregister(pdev);
 }
@@ -1034,20 +996,21 @@ static struct baseband_power_platform_data tegra_baseband_power_data = {
 	.baseband_type = BASEBAND_XMM,
 	.modem = {
 	.xmm = {
-			.bb_rst = XMM_GPIO_BB_RST,
-			.bb_on = XMM_GPIO_BB_ON,
-			.bb_vbat = BB_GPIO_VBAT_ON,
-			.bb_rst_ind = BB_GPIO_RESET_IND,
-			.bb_vbus = BB_GPIO_VBUS_ON,
-			.bb_sw_sel = BB_GPIO_SW_SEL,
-			.bb_sim_cd = BB_GPIO_SIM_DET,
-			.bb_sar_det = BB_GPIO_SAR_DET,
-			.ipc_bb_wake = XMM_GPIO_IPC_BB_WAKE,
-			.ipc_ap_wake = XMM_GPIO_IPC_AP_WAKE,
-			.ipc_hsic_active = XMM_GPIO_IPC_HSIC_ACTIVE,
-			.ipc_hsic_sus_req = XMM_GPIO_IPC_HSIC_SUS_REQ,
-			.ipc_bb_force_crash = XMM_GPIO_IPC_BB_FORCE_CRASH,
-			.hsic_device = &tegra_ehci2_device,
+		.bb_rst = XMM_GPIO_BB_RST,
+		.bb_on = XMM_GPIO_BB_ON,
+		.bb_vbat = XMM_GPIO_BB_VBAT,
+		.bb_vbus = XMM_GPIO_BB_VBUS,
+		.bb_sw_sel = XMM_GPIO_BB_SW_SEL,
+		.sim_card_det = XMM_GPIO_SIM_CARD_DET,
+		.ipc_bb_rst_ind = XMM_GPIO_IPC_BB_RST_IND,
+		.ipc_bb_wake = XMM_GPIO_IPC_BB_WAKE,
+		.ipc_ap_wake = XMM_GPIO_IPC_AP_WAKE,
+		.ipc_hsic_active = XMM_GPIO_IPC_HSIC_ACTIVE,
+		.ipc_hsic_sus_req = XMM_GPIO_IPC_HSIC_SUS_REQ,
+		.ipc_bb_force_crash = XMM_GPIO_IPC_BB_FORCE_CRASH,
+
+		.bb_sar_det = BB_GPIO_SAR_DET,
+		.hsic_device = &tegra_ehci2_device,
 		},
 	},
 };

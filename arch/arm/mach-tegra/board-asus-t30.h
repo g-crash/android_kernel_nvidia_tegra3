@@ -238,8 +238,6 @@ int __init cardhu_pm299_gpio_switch_regulator_init(void);
 int __init cardhu_pm299_regulator_init(void);
 struct platform_device *tegra_cardhu_usb_utmip_host_register(void);
 void tegra_cardhu_usb_utmip_host_unregister(struct platform_device *pdev);
-struct platform_device *tegra_usb3_utmip_host_register(void);
-void tegra_usb3_utmip_host_unregister(struct platform_device *pdev);
 
 /* Invensense MPU Definitions */
 #define MPU_GYRO_NAME		"mpu3050"
@@ -283,28 +281,21 @@ void tegra_usb3_utmip_host_unregister(struct platform_device *pdev);
 #define TF300TL_COMPASS_ORIENTATION	{ -1, 0, 0, 0, -1, 0, 0, 0, 1 }
 
 /* Baseband GPIO addresses */
-#define BB_GPIO_BB_EN			TEGRA_GPIO_PX7 //MODEM_ON
-#define BB_GPIO_BB_RST			TEGRA_GPIO_PU3 //MOD_nRST_PWRDWN
-#define BB_GPIO_SPI_INT			TEGRA_GPIO_PX0 //AP_Active
-#define BB_GPIO_SPI_SS			TEGRA_GPIO_PY3 //MOD_suspend_req
-#define BB_GPIO_AWR				TEGRA_GPIO_PY2 //AP_WAKE_MOD
-#define BB_GPIO_CWR				TEGRA_GPIO_PU5 //MOD_WAKE_AP
-
-#define XMM_GPIO_BB_ON			BB_GPIO_BB_EN
-#define XMM_GPIO_BB_RST			BB_GPIO_BB_RST
-#define XMM_GPIO_IPC_HSIC_ACTIVE	BB_GPIO_SPI_INT
-#define XMM_GPIO_IPC_HSIC_SUS_REQ	BB_GPIO_SPI_SS
-#define XMM_GPIO_IPC_BB_WAKE		BB_GPIO_AWR
-#define XMM_GPIO_IPC_AP_WAKE		BB_GPIO_CWR
-#define XMM_GPIO_IPC_BB_FORCE_CRASH            TEGRA_GPIO_PN1
+#define XMM_GPIO_BB_ON			TEGRA_GPIO_PX7
+#define XMM_GPIO_BB_RST			TEGRA_GPIO_PU3
+#define XMM_GPIO_IPC_HSIC_ACTIVE	TEGRA_GPIO_PX0
+#define XMM_GPIO_IPC_HSIC_SUS_REQ	TEGRA_GPIO_PY3
+#define XMM_GPIO_IPC_BB_WAKE		TEGRA_GPIO_PY2
+#define XMM_GPIO_IPC_AP_WAKE		TEGRA_GPIO_PU5
 
 /* Asus baseband GPIO addresses */
-#define BB_GPIO_VBAT_ON			TEGRA_GPIO_PC6  //MOD_VBAT_ON
-#define BB_GPIO_VBUS_ON			TEGRA_GPIO_PD2  //MOD_VBUS_ON
-#define BB_GPIO_SW_SEL			TEGRA_GPIO_PP1  //USB_SW_SEL
-#define BB_GPIO_RESET_IND		TEGRA_GPIO_PEE1 //n_MOD_RST_IND
-#define BB_GPIO_SAR_DET			TEGRA_GPIO_PR3  //SAR_DET#_3G
-#define BB_GPIO_SIM_DET			TEGRA_GPIO_PW3  //n_SIM_CD
+#define XMM_GPIO_BB_VBAT			TEGRA_GPIO_PC6
+#define XMM_GPIO_BB_VBUS			TEGRA_GPIO_PD2
+#define XMM_GPIO_BB_SW_SEL			TEGRA_GPIO_PP1
+#define XMM_GPIO_IPC_BB_RST_IND		TEGRA_GPIO_PEE1
+#define BB_GPIO_SAR_DET				TEGRA_GPIO_PR3  //SAR_DET#_3G
+#define XMM_GPIO_SIM_CARD_DET		TEGRA_GPIO_PW3
+#define XMM_GPIO_IPC_BB_FORCE_CRASH		TEGRA_GPIO_PN1
 
 enum tegra_bb_type {
 	TEGRA_BB_TANGO = 1,
