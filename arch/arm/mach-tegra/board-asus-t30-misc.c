@@ -111,7 +111,6 @@ const char *tegra3_get_project_name(void)
 
 	if (tegra3_misc_enabled) {
 		project_id = HW_DRF_VAL(TEGRA3_DEVKIT, MISC_HW,
-
 						PROJECT, cardhu_pcbid);
 		if (project_id == TEGRA3_PROJECT_EXTENSION)
 			project_id = 8 + HW_DRF_VAL(TEGRA3_DEVKIT, MISC_HW,
@@ -121,8 +120,7 @@ const char *tegra3_get_project_name(void)
 		WARN_ONCE(project_id != tegra3_project_name_index,
 			"[MISC]: project ID in kernel cmdline was not matched"
 			"with PCBID\n");
-	}
-	else {
+	} else {
 		pr_info("[MISC]: adopt kernel cmdline prior to %s ready.\n",
 				__func__);
 	}
@@ -148,8 +146,7 @@ unsigned int tegra3_get_project_id(void)
 		WARN_ONCE(project_id != tegra3_project_name_index,
 			"[MISC]: project ID in kernel cmdline was not matched"
 			"with PCBID\n");
-	}
-	else {
+	} else {
 		pr_info("[MISC]: adopt kernel cmdline prior to %s ready.\n",
 				__func__);
 	}
@@ -296,19 +293,19 @@ static ssize_t cardhu_pcbid_show(struct kobject *kobj,
 static ssize_t cardhu_projectid_show(struct kobject *kobj,
         struct kobj_attribute *attr, char *buf)
 {
-        char *s = buf;
+    char *s = buf;
 
-        s += sprintf(s, "%02x\n", tegra3_get_project_id());
-        return (s - buf);
+	s += sprintf(s, "%02x\n", tegra3_get_project_id());
+    return (s - buf);
 }
 
 static ssize_t cardhu_projectname_show(struct kobject *kobj,
         struct kobj_attribute *attr, char *buf)
 {
-        char *s = buf;
+    char *s = buf;
 
-        s += sprintf(s, "%s\n", tegra3_get_project_name());
-        return (s - buf);
+    s += sprintf(s, "%s\n", tegra3_get_project_name());
+    return (s - buf);
 }
 
 CARDHU_MISC_ATTR(cardhu_chipid);

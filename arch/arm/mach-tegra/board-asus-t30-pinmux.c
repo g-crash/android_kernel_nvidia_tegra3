@@ -707,8 +707,8 @@ int __init cardhu_gpio_init(void)
 
     /* Asus: TEGRA_GPIO_PW3 is used in TF300TG/TL for SIM detection */
 	if (tegra3_get_project_id() != TEGRA3_PROJECT_TF300TG &&
-			tegra3_get_project_id() != TEGRA3_PROJECT_TF300TL) {
-	cardhu_audio_gpio_init();
+		tegra3_get_project_id() != TEGRA3_PROJECT_TF300TL) {
+		cardhu_audio_gpio_init();
 	}
 	
 	return 0;
@@ -769,21 +769,7 @@ void __init cardhu_pinmux_init_early(void)
 		.value		= _value,	\
 	}
 
-struct gpio_init_pin_info pin_lpm_cardhu_common[] = {
-	PIN_GPIO_LPM("GMI_CS3_N", TEGRA_GPIO_PK4, 0, 0),
-	PIN_GPIO_LPM("GMI_CS4_N", TEGRA_GPIO_PK2, 1, 0),
-	PIN_GPIO_LPM("GMI_CS7",   TEGRA_GPIO_PI6, 1, 0),
-	PIN_GPIO_LPM("GMI_CS0",   TEGRA_GPIO_PJ0, 1, 0),
-	PIN_GPIO_LPM("GMI_CS1",   TEGRA_GPIO_PJ2, 1, 0),
-	PIN_GPIO_LPM("GMI_WP_N",  TEGRA_GPIO_PC7, 1, 0),
-};
-
-/* E1198 without PM313 display board */
-struct gpio_init_pin_info pin_lpm_cardhu_common_wo_pm313[] = {
-	PIN_GPIO_LPM("GMI_AD11",  TEGRA_GPIO_PH3, 0, 0),
-};
-
-struct gpio_init_pin_info vddio_gmi_pins_pm269[] = {
+static struct gpio_init_pin_info vddio_gmi_pins_pm269[] = {
 	PIN_GPIO_LPM("GMI_CS7",   TEGRA_GPIO_PI6, 1, 0),
 	PIN_GPIO_LPM("GMI_A18",   TEGRA_GPIO_PB1, 1, 0),
 	PIN_GPIO_LPM("GMI_A19",   TEGRA_GPIO_PK7, 0, 0),
@@ -791,7 +777,7 @@ struct gpio_init_pin_info vddio_gmi_pins_pm269[] = {
 };
 
 /* PM269 without PM313 display board */
-struct gpio_init_pin_info vddio_gmi_pins_pm269_wo_pm313[] = {
+static struct gpio_init_pin_info vddio_gmi_pins_pm269_wo_pm313[] = {
 	PIN_GPIO_LPM("GMI_CS2",   TEGRA_GPIO_PK3, 1, 0),
 };
 

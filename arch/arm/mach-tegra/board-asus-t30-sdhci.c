@@ -37,11 +37,45 @@
 
 static void (*wifi_status_cb)(int card_present, void *dev_id);
 static void *wifi_status_cb_devid;
-static int cardhu_wifi_status_register(void (*callback)(int , void *), void *);
 
-static int cardhu_wifi_reset(int on);
-static int cardhu_wifi_power(int on);
-static int cardhu_wifi_set_carddetect(int val);
+static int cardhu_wifi_status_register(
+		void (*callback)(int card_present, void *dev_id),
+		void *dev_id)
+{
+	if (wifi_status_cb)
+		return -EAGAIN;
+	wifi_status_cb = callback;
+	wifi_status_cb_devid = dev_id;
+	return 0;
+}
+
+static int cardhu_wifi_set_carddetect(int val)
+{
+	pr_debug("%s: %d\n", __func__, val);
+	if (wifi_status_cb)
+		wifi_status_cb(val, wifi_status_cb_devid);
+	else
+		pr_warning("%s: Nobody to notify\n", __func__);
+	return 0;
+}
+
+static int cardhu_wifi_power(int on)
+{
+	pr_debug("%s: %d\n", __func__, on);
+
+	gpio_set_value(CARDHU_WLAN_PWR, on);
+	mdelay(100);
+	gpio_set_value(CARDHU_WLAN_RST, on);
+	mdelay(200);
+	
+	return 0;
+}
+
+static int cardhu_wifi_reset(int on)
+{
+	pr_debug("%s: do nothing\n", __func__);
+	return 0;
+}
 
 static struct wifi_platform_data cardhu_wifi_control = {
 	.set_power	= cardhu_wifi_power,
@@ -197,45 +231,6 @@ static struct platform_device tegra_sdhci_device3 = {
 	},
 };
 
-static int cardhu_wifi_status_register(
-		void (*callback)(int card_present, void *dev_id),
-		void *dev_id)
-{
-	if (wifi_status_cb)
-		return -EAGAIN;
-	wifi_status_cb = callback;
-	wifi_status_cb_devid = dev_id;
-	return 0;
-}
-
-static int cardhu_wifi_set_carddetect(int val)
-{
-	pr_debug("%s: %d\n", __func__, val);
-	if (wifi_status_cb)
-		wifi_status_cb(val, wifi_status_cb_devid);
-	else
-		pr_warning("%s: Nobody to notify\n", __func__);
-	return 0;
-}
-
-static int cardhu_wifi_power(int on)
-{
-	pr_debug("%s: %d\n", __func__, on);
-
-	gpio_set_value(CARDHU_WLAN_PWR, on);
-	mdelay(100);
-	gpio_set_value(CARDHU_WLAN_RST, on);
-	mdelay(200);
-	
-	return 0;
-}
-
-static int cardhu_wifi_reset(int on)
-{
-	pr_debug("%s: do nothing\n", __func__);
-	return 0;
-}
-
 static int __init cardhu_wifi_init(void)
 {
 	int rc;
@@ -243,23 +238,27 @@ static int __init cardhu_wifi_init(void)
 
 	rc = gpio_request(CARDHU_WLAN_PWR, "wlan_power");
 	if (rc)
-		pr_err("WLAN_PWR gpio request failed:%d\n", rc);
+		pr_err("WLAN_PWR gpio request failed: %d\n", rc);
+
 	rc = gpio_request(CARDHU_WLAN_RST, "wlan_rst");
 	if (rc)
-		pr_err("WLAN_RST gpio request failed:%d\n", rc);
+		pr_err("WLAN_RST gpio request failed: %d\n", rc);
+
 	rc = gpio_request(CARDHU_WLAN_WOW, "bcmsdh_sdmmc");
 	if (rc)
-		pr_err("WLAN_WOW gpio request failed:%d\n", rc);
+		pr_err("WLAN_WOW gpio request failed: %d\n", rc);
 
 	rc = gpio_direction_output(CARDHU_WLAN_PWR, 0);
 	if (rc)
-		pr_err("WLAN_PWR gpio direction configuration failed:%d\n", rc);
-	gpio_direction_output(CARDHU_WLAN_RST, 0);
+		pr_err("WLAN_PWR gpio direction configuration failed: %d\n", rc);
+
+	rc = gpio_direction_output(CARDHU_WLAN_RST, 0);
 	if (rc)
-		pr_err("WLAN_RST gpio direction configuration failed:%d\n", rc);
+		pr_err("WLAN_RST gpio direction configuration failed: %d\n", rc);
+
 	rc = gpio_direction_input(CARDHU_WLAN_WOW);
 	if (rc)
-		pr_err("WLAN_WOW gpio direction configuration failed:%d\n", rc);
+		pr_err("WLAN_WOW gpio direction configuration failed: %d\n", rc);
 
 	if (commchip_id == COMMCHIP_MARVELL_SD8797)
 		platform_device_register(&marvell_wifi_device);

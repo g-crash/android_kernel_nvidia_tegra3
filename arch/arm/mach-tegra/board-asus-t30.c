@@ -226,17 +226,16 @@ static struct wm8903_platform_data cardhu_wm8903_pdata = {
 	.gpio_cfg = {
 		(WM8903_GPn_FN_DMIC_LR_CLK_OUTPUT << WM8903_GP1_FN_SHIFT),
 		(WM8903_GPn_FN_DMIC_LR_CLK_OUTPUT << WM8903_GP2_FN_SHIFT) |
-			WM8903_GP2_DIR,
+		WM8903_GP2_DIR,
 		WM8903_GPIO_CONFIG_ZERO,
 		0,
 		0,
 	},
 };
+
 #ifdef CONFIG_DSP_FM34
-static const struct i2c_board_info cardhu_dsp_board_info[] = {
-	{
-        I2C_BOARD_INFO("dsp_fm34", 0x60),
-    },
+static const struct i2c_board_info cardhu_dsp_board_info = {
+    I2C_BOARD_INFO("dsp_fm34", 0x60),
 };
 #endif
 
@@ -491,10 +490,10 @@ static struct tegra_asoc_platform_data cardhu_audio_pdata = {
 
 static struct platform_device cardhu_audio_device = {
 	.name	= "tegra-snd-codec",
-        .id     = 0,
-        .dev    = {
-                .platform_data = &cardhu_audio_pdata,
-        },
+    .id     = 0,
+    .dev    = {
+        .platform_data = &cardhu_audio_pdata,
+    },
 };
 
 static struct platform_device *cardhu_devices[] __initdata = {
@@ -561,22 +560,22 @@ static struct i2c_board_info __initdata atmel_i2c_info[] = {
 #define ELAN_Y_MAX_202T  1856
 
 struct elan_ktf3k_i2c_platform_data ts_elan_ktf3k_data[] = {
-        {
-                .version = 0x0001,
-		        .abs_x_min = 0,
-                .abs_x_max = ELAN_X_MAX,   //LG 9.7" Dpin 2368, Spin 2112
-                .abs_y_min = 0,
-                .abs_y_max = ELAN_Y_MAX,   //LG 9.7" Dpin 1728, Spin 1600
-                .intr_gpio = TEGRA_GPIO_PH4,
-                .rst_gpio = TEGRA_GPIO_PH6,
-        },
+    {
+        .version = 0x0001,
+		.abs_x_min = 0,
+        .abs_x_max = ELAN_X_MAX,   //LG 9.7" Dpin 2368, Spin 2112
+        .abs_y_min = 0,
+        .abs_y_max = ELAN_Y_MAX,   //LG 9.7" Dpin 1728, Spin 1600
+        .intr_gpio = TEGRA_GPIO_PH4,
+        .rst_gpio = TEGRA_GPIO_PH6,
+    },
 };
 
 static struct i2c_board_info elan_i2c_devices[] = {
-        {
-                I2C_BOARD_INFO(ELAN_KTF3K_NAME, 0x10),
-                .platform_data = &ts_elan_ktf3k_data,
-        },
+    {
+        I2C_BOARD_INFO(ELAN_KTF3K_NAME, 0x10),
+        .platform_data = &ts_elan_ktf3k_data,
+    },
 
 };
 #endif
@@ -1028,9 +1027,6 @@ static struct platform_device tegra_baseband_power2_device = {
 
 static void __init cardhu_modem_init(void)
 {
-	struct board_info board_info;
-	int w_disable_gpio, ret;
-
 	int modem_id = tegra_get_modem_id();
 
 	switch (tegra3_get_project_id()) {
@@ -1041,64 +1037,20 @@ static void __init cardhu_modem_init(void)
 		// TF300TL init GPIOs in ASUS's customized RIL driver.
 		return;
 	default:
-		printk("do not init modem-related components on non-mobile devices\n");
+		pr_info("%s: Device doesn't include modile data module\n", __func__);
 		return;
 	}
 
-	tegra_get_board_info(&board_info);
-	switch (board_info.board_id) {
-	case BOARD_E1291:
-	case BOARD_E1198:
-		if (((board_info.board_id == BOARD_E1291) &&
-				(board_info.fab < BOARD_FAB_A03)) ||
-			((board_info.board_id == BOARD_E1198) &&
-					(board_info.fab < BOARD_FAB_A02))) {
-			w_disable_gpio = TEGRA_GPIO_PH5;
-		} else {
-			w_disable_gpio = TEGRA_GPIO_PDD5;
-		}
-
-		ret = gpio_request(w_disable_gpio, "w_disable_gpio");
-		if (ret < 0)
-			pr_err("%s: gpio_request failed for gpio %d\n",
-				__func__, w_disable_gpio);
-		else
-			gpio_direction_input(w_disable_gpio);
-
-		/* E1291-A04 & E1198:A02: Set PERST signal to high */
-		if (((board_info.board_id == BOARD_E1291) &&
-				(board_info.fab >= BOARD_FAB_A04)) ||
-			((board_info.board_id == BOARD_E1198) &&
-					(board_info.fab >= BOARD_FAB_A02))) {
-			ret = gpio_request(TEGRA_GPIO_PH7, "modem_perst");
-			if (ret < 0) {
-				pr_err("%s(): Error in allocating gpio "
-					"TEGRA_GPIO_PH7\n", __func__);
-				break;
-			}
-			gpio_direction_output(TEGRA_GPIO_PH7, 1);
-		}
-		break;
-	case BOARD_E1186:
-		platform_device_register(&tegra_baseband_power_device);
-		platform_device_register(&tegra_baseband_power2_device);
-		break;
-	case BOARD_PM269:
-		printk("BOARD_PM269");
-		tegra_baseband_power_data.hsic_register =
-			&tegra_cardhu_usb_hsic_host_register;
-		tegra_baseband_power_data.hsic_unregister =
-			&tegra_cardhu_usb_hsic_host_unregister;
-		tegra_baseband_power_data.utmip_register =
-			&tegra_cardhu_usb_utmip_host_register;
-		tegra_baseband_power_data.utmip_unregister =
-			&tegra_cardhu_usb_utmip_host_unregister;
-		platform_device_register(&tegra_baseband_power_device);
-		platform_device_register(&tegra_baseband_power2_device);
-
-	default:
-		break;
-	}
+	tegra_baseband_power_data.hsic_register =
+		&tegra_cardhu_usb_hsic_host_register;
+	tegra_baseband_power_data.hsic_unregister =
+		&tegra_cardhu_usb_hsic_host_unregister;
+	tegra_baseband_power_data.utmip_register =
+		&tegra_cardhu_usb_utmip_host_register;
+	tegra_baseband_power_data.utmip_unregister =
+		&tegra_cardhu_usb_utmip_host_unregister;
+	platform_device_register(&tegra_baseband_power_device);
+	platform_device_register(&tegra_baseband_power2_device);
 
 	if (modem_id == TEGRA_BB_TANGO) {
 		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_utmi_pdata;
@@ -1188,8 +1140,7 @@ static void __init tegra_cardhu_init(void)
 	cardhu_regulator_init();
 	cardhu_suspend_init();
 	cardhu_touch_init();
-//	if (project_info == TEGRA3_PROJECT_TF300TG)
-//		cardhu_modem_init();
+//	cardhu_modem_init();
 	cardhu_keys_init();
 	cardhu_panel_init();
 	cardhu_pmon_init();
@@ -1225,11 +1176,11 @@ MACHINE_START(TRANSFORMER, "transformer")
 	.soc            = &tegra_soc_desc,
 	.map_io         = tegra_map_common_io,
 	.reserve        = tegra_cardhu_reserve,
-	.init_early	= tegra30_init_early,
+	.init_early     = tegra30_init_early,
 	.init_irq       = tegra_init_irq,
 	.handle_irq     = gic_handle_irq,
 	.timer          = &tegra_timer,
 	.init_machine   = tegra_cardhu_init,
-	.dt_compat	= cardhu_dt_board_compat,
+	.dt_compat	    = cardhu_dt_board_compat,
 	.restart        = tegra_assert_system_reset,
 MACHINE_END
