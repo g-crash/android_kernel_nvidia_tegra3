@@ -234,7 +234,7 @@ static struct wm8903_platform_data cardhu_wm8903_pdata = {
 };
 
 #ifdef CONFIG_DSP_FM34
-static const struct i2c_board_info cardhu_dsp_board_info = {
+static struct i2c_board_info __initdata dsp_board_info = {
     I2C_BOARD_INFO("dsp_fm34", 0x60),
 };
 #endif
@@ -297,7 +297,7 @@ static void cardhu_i2c_init(void)
 	}
 
 #ifdef CONFIG_DSP_FM34
-	i2c_register_board_info(0, cardhu_dsp_board_info, 1);
+	i2c_register_board_info(0, &dsp_board_info, 1);
 #endif
 }
 
