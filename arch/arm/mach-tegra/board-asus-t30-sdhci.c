@@ -85,25 +85,16 @@ static struct wifi_platform_data cardhu_wifi_control = {
 
 static struct resource wifi_resource[] = {
 	[0] = {
-		.name	= "bcm4329_wlan_irq",
+		.name	= "bcmdhd_wlan_irq",
 		.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL | IORESOURCE_IRQ_SHAREABLE,
 	},
 };
 
 static struct platform_device broadcom_wifi_device = {
-	.name		= "bcm4329_wlan",
+	.name		= "bcmdhd_wlan",
 	.id		= 1,
 	.num_resources	= 1,
 	.resource	= wifi_resource,
-	.dev		= {
-		.platform_data = &cardhu_wifi_control,
-	},
-};
-
-static struct platform_device marvell_wifi_device = {
-	.name		= "mrvl8797_wlan",
-	.id		= 1,
-	.num_resources	= 0,
 	.dev		= {
 		.platform_data = &cardhu_wifi_control,
 	},
@@ -181,6 +172,8 @@ static struct tegra_sdhci_platform_data tegra_sdhci_platform_data2 = {
 	.wp_gpio = -1,
 	.power_gpio = -1,
 	.tap_delay = 0x0F,
+	.ddr_clk_limit = 41000000,
+	.max_clk_limit = 12000000,
 };
 
 static struct tegra_sdhci_platform_data tegra_sdhci_platform_data0 = {
@@ -188,6 +181,7 @@ static struct tegra_sdhci_platform_data tegra_sdhci_platform_data0 = {
 	.wp_gpio = -1,
 	.power_gpio = -1,
 	.tap_delay = 0x0F,
+	.ddr_clk_limit = 41000000,
 };
 
 static struct tegra_sdhci_platform_data tegra_sdhci_platform_data3 = {
@@ -196,6 +190,7 @@ static struct tegra_sdhci_platform_data tegra_sdhci_platform_data3 = {
 	.power_gpio = -1,
 	.is_8bit = 1,
 	.tap_delay = 0x0F,
+	.ddr_clk_limit = 41000000,
 	.mmc_data = {
 		.built_in = 1,
 	}
@@ -234,7 +229,6 @@ static struct platform_device tegra_sdhci_device3 = {
 static int __init cardhu_wifi_init(void)
 {
 	int rc;
-	int commchip_id = tegra_get_commchip_id();
 
 	rc = gpio_request(CARDHU_WLAN_PWR, "wlan_power");
 	if (rc)
@@ -260,13 +254,9 @@ static int __init cardhu_wifi_init(void)
 	if (rc)
 		pr_err("WLAN_WOW gpio direction configuration failed: %d\n", rc);
 
-	if (commchip_id == COMMCHIP_MARVELL_SD8797)
-		platform_device_register(&marvell_wifi_device);
-	else {
-		broadcom_wifi_device.resource[0].start = gpio_to_irq(TEGRA_GPIO_PO4);
-		broadcom_wifi_device.resource[0].end = gpio_to_irq(TEGRA_GPIO_PO4);
-		platform_device_register(&broadcom_wifi_device);
-	}
+	wifi_resource[0].start = wifi_resource[0].end =
+		gpio_to_irq(TEGRA_GPIO_PO4);
+	platform_device_register(&broadcom_wifi_device);
 
 	return 0;
 }
