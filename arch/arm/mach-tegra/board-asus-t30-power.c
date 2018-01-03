@@ -497,6 +497,7 @@ int __init cardhu_regulator_init(void)
         }
 
 		if (pmu_board_info.sku & SKU_DCDC_TPS62361_SUPPORT) {
+            pr_info("%s: pmu_board_info.sku & SKU_DCDC_TPS62361_SUPPORT\n", __func__);
 			tps_platform.num_subdevs = ARRAY_SIZE(tps_devs_e118x_skubit0_1);
 			tps_platform.subdevs = tps_devs_e118x_skubit0_1;
 			ext_core_regulator = true;
@@ -1081,12 +1082,15 @@ int __init cardhu_fixed_regulator_init(void)
 		nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269);
 		fixed_reg_devs = fixed_reg_devs_pm269;
 		if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
+            pr_info("%s: display_board_info.board_id == BOARD_DISPLAY_PM313\n", __func__);
 			nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269_pm313);
 			fixed_reg_devs = fixed_reg_devs_pm269_pm313;
 		} else if (is_display_board_dsi(display_board_info.board_id)) {
+            pr_info("%s: is_display_board_dsi(display_board_info.board_id\n", __func__);
 			nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269_dsi);
 			fixed_reg_devs = fixed_reg_devs_pm269_dsi;
 		} else {
+            pr_info("%s: else\n", __func__);
 			nfixreg_devs = ARRAY_SIZE(fixed_reg_devs_pm269);
 			fixed_reg_devs = fixed_reg_devs_pm269;
 		}
@@ -1188,6 +1192,7 @@ int __init cardhu_suspend_init(void)
 #ifdef CONFIG_TEGRA_LP1_LOW_COREVOLTAGE
 		/* AP37 board supports the LP1_950mV feature */
 		if (is_display_board_dsi(display_board_info.board_id)) {
+        pr_info("%s: CONFIG_TEGRA_LP1_LOW_COREVOLTAGE\n", __func__);
 			cardhu_suspend_data.lp1_lowvolt_support = true;
 			cardhu_suspend_data.i2c_base_addr = TEGRA_I2C5_BASE;
 			cardhu_suspend_data.pmuslave_addr = 0xC0;
