@@ -820,14 +820,15 @@ int __init cardhu_panel_init(void)
 	cardhu_carveouts[1].size = tegra_carveout_size;
 #endif
 
-	if (tegra3_get_project_id() != TEGRA3_PROJECT_TF700T){
-		cardhu_disp1_out.enable = cardhu_panel_enable;
-		cardhu_disp1_out.postpoweron = cardhu_panel_postpoweron;
-		cardhu_disp1_out.disable = cardhu_panel_disable;
-		cardhu_disp1_out.prepoweroff = cardhu_panel_prepoweroff;
-	} else {
+	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF700T){
+		cardhu_disp1_out.dither = TEGRA_DC_ORDERED_DITHER;
         cardhu_disp1_out.enable = cardhu_panel_enable_tf700t;
 		cardhu_disp1_out.disable = cardhu_panel_disable_tf700t;
+	} else {
+		cardhu_disp1_out.enable = cardhu_panel_enable;
+		cardhu_disp1_out.postpoweron = cardhu_panel_postpoweron;
+		cardhu_disp1_out.prepoweroff = cardhu_panel_prepoweroff;
+		cardhu_disp1_out.disable = cardhu_panel_disable;
 	}
 
 #ifdef CONFIG_TEGRA_DC
