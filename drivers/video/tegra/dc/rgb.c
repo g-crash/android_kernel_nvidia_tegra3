@@ -21,7 +21,7 @@
 
 #include <mach/dc.h>
 #ifdef CONFIG_MACH_TRANSFORMER
-#include <mach/board-cardhu-misc.h>
+#include <mach/board-asus-t30-misc.h>
 #endif
 
 #include "dc_reg.h"
