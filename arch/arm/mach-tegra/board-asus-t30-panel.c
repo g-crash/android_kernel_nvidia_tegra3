@@ -39,16 +39,6 @@
 #define DC_CTRL_MODE	(TEGRA_DC_OUT_ONE_SHOT_MODE | \
 			 TEGRA_DC_OUT_ONE_SHOT_LP_MODE)
 
-#define AVDD_LCD PMU_TCA6416_GPIO_PORT17
-
-/* PM313 display board specific pins */
-#define pm313_R_FDE			TEGRA_GPIO_PW0
-#define pm313_R_FB			TEGRA_GPIO_PN4
-#define pm313_MODE0			TEGRA_GPIO_PZ4
-#define pm313_MODE1			TEGRA_GPIO_PW1
-#define pm313_BPP			TEGRA_GPIO_PN6 /* 0:24bpp, 1:18bpp */
-#define pm313_lvds_shutdown		TEGRA_GPIO_PL2
-
 /* E1506 display board pins */
 #define e1506_lcd_te		TEGRA_GPIO_PJ1
 
@@ -72,7 +62,6 @@ static struct regulator *cardhu_lvds_reg = NULL;
 static struct regulator *cardhu_lvds_vdd_bl = NULL;
 static struct regulator *cardhu_lvds_vdd_panel = NULL;
 
-static struct board_info display_board_info;
 extern bool isRecording;
 extern int cn_vf_sku;
 
@@ -278,21 +267,7 @@ static int cardhu_panel_enable_tf700t(struct device *dev)
 	}
 	mdelay(10);
 
-	if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
-		/* lvds configuration */
-		gpio_set_value(pm313_R_FDE, 1);
-		gpio_set_value(pm313_R_FB, 1);
-		gpio_set_value(pm313_MODE0, 1);
-		gpio_set_value(pm313_MODE1, 0);
-		gpio_set_value(pm313_BPP, 0);
-
-		/* FIXME : it may require more or less delay for latching
-		   values correctly before enabling RGB2LVDS */
-		mdelay(100);
-		gpio_set_value(pm313_lvds_shutdown, 1);
-	} else {
-		gpio_set_value(e1247_pm269_lvds_shutdown, 1);
-	}
+	gpio_set_value(e1247_pm269_lvds_shutdown, 1);
 
 	ret = gpio_direction_output(TEGRA_GPIO_PD2, 1);
 	if (ret < 0) {
@@ -400,11 +375,7 @@ static int cardhu_panel_prepoweroff(void)
 	}    
 	msleep(200);
 
-	if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
-		gpio_set_value(pm313_lvds_shutdown, 0);
-	} else {
-		gpio_set_value(e1247_pm269_lvds_shutdown, 0);
-	}    
+	gpio_set_value(e1247_pm269_lvds_shutdown, 0);
 	msleep(10);
         return 0;
 }
@@ -813,8 +784,6 @@ int __init cardhu_panel_init(void)
 	struct platform_device *phost1x;
 #endif
 
-	tegra_get_display_board_info(&display_board_info);
-
 #ifdef CONFIG_TEGRA_NVMAP
 	cardhu_carveouts[1].base = tegra_carveout_start;
 	cardhu_carveouts[1].size = tegra_carveout_size;
@@ -822,7 +791,7 @@ int __init cardhu_panel_init(void)
 
 	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF700T){
 		cardhu_disp1_out.dither = TEGRA_DC_ORDERED_DITHER;
-        cardhu_disp1_out.enable = cardhu_panel_enable_tf700t;
+		cardhu_disp1_out.enable = cardhu_panel_enable_tf700t;
 		cardhu_disp1_out.disable = cardhu_panel_disable_tf700t;
 	} else {
 		cardhu_disp1_out.enable = cardhu_panel_enable;
@@ -832,48 +801,6 @@ int __init cardhu_panel_init(void)
 	}
 
 #ifdef CONFIG_TEGRA_DC
-	if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
-		/* initialize the values */
-
-		cardhu_disp1_out.modes = panel_19X12_modes;
-		cardhu_disp1_out.n_modes = ARRAY_SIZE(panel_19X12_modes);
-		cardhu_disp1_out.parent_clk = "pll_d_out0";
-		cardhu_disp1_out.depth = 24;
-
-		/* Set height and width in mm. */
-		cardhu_disp1_out.height = 127;
-		cardhu_disp1_out.width = 203;
-		cardhu_fb_data.xres = 1920;
-		cardhu_fb_data.yres = 1200;
-
-		cardhu_disp2_out.parent_clk = "pll_d2_out0";
-		cardhu_hdmi_fb_data.xres = 1920;
-		cardhu_hdmi_fb_data.yres = 1200;
-
-		/* lvds configuration */
-		err = gpio_request(pm313_R_FDE, "R_FDE");
-		err |= gpio_direction_output(pm313_R_FDE, 1);
-
-		err |= gpio_request(pm313_R_FB, "R_FB");
-		err |= gpio_direction_output(pm313_R_FB, 1);
-
-		err |= gpio_request(pm313_MODE0, "MODE0");
-		err |= gpio_direction_output(pm313_MODE0, 1);
-
-		err |= gpio_request(pm313_MODE1, "MODE1");
-		err |= gpio_direction_output(pm313_MODE1, 0);
-
-		err |= gpio_request(pm313_BPP, "BPP");
-		err |= gpio_direction_output(pm313_BPP, 0);
-
-		err = gpio_request(pm313_lvds_shutdown, "lvds_shutdown");
-		/* free ride provided by bootloader */
-		err |= gpio_direction_output(pm313_lvds_shutdown, 1);
-
-		if (err)
-			printk(KERN_ERR "ERROR(s) in LVDS configuration\n");
-	}
-
 	if ( tegra3_get_project_id() == TEGRA3_PROJECT_TF300TG && cn_vf_sku){
 		cardhu_disp1_out.modes->pclk = 83900000;
 		cardhu_disp1_out.modes->v_front_porch = 200;

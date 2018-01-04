@@ -681,16 +681,16 @@ static void __init cardhu_gpio_init_configure(void)
 	if (project_info == TEGRA3_PROJECT_TF300T) {
 		len = ARRAY_SIZE(init_gpio_mode_pm269_TF300T);
 		pins_info = init_gpio_mode_pm269_TF300T;
-		printk("PBB5 is set to low with PM269\n");
+		pr_info("PBB5 is set to low with PM269\n");
 	} else if (project_info == TEGRA3_PROJECT_TF300TL) {
 		len = ARRAY_SIZE(init_gpio_mode_pm269_TF300TL);
 		pins_info = init_gpio_mode_pm269_TF300TL;
 	} else if (project_info == TEGRA3_PROJECT_TF300TG) {
 		len = ARRAY_SIZE(init_gpio_mode_pm269_TF300TG);
 		pins_info = init_gpio_mode_pm269_TF300TG;
-		printk("TF300TG GPIOs set to low with PM269\n");
+		pr_info("TF300TG GPIOs set to low with PM269\n");
     } else {
-        printk("%s: unknown project_info %u", __func__, project_info);
+        pr_info("%s: unknown project_info %u", __func__, project_info);
         return;
     }
 
@@ -776,11 +776,6 @@ static struct gpio_init_pin_info vddio_gmi_pins_pm269[] = {
 	PIN_GPIO_LPM("KB_ROW0",   TEGRA_GPIO_PR0, 0, 0),
 };
 
-/* PM269 without PM313 display board */
-static struct gpio_init_pin_info vddio_gmi_pins_pm269_wo_pm313[] = {
-	PIN_GPIO_LPM("GMI_CS2",   TEGRA_GPIO_PK3, 1, 0),
-};
-
 static void set_unused_pin_gpio(struct gpio_init_pin_info *lpm_pin_info,
 		int list_count)
 {
@@ -819,7 +814,5 @@ int __init cardhu_pins_state_init(void)
 {
 	set_unused_pin_gpio(&vddio_gmi_pins_pm269[0],
 			ARRAY_SIZE(vddio_gmi_pins_pm269));
-	set_unused_pin_gpio(&vddio_gmi_pins_pm269_wo_pm313[0],
-			ARRAY_SIZE(vddio_gmi_pins_pm269_wo_pm313));
 	return 0;
 }

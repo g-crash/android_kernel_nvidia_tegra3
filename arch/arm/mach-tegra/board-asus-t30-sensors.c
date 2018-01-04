@@ -566,14 +566,14 @@ static struct i2c_board_info cardhu_i2c4_nct1008_board_info[] = {
 };
 
 #ifdef CONFIG_VIDEO_YUV
-static struct i2c_board_info rear_sensor_i2c3_board_info[] = {  //ddebug
+static struct i2c_board_info rear_sensor_i2c3_board_info[] = {
     {
         I2C_BOARD_INFO("fjm6mo", 0x1F),
         .platform_data = &yuv_rear_sensor_data,
     },
 };
 
-static struct i2c_board_info front_sensor_i2c2_board_info[] = {  //ddebug
+static struct i2c_board_info front_sensor_i2c2_board_info[] = {
 	{
 		I2C_BOARD_INFO("mi1040", 0x48),
 		.platform_data = &yuv_front_sensor_data,
@@ -854,7 +854,7 @@ static void mpuirq_init(void)
 		memcpy( mpu3050_accel_data.orientation, TF300TL.accel_orientation, sizeof(mpu3050_accel_data.orientation));
 		memcpy( mpu3050_compass_data.orientation, TF300TL.compass_orientation, sizeof(mpu3050_compass_data.orientation));
 	}
-    else pr_info("initial mpu with TF201 config...\n");
+	else pr_info("initial mpu with TF201 config...\n");
 
 #if	MPU_ACCEL_IRQ_GPIO
 	/* ACCEL-IRQ assignment */
@@ -900,9 +900,9 @@ static void mpuirq_init(void)
 }
 
 static struct i2c_board_info cardhu_i2c1_board_info_al3010[] = {
-    {
-        I2C_BOARD_INFO("al3010",0x1C),
-    },
+	{
+		I2C_BOARD_INFO("al3010",0x1C),
+	},
 };
 
 int __init cardhu_sensors_init(void)
@@ -923,17 +923,17 @@ int __init cardhu_sensors_init(void)
 	pmu_tca6416_init();
 
 	cardhu_i2c1_board_info_al3010[0].irq = gpio_to_irq(TEGRA_GPIO_PZ2);
-    i2c_register_board_info(2, cardhu_i2c1_board_info_al3010,
-        ARRAY_SIZE(cardhu_i2c1_board_info_al3010));
+	i2c_register_board_info(2, cardhu_i2c1_board_info_al3010,
+		ARRAY_SIZE(cardhu_i2c1_board_info_al3010));
 
 #ifdef CONFIG_VIDEO_YUV
 //+ m6mo rear camera
-    pr_info("fjm6mo i2c_register_board_info");
-    i2c_register_board_info(2, rear_sensor_i2c3_board_info,
-        ARRAY_SIZE(rear_sensor_i2c3_board_info));
+	pr_info("fjm6mo i2c_register_board_info");
+	i2c_register_board_info(2, rear_sensor_i2c3_board_info,
+		ARRAY_SIZE(rear_sensor_i2c3_board_info));
 
 /* Front Camera mi1040 + */
-    pr_info("mi1040 i2c_register_board_info");
+	pr_info("mi1040 i2c_register_board_info");
 	i2c_register_board_info(2, front_sensor_i2c2_board_info,
 		ARRAY_SIZE(front_sensor_i2c2_board_info));
 /* Front Camera mi1040 - */

@@ -129,9 +129,9 @@ static noinline void __init cardhu_setup_bluesleep(void)
 {
 	cardhu_bluesleep_resources[2].start = cardhu_bluesleep_resources[2].end =
 		gpio_to_irq(TEGRA_GPIO_PU6);
-        platform_device_register(&cardhu_bluesleep_device);
+	platform_device_register(&cardhu_bluesleep_device);
 #ifdef CONFIG_BT_BLUESLEEP
-        bluesleep_setup_uart_port(&tegra_uartc_device);
+	bluesleep_setup_uart_port(&tegra_uartc_device);
 #endif
 }
 
@@ -387,10 +387,6 @@ static struct platform_device *cardhu_spi_devices[] __initdata = {
 	&tegra_spi_device4,
 };
 
-static struct platform_device *touch_spi_device[] __initdata = {
-	&tegra_spi_device1,
-};
-
 struct spi_clk_parent spi_parent_clk[] = {
 	[0] = {.name = "pll_p"},
 #ifndef CONFIG_TEGRA_PLLM_RESTRICTED
@@ -405,17 +401,13 @@ static struct tegra_spi_platform_data cardhu_spi_pdata = {
 	.is_dma_based		= true,
 	.max_dma_buffer		= (16 * 1024),
 	.is_clkon_always	= false,
-	.max_rate		= 100000000,
+	.max_rate			= 100000000,
 };
 
 static void __init cardhu_spi_init(void)
 {
 	int i;
 	struct clk *c;
-	struct board_info board_info, display_board_info;
-
-	tegra_get_board_info(&board_info);
-	tegra_get_display_board_info(&display_board_info);
 
 	for (i = 0; i < ARRAY_SIZE(spi_parent_clk); ++i) {
 		c = tegra_get_clock_by_name(spi_parent_clk[i].name);
@@ -432,19 +424,6 @@ static void __init cardhu_spi_init(void)
 	tegra_spi_device4.dev.platform_data = &cardhu_spi_pdata;
 	platform_add_devices(cardhu_spi_devices,
 				ARRAY_SIZE(cardhu_spi_devices));
-
-	if (display_board_info.board_id == BOARD_DISPLAY_PM313) {
-        pr_info("%s: display_board_info.board_id == BOARD_DISPLAY_PM313\n", __func__);
-		platform_add_devices(touch_spi_device,
-				ARRAY_SIZE(touch_spi_device));
-	}
-	if (board_info.board_id == BOARD_E1198) {
-        pr_info("%s: board_info.board_id == BOARD_E1198\n", __func__);
-		tegra_spi_device2.dev.platform_data = &cardhu_spi_pdata;
-		platform_device_register(&tegra_spi_device2);
-		tegra_spi_slave_device1.dev.platform_data = &cardhu_spi_pdata;
-		platform_device_register(&tegra_spi_slave_device1);
-	}
 }
 
 static struct resource tegra_rtc_resources[] = {
@@ -490,10 +469,10 @@ static struct tegra_asoc_platform_data cardhu_audio_pdata = {
 
 static struct platform_device cardhu_audio_device = {
 	.name	= "tegra-snd-codec",
-    .id     = 0,
-    .dev    = {
-        .platform_data = &cardhu_audio_pdata,
-    },
+	.id		= 0,
+	.dev	= {
+		.platform_data = &cardhu_audio_pdata,
+	},
 };
 
 static struct platform_device *cardhu_devices[] __initdata = {
@@ -560,23 +539,22 @@ static struct i2c_board_info __initdata atmel_i2c_info[] = {
 #define ELAN_Y_MAX_202T  1856
 
 struct elan_ktf3k_i2c_platform_data ts_elan_ktf3k_data[] = {
-    {
-        .version = 0x0001,
+	{
+		.version = 0x0001,
 		.abs_x_min = 0,
-        .abs_x_max = ELAN_X_MAX,   //LG 9.7" Dpin 2368, Spin 2112
-        .abs_y_min = 0,
-        .abs_y_max = ELAN_Y_MAX,   //LG 9.7" Dpin 1728, Spin 1600
-        .intr_gpio = TEGRA_GPIO_PH4,
-        .rst_gpio = TEGRA_GPIO_PH6,
-    },
+		.abs_x_max = ELAN_X_MAX,   //LG 9.7" Dpin 2368, Spin 2112
+		.abs_y_min = 0,
+		.abs_y_max = ELAN_Y_MAX,   //LG 9.7" Dpin 1728, Spin 1600
+		.intr_gpio = TEGRA_GPIO_PH4,
+		.rst_gpio = TEGRA_GPIO_PH6,
+	},
 };
 
 static struct i2c_board_info elan_i2c_devices[] = {
-    {
-        I2C_BOARD_INFO(ELAN_KTF3K_NAME, 0x10),
-        .platform_data = &ts_elan_ktf3k_data,
-    },
-
+	{
+		I2C_BOARD_INFO(ELAN_KTF3K_NAME, 0x10),
+		.platform_data = &ts_elan_ktf3k_data,
+	},
 };
 #endif
 
@@ -586,44 +564,44 @@ static int __init cardhu_touch_init(void)
 	struct elan_ktf3k_i2c_platform_data *platform;
 #endif
 
-    gpio_request(TEGRA_GPIO_PH4, "touch-irq");
-    gpio_direction_input(TEGRA_GPIO_PH4);
-    gpio_request(TEGRA_GPIO_PH6, "touch-reset");
-    gpio_direction_output(TEGRA_GPIO_PH6, 0);
+	gpio_request(TEGRA_GPIO_PH4, "touch-irq");
+	gpio_direction_input(TEGRA_GPIO_PH4);
+	gpio_request(TEGRA_GPIO_PH6, "touch-reset");
+	gpio_direction_output(TEGRA_GPIO_PH6, 0);
 
-    msleep(1);
+	msleep(1);
 
-    gpio_set_value(TEGRA_GPIO_PH6, 1);
+	gpio_set_value(TEGRA_GPIO_PH6, 1);
 
-    msleep(100);
+	msleep(100);
 
-    switch(tegra3_get_project_id()){
-	    case TEGRA3_PROJECT_TF201:
+	switch(tegra3_get_project_id()){
+		case TEGRA3_PROJECT_TF201:
 #ifdef CONFIG_TOUCHSCREEN_ATMEL_MXT
-            atmel_i2c_info[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
-            i2c_register_board_info(1, atmel_i2c_info, 1);
+			atmel_i2c_info[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
+			i2c_register_board_info(1, atmel_i2c_info, 1);
 #endif
-	        break;
-	    case TEGRA3_PROJECT_TF300T:
-	    case TEGRA3_PROJECT_TF300TG:
-	    case TEGRA3_PROJECT_TF300TL:
+			break;
+		case TEGRA3_PROJECT_TF300T:
+		case TEGRA3_PROJECT_TF300TG:
+		case TEGRA3_PROJECT_TF300TL:
 #ifdef CONFIG_TOUCHSCREEN_ELAN_TF_3K
-            elan_i2c_devices[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
-	        i2c_register_board_info(1, elan_i2c_devices, 1);
+			elan_i2c_devices[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
+			i2c_register_board_info(1, elan_i2c_devices, 1);
 #endif
-	        break;
-	    case TEGRA3_PROJECT_TF700T:
-	        gpio_request(TEGRA_GPIO_PK2, "tp_wake");
-	        gpio_direction_output(TEGRA_GPIO_PK2, 1);
+			break;
+		case TEGRA3_PROJECT_TF700T:
+			gpio_request(TEGRA_GPIO_PK2, "tp_wake");
+			gpio_direction_output(TEGRA_GPIO_PK2, 1);
 #ifdef CONFIG_TOUCHSCREEN_ELAN_TF_3K
-	        platform = (struct elan_ktf3k_i2c_platform_data *)elan_i2c_devices[0].platform_data;
-	        platform->abs_x_max = ELAN_X_MAX_202T;
-	        platform->abs_y_max = ELAN_Y_MAX_202T;
-            elan_i2c_devices[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
-	        i2c_register_board_info(1, elan_i2c_devices, 1);
+			platform = (struct elan_ktf3k_i2c_platform_data *)elan_i2c_devices[0].platform_data;
+			platform->abs_x_max = ELAN_X_MAX_202T;
+			platform->abs_y_max = ELAN_Y_MAX_202T;
+			elan_i2c_devices[0].irq = gpio_to_irq(TEGRA_GPIO_PH4);
+			i2c_register_board_info(1, elan_i2c_devices, 1);
 #endif
-	        break;
-	    }
+			break;
+	}
 	return 0;
 }
 
@@ -665,6 +643,7 @@ static struct tegra_usb_platform_data tegra_ehci2_hsic_xmm_pdata = {
 	.phy_intf = TEGRA_USB_PHY_INTF_HSIC,
 	.op_mode	= TEGRA_USB_OPMODE_HOST,
 	.u_data.host = {
+		.enable_gpio = EN_HSIC_GPIO,
 		.vbus_gpio = -1,
 		.hot_plug = false,
 		.remote_wakeup_supported = false,
@@ -853,11 +832,6 @@ static struct tegra_usb_otg_data tegra_otg_pdata = {
 
 static void __init cardhu_usb_init(void)
 {
-	struct board_info bi;
-	u32 project_info = tegra3_get_project_id();
-
-	tegra_get_board_info(&bi);
-
 	/* OTG should be the first to be registered */
 	tegra_otg_device.dev.platform_data = &tegra_otg_pdata;
 	platform_device_register(&tegra_otg_device);
@@ -865,29 +839,11 @@ static void __init cardhu_usb_init(void)
 	/* setup the udc platform data */
 	tegra_udc_device.dev.platform_data = &tegra_udc_pdata;
 
-	if (bi.board_id == BOARD_PM267) {
-        pr_info("%s: bi.board_id == BOARD_PM267\n", __func__);
-		hsic_enable_gpio = EN_HSIC_GPIO;
-		hsic_reset_gpio = PM267_SMSC4640_HSIC_HUB_RESET_GPIO;
-		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_hsic_pdata;
-		platform_device_register(&tegra_ehci2_device);
-	} else if (bi.board_id == BOARD_E1256) {
-        pr_info("%s: bi.board_id == BOARD_E1256\n", __func__);
-		hsic_enable_gpio = EN_HSIC_GPIO;
-		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_hsic_pdata;
-		platform_device_register(&tegra_ehci2_device);
-	} else if (bi.board_id == BOARD_E1186) {
-        pr_info("%s: bi.board_id == BOARD_E1186\n", __func__);
-		tegra_ehci2_device.dev.platform_data =
-						&tegra_ehci2_hsic_xmm_pdata;
-		/* ehci2 registration happens in baseband-xmm-power  */
-	}
-
-	if (project_info == TEGRA3_PROJECT_TF300TL) {
+	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF300TL) {
 		printk("[TF300TL] register tegra_ehci2_device\n");
 		tegra_ehci2_device.dev.platform_data = &tegra_ehci2_utmi_pdata;
 		platform_device_register(&tegra_ehci2_device);
-	} else if (project_info == TEGRA3_PROJECT_TF300TG) {
+	} else if (tegra3_get_project_id() == TEGRA3_PROJECT_TF300TG) {
 		printk("[TF300TG] register tegra_ehci2_device\n");
 		tegra_ehci2_utmi_pdata.u_data.host.power_off_on_suspend = false;
 		tegra_ehci2_device.dev.platform_data =  &tegra_ehci2_hsic_xmm_pdata;
@@ -1064,36 +1020,6 @@ static void __init cardhu_usb_init(void)  { }
 //static void __init cardhu_modem_init(void)  { }
 #endif /* CONFIG_USB_SUPPORT */
 
-static struct tegra_pci_platform_data cardhu_pci_platform_data = {
-	.port_status[0]	= 1,
-	.port_status[1]	= 1,
-	.port_status[2]	= 1,
-	.use_dock_detect	= 0,
-	.gpio		= 0,
-};
-
-static void __init cardhu_pci_init(void)
-{
-	struct board_info board_info;
-
-	tegra_get_board_info(&board_info);
-	if (board_info.board_id == BOARD_E1291) {
-        pr_info("%s: board_info.board_id == BOARD_E1291\n", __func__);
-		cardhu_pci_platform_data.port_status[0] = 0;
-		cardhu_pci_platform_data.port_status[1] = 0;
-		cardhu_pci_platform_data.port_status[2] = 1;
-		cardhu_pci_platform_data.use_dock_detect = 1;
-		cardhu_pci_platform_data.gpio = DOCK_DETECT_GPIO;
-	}
-	if ((board_info.board_id == BOARD_E1186) ||
-		(board_info.board_id == BOARD_E1187) ||
-		(board_info.board_id == BOARD_E1291)) {
-        pr_info("%s: board_info.board_id == BOARD_E1186 or BOARD_E1187 or BOARD_E1291\n", __func__);
-		tegra_pci_device.dev.platform_data = &cardhu_pci_platform_data;
-		platform_device_register(&tegra_pci_device);
-	}
-}
-
 static void __init cardhu_booting_info(void)
 {
 	static void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
@@ -1143,17 +1069,15 @@ static void __init tegra_cardhu_init(void)
 //	cardhu_modem_init();
 	cardhu_keys_init();
 	cardhu_panel_init();
-	cardhu_pmon_init();
 	cardhu_sensors_init();
 	cardhu_setup_bluesleep();
 	cardhu_pins_state_init();
 	cardhu_emc_init();
 //	tegra_release_bootloader_fb();
-	cardhu_pci_init();
 #ifdef CONFIG_TEGRA_WDT_RECOVERY
 	tegra_wdt_recovery_init();
-	tegra_register_fuse();
 #endif
+	tegra_register_fuse();
 }
 
 static void __init tegra_cardhu_reserve(void)
@@ -1181,6 +1105,6 @@ MACHINE_START(TRANSFORMER, "transformer")
 	.handle_irq     = gic_handle_irq,
 	.timer          = &tegra_timer,
 	.init_machine   = tegra_cardhu_init,
-	.dt_compat	    = cardhu_dt_board_compat,
+	.dt_compat      = cardhu_dt_board_compat,
 	.restart        = tegra_assert_system_reset,
 MACHINE_END

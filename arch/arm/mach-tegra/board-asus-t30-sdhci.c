@@ -23,11 +23,8 @@
 #include <asm/mach-types.h>
 #include <mach/iomap.h>
 #include <mach/sdhci.h>
-#include <mach/pinmux.h>
-#include <mach/pinmux-tegra30.h>
 
 #include "gpio-names.h"
-#include "board.h"
 #include "board-asus-t30.h"
 
 #define CARDHU_WLAN_PWR	TEGRA_GPIO_PD4
