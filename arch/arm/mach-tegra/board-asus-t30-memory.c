@@ -22,7 +22,6 @@
 #include "board-asus-t30.h"
 #include "tegra3_emc.h"
 #include "devices.h"
-#include "gpio-names.h"
 
 #include <mach/board-asus-t30-misc.h>
 

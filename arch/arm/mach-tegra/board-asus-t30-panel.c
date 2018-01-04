@@ -33,7 +33,6 @@
 #include "board.h"
 #include "board-asus-t30.h"
 #include "devices.h"
-#include "gpio-names.h"
 #include "tegra3_host1x_devices.h"
 
 #define DC_CTRL_MODE	(TEGRA_DC_OUT_ONE_SHOT_MODE | \

@@ -31,35 +31,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <linux/i2c.h>
 #include <linux/delay.h>
+#include <linux/i2c.h>
+#include <linux/nct1008.h>
+#include <linux/mpu_inv.h>
 #include <linux/regulator/consumer.h>
 #include <linux/i2c/pca953x.h>
-#include <linux/nct1008.h>
-#include <mach/fb.h>
-#include <mach/gpio.h>
+#include <linux/gpio.h>
+
 #ifdef CONFIG_VIDEO_YUV
 #include <media/yuv_sensor.h>
 #endif /* CONFIG_VIDEO_YUV */
-#include <media/tps61050.h>
-#include <generated/mach-types.h>
-#include "gpio-names.h"
-#include "board.h"
-#include <linux/mpu_inv.h>
 
-#include <linux/bq27x00.h>
 #include <mach/edp.h>
-#include <linux/therm_est.h>
-#include <linux/gpio.h>
-
-#include "gpio-names.h"
-#include "board-asus-t30.h"
-#include "cpu-tegra.h"
-#include "devices.h"
-
 #include <mach/board-asus-t30-misc.h>
 
-static struct board_info board_info;
+#include "board-asus-t30.h"
+#include "cpu-tegra.h"
+
 #ifdef CONFIG_VIDEO_YUV
 static struct regulator *reg_cardhu_cam;	/* LDO6 */
 static struct regulator *reg_cardhu_1v8_cam;	/* VDDIO_CAM 1.8V PBB4 */
@@ -908,8 +897,6 @@ static struct i2c_board_info cardhu_i2c1_board_info_al3010[] = {
 int __init cardhu_sensors_init(void)
 {
 	int err;
-
-	tegra_get_board_info(&board_info);
 
 	err = cardhu_nct1008_init();
 	if (err)

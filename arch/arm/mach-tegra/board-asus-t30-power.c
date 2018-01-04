@@ -18,45 +18,26 @@
  * 02111-1307, USA
  */
 #include <linux/i2c.h>
-#include <linux/pda_power.h>
 #include <linux/platform_device.h>
-#include <linux/resource.h>
-#include <linux/regulator/machine.h>
 #include <linux/mfd/tps6591x.h>
-#include <linux/mfd/max77663-core.h>
-#include <linux/gpio.h>
 #include <linux/io.h>
 #include <linux/regulator/fixed.h>
 #include <linux/regulator/tps6591x-regulator.h>
 #include <linux/regulator/tps62360.h>
-#include <linux/power/gpio-charger.h>
 
 #include <asm/mach-types.h>
 
 #include <mach/iomap.h>
 #include <mach/irqs.h>
-#include <mach/pinmux.h>
 #include <mach/edp.h>
-#include <mach/gpio-tegra.h>
-#include <mach/pinmux-tegra30.h>
-#include <mach/hardware.h>
 #include <mach/board-asus-t30-misc.h>
 
-#include "gpio-names.h"
 #include "board.h"
 #include "board-asus-t30.h"
 #include "pm.h"
-#include "tegra3_tsensor.h"
-#include "wakeups-t3.h"
-#include "pm-irq.h"
 
 #define PMC_CTRL		0x0
 #define PMC_CTRL_INTR_LOW	(1 << 17)
-
-static struct regulator_consumer_supply tps6591x_vdd1_supply_skubit0_0[] = {
-	REGULATOR_SUPPLY("vdd_core", NULL),
-	REGULATOR_SUPPLY("en_vddio_ddr_1v2", NULL),
-};
 
 static struct regulator_consumer_supply tps6591x_vdd1_supply_skubit0_1[] = {
 	REGULATOR_SUPPLY("en_vddio_ddr_1v2", NULL),
@@ -135,22 +116,12 @@ static struct regulator_consumer_supply tps6591x_ldo3_supply_e118x[] = {
 	REGULATOR_SUPPLY("pwrdet_sdmmc1", NULL),
 };
 
-static struct regulator_consumer_supply tps6591x_ldo3_supply_e1198[] = {
-	REGULATOR_SUPPLY("unused_rail_ldo3", NULL),
-};
-
 static struct regulator_consumer_supply tps6591x_ldo4_supply_0[] = {
 	REGULATOR_SUPPLY("vdd_rtc", NULL),
 };
 
 static struct regulator_consumer_supply tps6591x_ldo5_supply_e118x[] = {
 	REGULATOR_SUPPLY("avdd_vdac", NULL),
-};
-
-static struct regulator_consumer_supply tps6591x_ldo5_supply_e1198[] = {
-	REGULATOR_SUPPLY("avdd_vdac", NULL),
-	REGULATOR_SUPPLY("vddio_sdmmc", "sdhci-tegra.0"),
-	REGULATOR_SUPPLY("pwrdet_sdmmc1", NULL),
 };
 
 static struct regulator_consumer_supply tps6591x_ldo6_supply_0[] = {
@@ -200,7 +171,6 @@ static struct regulator_consumer_supply tps6591x_ldo8_supply_0[] = {
 		.shutdown_state_off = _off,				\
 	}
 
-TPS_PDATA_INIT(vdd1, skubit0_0, 600,  1500, 0, 1, 1, 0, -1, 0, 0, EXT_CTRL_SLEEP_OFF, 0, true);
 TPS_PDATA_INIT(vdd1, skubit0_1, 600,  1500, 0, 1, 1, 0, -1, 0, 0, EXT_CTRL_SLEEP_OFF, 0, true);
 TPS_PDATA_INIT(vdd2, 0,         600,  1500, 0, 1, 1, 0, -1, 0, 0, 0, 0, false);
 TPS_PDATA_INIT(vddctrl, 0,      600,  1400, 0, 1, 1, 0, -1, 0, 0, EXT_CTRL_EN1, 0, true);
@@ -210,10 +180,8 @@ TPS_PDATA_INIT(ldo1, 0,         1000, 3300, tps6591x_rails(VDD_2), 1, 0, 0, -1, 
 TPS_PDATA_INIT(ldo2, 0,         1050, 3300, tps6591x_rails(VDD_2), 0, 0, 1, -1, 0, 1, 0, 0, false);
 
 TPS_PDATA_INIT(ldo3, e118x,     1000, 3300, 0, 0, 0, 0, -1, 0, 0, 0, 0, true);
-TPS_PDATA_INIT(ldo3, e1198,     1000, 3300, 0, 0, 0, 0, -1, 0, 0, 0, 0, true);
 TPS_PDATA_INIT(ldo4, 0,         1000, 3300, 0, 1, 0, 0, -1, 0, 0, 0, 0, false);
 TPS_PDATA_INIT(ldo5, e118x,     1000, 3300, 0, 0, 0, 0, -1, 0, 0, 0, 0, true);
-TPS_PDATA_INIT(ldo5, e1198,     1000, 3300, 0, 0, 0, 0, -1, 0, 0, 0, 0, true );
 
 TPS_PDATA_INIT(ldo6, 0,         1200, 1200, tps6591x_rails(VIO), 0, 0, 1, -1, 0, 0, 0, 0, true);
 TPS_PDATA_INIT(ldo7, 0,         1200, 1200, tps6591x_rails(VIO), 1, 1, 1, -1, 0, 0, EXT_CTRL_SLEEP_OFF, LDO_LOW_POWER_ON_SUSPEND, false);
@@ -554,7 +522,6 @@ static struct regulator_consumer_supply fixed_reg_en_vbrtr_supply[] = {
 
 /* common to most of boards*/
 FIXED_REG(0, en_5v_cp,			en_5v_cp,		NULL,						1,	0,	TPS6591X_GPIO_0,	true,	1, 5000);
-FIXED_REG(3, en_3v3_sys,		en_3v3_sys,		NULL,						0,	0,	TPS6591X_GPIO_7,	true,	1, 3300);
 FIXED_REG(5, en_3v3_modem,		en_3v3_modem,	NULL,						1,	0,	TEGRA_GPIO_PD6,		true,	1, 3300);
 FIXED_REG(7, cam3_ldo_en,		cam3_ldo_en,	FIXED_SUPPLY(en_3v3_sys),	0,	0,	TEGRA_GPIO_PS0,		true,	0, 3300);
 FIXED_REG(8, en_vdd_com,		en_vdd_com,		FIXED_SUPPLY(en_3v3_sys),	1,	0,	TEGRA_GPIO_PD0,		true,	1, 3300);

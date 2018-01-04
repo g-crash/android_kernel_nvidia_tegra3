@@ -19,7 +19,6 @@
 #include <linux/export.h>
 
 #include <mach/board-asus-t30-misc.h>
-#include <mach/pinmux.h>
 #include <mach/pinmux-tegra30.h>
 #include "gpio-names.h"
 #include "fuse.h"

@@ -18,7 +18,6 @@
 #include <mach/pinmux-tegra30.h>
 #include <mach/board-asus-t30-misc.h>
 #include "board-asus-t30.h"
-#include "gpio-names.h"
 
 #define DEFAULT_DRIVE(_name)					\
 	{							\

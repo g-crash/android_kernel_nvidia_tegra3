@@ -23,7 +23,6 @@
 
 #include <mach/irqs.h>
 #include <linux/mfd/tps6591x.h>
-#include <linux/mfd/ricoh583.h>
 #include "gpio-names.h"
 
 /* External peripheral act as gpio */

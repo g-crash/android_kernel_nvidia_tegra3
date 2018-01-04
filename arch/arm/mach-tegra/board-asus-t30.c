@@ -34,9 +34,6 @@
 #include <linux/input.h>
 #include <linux/platform_data/tegra_usb.h>
 #include <linux/spi/spi.h>
-#ifdef CONFIG_TOUCHSCREEN_ATMEL_MXT
-#include <linux/i2c/atmel_mxt_ts.h>
-#endif
 #include <linux/tegra_uart.h>
 #include <linux/memblock.h>
 #include <linux/spi-tegra.h>
@@ -58,9 +55,7 @@
 #include <mach/tegra_wm8903_pdata.h>
 #include <mach/usb_phy.h>
 #include <mach/board-asus-t30-misc.h>
-#include <mach/pci.h>
 #include <mach/tegra_fiq_debugger.h>
-#include <mach/gpio-tegra.h>
 
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
@@ -70,7 +65,6 @@
 #include "clock.h"
 #include "common.h"
 #include "board-asus-t30.h"
-#include "board-touch.h"
 #include "devices.h"
 #include "gpio-names.h"
 #include "fuse.h"
@@ -508,6 +502,9 @@ static struct platform_device *cardhu_devices[] __initdata = {
 };
 
 #ifdef CONFIG_TOUCHSCREEN_ATMEL_MXT
+
+#include <linux/i2c/atmel_mxt_ts.h>
+
 static u8 read_chg(void)
 {
 	return gpio_get_value(TEGRA_GPIO_PH4);
@@ -643,90 +640,13 @@ static struct tegra_usb_platform_data tegra_ehci2_hsic_xmm_pdata = {
 	.phy_intf = TEGRA_USB_PHY_INTF_HSIC,
 	.op_mode	= TEGRA_USB_OPMODE_HOST,
 	.u_data.host = {
-		.enable_gpio = EN_HSIC_GPIO,
+//		.enable_gpio = EN_HSIC_GPIO,
 		.vbus_gpio = -1,
 		.hot_plug = false,
 		.remote_wakeup_supported = false,
 		.power_off_on_suspend = false,
 	},
 	.ops = &hsic_xmm_plat_ops,
-};
-
-static int hsic_enable_gpio = -1;
-static int hsic_reset_gpio = -1;
-
-static void hsic_platform_open(void)
-{
-	int reset_gpio = -1, enable_gpio = -1;
-
-	if (hsic_enable_gpio != -1)
-		enable_gpio = gpio_request(hsic_enable_gpio, "uhsic_enable");
-	if (hsic_reset_gpio != -1)
-		reset_gpio = gpio_request(hsic_reset_gpio, "uhsic_reset");
-	/* hsic enable signal deasserted, hsic reset asserted */
-	if (!enable_gpio)
-		gpio_direction_output(hsic_enable_gpio, 0 /* deasserted */);
-	if (!reset_gpio)
-		gpio_direction_output(hsic_reset_gpio, 0 /* asserted */);
-	/* keep hsic reset asserted for 1 ms */
-	udelay(1000);
-	/* enable (power on) hsic */
-	if (!enable_gpio)
-		gpio_set_value_cansleep(hsic_enable_gpio, 1);
-	udelay(1000);
-	/* deassert reset */
-	if (!reset_gpio)
-		gpio_set_value_cansleep(hsic_reset_gpio, 1);
-
-}
-
-static void hsic_platform_close(void)
-{
-	if (hsic_enable_gpio != -1) {
-		gpio_set_value(hsic_enable_gpio, 0);
-		gpio_free(hsic_enable_gpio);
-	}
-	if (hsic_reset_gpio != -1) {
-		gpio_set_value(hsic_reset_gpio, 0);
-		gpio_free(hsic_reset_gpio);
-	}
-}
-
-static void hsic_power_on(void)
-{
-	if (hsic_enable_gpio != -1) {
-		gpio_set_value_cansleep(hsic_enable_gpio, 1);
-		udelay(1000);
-	}
-}
-
-static void hsic_power_off(void)
-{
-	if (hsic_enable_gpio != -1) {
-		gpio_set_value_cansleep(hsic_enable_gpio, 0);
-		udelay(1000);
-	}
-}
-
-static struct tegra_usb_phy_platform_ops hsic_plat_ops = {
-	.open = hsic_platform_open,
-	.close = hsic_platform_close,
-	.pre_phy_on = hsic_power_on,
-	.post_phy_off = hsic_power_off,
-};
-
-static struct tegra_usb_platform_data tegra_ehci2_hsic_pdata = {
-	.port_otg = false,
-	.has_hostpc = true,
-	.phy_intf = TEGRA_USB_PHY_INTF_HSIC,
-	.op_mode	= TEGRA_USB_OPMODE_HOST,
-	.u_data.host = {
-		.vbus_gpio = -1,
-		.hot_plug = false,
-		.remote_wakeup_supported = false,
-		.power_off_on_suspend = false,
-	},
-	.ops = &hsic_plat_ops,
 };
 
 static struct tegra_usb_platform_data tegra_udc_pdata = {
@@ -746,6 +666,30 @@ static struct tegra_usb_platform_data tegra_udc_pdata = {
 		.idle_wait_delay = 17,
 		.term_range_adj = 6,
 		.xcvr_setup = 8,
+		.xcvr_lsfslew = 2,
+		.xcvr_lsrslew = 2,
+		.xcvr_setup_offset = 0,
+		.xcvr_use_fuses = 1,
+	},
+};
+
+static struct tegra_usb_platform_data tegra_ehci1_utmi_pdata = {
+	.port_otg = true,
+	.has_hostpc = true,
+	.phy_intf = TEGRA_USB_PHY_INTF_UTMI,
+	.op_mode = TEGRA_USB_OPMODE_HOST,
+	.u_data.host = {
+		.vbus_gpio = -1,
+		.hot_plug = true,
+		.remote_wakeup_supported = true,
+		.power_off_on_suspend = true,
+	},
+	.u_cfg.utmi = {
+		.hssync_start_delay = 0,
+		.elastic_limit = 16,
+		.idle_wait_delay = 17,
+		.term_range_adj = 6,
+		.xcvr_setup = 15,
 		.xcvr_lsfslew = 2,
 		.xcvr_lsrslew = 2,
 		.xcvr_setup_offset = 0,
@@ -794,30 +738,6 @@ static struct tegra_usb_platform_data tegra_ehci3_utmi_pdata = {
 		.idle_wait_delay = 17,
 		.term_range_adj = 6,
 		.xcvr_setup = 8,
-		.xcvr_lsfslew = 2,
-		.xcvr_lsrslew = 2,
-		.xcvr_setup_offset = 0,
-		.xcvr_use_fuses = 1,
-	},
-};
-
-static struct tegra_usb_platform_data tegra_ehci1_utmi_pdata = {
-	.port_otg = true,
-	.has_hostpc = true,
-	.phy_intf = TEGRA_USB_PHY_INTF_UTMI,
-	.op_mode = TEGRA_USB_OPMODE_HOST,
-	.u_data.host = {
-		.vbus_gpio = -1,
-		.hot_plug = true,
-		.remote_wakeup_supported = true,
-		.power_off_on_suspend = true,
-	},
-	.u_cfg.utmi = {
-		.hssync_start_delay = 0,
-		.elastic_limit = 16,
-		.idle_wait_delay = 17,
-		.term_range_adj = 6,
-		.xcvr_setup = 15,
 		.xcvr_lsfslew = 2,
 		.xcvr_lsrslew = 2,
 		.xcvr_setup_offset = 0,
