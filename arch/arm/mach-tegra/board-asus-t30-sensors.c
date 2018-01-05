@@ -36,7 +36,6 @@
 #include <linux/nct1008.h>
 #include <linux/mpu_inv.h>
 #include <linux/regulator/consumer.h>
-#include <linux/i2c/pca953x.h>
 #include <linux/gpio.h>
 
 #ifdef CONFIG_VIDEO_YUV
@@ -196,13 +195,12 @@ static int yuv_sensor_power_on(struct device *dev)
 
     return 0;
 }
+
 int yuv_sensor_power_on_reset_pin(void)
 {
     pr_info("gpio %d set to %d\n",ISP_POWER_RESET_GPIO, gpio_get_value(ISP_POWER_RESET_GPIO));
     gpio_direction_output(ISP_POWER_RESET_GPIO, 1);
     pr_info("gpio %d set to %d\n",ISP_POWER_RESET_GPIO, gpio_get_value(ISP_POWER_RESET_GPIO));
-
-    printk("yuv_sensor_power_on -\n");
     return 0;
 }
 
@@ -253,6 +251,7 @@ static int yuv_front_sensor_power_on(struct device *dev)
 		printk("yuv_sensor busy\n");
 		return -EBUSY;
 	}
+
 	camera_busy = true;
 	/* 1.8V VDDIO_CAM controlled by "EN_1V8_CAM(GPIO_PBB4)" */
 	if (!reg_cardhu_1v8_cam) {
@@ -439,6 +438,7 @@ fail_to_get_reg:
     printk("%s- : -ENODEV\n", __FUNCTION__);
     return -ENODEV;
 }
+
 static int iCatch7002a_power_off(struct device *dev)
 {
 	printk("%s+\n", __FUNCTION__);
@@ -686,56 +686,6 @@ static int __init cardhu_skin_init(void)
 late_initcall(cardhu_skin_init);
 #endif
 
-#ifdef CONFIG_GPIO_PCA953X
-static struct pca953x_platform_data cardhu_pmu_tca6416_data = {
-	.gpio_base      = PMU_TCA6416_GPIO_BASE,
-};
-
-static const struct i2c_board_info cardhu_i2c4_board_info_tca6416[] = {
-	{
-		I2C_BOARD_INFO("tca6416", 0x20),
-		.platform_data = &cardhu_pmu_tca6416_data,
-	},
-};
-
-static struct pca953x_platform_data cardhu_cam_tca6416_data = {
-	.gpio_base      = CAM_TCA6416_GPIO_BASE,
-};
-
-static const struct i2c_board_info cardhu_i2c2_board_info_tca6416[] = {
-	{
-		I2C_BOARD_INFO("tca6416", 0x20),
-		.platform_data = &cardhu_cam_tca6416_data,
-	},
-};
-
-static int __init pmu_tca6416_init(void)
-{
-	pr_info("Registering pmu pca6416\n");
-	i2c_register_board_info(4, cardhu_i2c4_board_info_tca6416,
-		ARRAY_SIZE(cardhu_i2c4_board_info_tca6416));
-	return 0;
-}
-
-static int __init cam_tca6416_init(void)
-{
-	pr_info("Registering cam pca6416\n");
-	i2c_register_board_info(2, cardhu_i2c2_board_info_tca6416,
-		ARRAY_SIZE(cardhu_i2c2_board_info_tca6416));
-	return 0;
-}
-#else
-static int __init pmu_tca6416_init(void)
-{
-	return 0;
-}
-
-static int __init cam_tca6416_init(void)
-{
-	return 0;
-}
-#endif
-
 static struct mpu_platform_data mpu3050_gyro_data = {
 	.int_config	= 0x10,
 	.level_shifter	= 0,
@@ -906,8 +856,6 @@ int __init cardhu_sensors_init(void)
 			ARRAY_SIZE(cardhu_i2c4_nct1008_board_info));
 
 	cardhu_camera_init();
-	cam_tca6416_init();
-	pmu_tca6416_init();
 
 	cardhu_i2c1_board_info_al3010[0].irq = gpio_to_irq(TEGRA_GPIO_PZ2);
 	i2c_register_board_info(2, cardhu_i2c1_board_info_al3010,
