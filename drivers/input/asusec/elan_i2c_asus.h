@@ -3,18 +3,6 @@
 
 #include "asusdec.h"
 
-#define ELAN_DEBUG			0
-#if ELAN_DEBUG
-#define ELAN_INFO(format, arg...)	\
-	printk(KERN_INFO "elan_i2c_asus: [%s] " format , __FUNCTION__ , ## arg)
-#else
-#define ELAN_INFO(format, arg...)
-#endif
-
-
-#define ELAN_ERR(format, arg...)	\
-	printk(KERN_ERR "elan_i2c_asus: [%s] " format , __FUNCTION__ , ## arg)
-
 #define CONVERSION_TIME_MS		50
 
 #define ELAN_RETRY_COUNT		3
@@ -39,13 +27,11 @@
 #define PSMOUSE_RET_NAK		0xfe
 #define ELANTOUCHPAD		727
 
-
 /*
  * Command values for Synaptics style queries
  */
 #define ETP_FW_VERSION_QUERY		0x01
 #define ETP_CAPABILITIES_QUERY		0x02
-
 
 /*
  * Command values for register reading or writing

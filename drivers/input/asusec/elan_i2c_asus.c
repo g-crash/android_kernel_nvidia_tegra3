@@ -6,7 +6,6 @@
 #include <linux/interrupt.h>
 #include <linux/init.h>
 #include <linux/input.h>
-#include <asm/gpio.h>
 #include <linux/workqueue.h>
 #include <linux/cdev.h>
 #include <linux/gpio_event.h>
@@ -14,11 +13,9 @@
 #include <linux/time.h>
 #include <linux/timer.h>
 #include <linux/slab.h>
+#include <asm/gpio.h>
 
 #include "elan_i2c_asus.h"
-
-MODULE_DESCRIPTION(DRIVER_DESC);
-MODULE_LICENSE("GPL");
 
 static int elan_i2c_asus_cmd(struct i2c_client *client,unsigned char *param, int command)
 {
@@ -29,14 +26,14 @@ static int elan_i2c_asus_cmd(struct i2c_client *client,unsigned char *param, int
 	int i;
 	int retry_data_count;
 	u8 i2c_data[16];
-	int index;
 
-	ELAN_INFO("command = 0x%x\n",command);
+	pr_info("elan_i2c_asus: %s: command = 0x%x\n", __func__, command);
 	asus_ec_cmd = (((command & 0x00ff) << 8) | 0xD4);
 	ret = 0;
 	ret = i2c_smbus_write_word_data(client, 0x64, asus_ec_cmd);
+
 	if (ret < 0) {
-		ELAN_ERR("Wirte to device fails status %x\n",ret);
+		pr_err("elan_i2c_asus: %s: write to device fails status %x\n", __func__, ret);
 		return ret;
 	}
 	msleep(CONVERSION_TIME_MS);
@@ -44,10 +41,9 @@ static int elan_i2c_asus_cmd(struct i2c_client *client,unsigned char *param, int
 	while(retry-- > 0){
 		ret = i2c_smbus_read_i2c_block_data(client, 0x6A, 8, i2c_data);
 		if (ret < 0) {
-			ELAN_ERR("Fail to read data, status %d\n", ret);
+			pr_err("elan_i2c_asus: %s: fail to read data, status %d\n", __func__, ret);
 			return ret;
 		}
-		ASUSDEC_I2C_DATA(i2c_data, index);
 		if ((i2c_data[1] & ASUSDEC_OBF_MASK) &&
 			(i2c_data[1] & ASUSDEC_AUX_MASK)){
 			if (i2c_data[2] == PSMOUSE_RET_ACK){
@@ -68,9 +64,8 @@ static int elan_i2c_asus_cmd(struct i2c_client *client,unsigned char *param, int
 	return 0;
 
 fail_elan_touchpad_i2c:
-	ELAN_ERR("fail to get touchpad response");
+	pr_err("elan_i2c_asus: %s: fail to get touchpad response", __func__);
 	return -1;
-
 }
 
 /*
@@ -97,7 +92,6 @@ void elantech_report_absolute_to_related(struct asusdec_chip *ec_chip, int *Null
 	fingers = (packet[0] & 0xc0) >> 6;
 	x = ((packet[1] & 0x0f) << 8) | packet[2];
 	y = etd->ymax - (((packet[4] & 0x0f) << 8) | packet[5]);
-	//printk("fingers=%d, x=%d, y=%d, packet=%02x,%02x,%02x,%02x,%02x,%02x\n", fingers, x, y, packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
         width = ((packet[0] & 0x30) >> 2) | ((packet[3] & 0x30) >> 4);
 
 	last_fingers = etd->fingers;
@@ -178,7 +172,7 @@ static int elantech_set_absolute_mode(struct asusdec_chip *ec_chip)
 	struct i2c_client *client;
 	unsigned char reg_10 = 0x03;
 
-	ELAN_INFO("elantech_set_absolute_mode 2\n");
+	pr_info("elan_i2c_asus: %s: elantech_set_absolute_mode 2\n", __func__);
 	client = ec_chip->client;
 
 	if ((!elan_i2c_asus_cmd(client, NULL, ETP_PS2_CUSTOM_COMMAND)) &&
@@ -224,9 +218,7 @@ static int elantech_set_input_rel_params(struct asusdec_chip *ec_chip)
 		etd->ymax = (0xF0 & param[0]) << 4 | param[2];
 
 		etd->abs_dev = input_allocate_device();
-		ELAN_INFO("1 elantech_touchscreen=%p\n",etd->abs_dev);
 		if (etd->abs_dev != NULL){
-			ELAN_INFO("2 elantech_touchscreen=%p\n",etd->abs_dev);
 			etd->abs_dev->name = "elantech_touchscreen";
 			etd->abs_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_SYN);
 			etd->abs_dev->keybit[BIT_WORD(BTN_MOUSE)] = BIT_MASK(BTN_LEFT) | BIT_MASK(BTN_RIGHT);
@@ -238,17 +230,16 @@ static int elantech_set_input_rel_params(struct asusdec_chip *ec_chip)
 			input_set_abs_params(etd->abs_dev, ABS_MT_POSITION_Y, 0, etd->ymax, 0, 0);
 			input_set_abs_params(etd->abs_dev, ABS_MT_TOUCH_MAJOR, 0, ETP_WMAX_V2, 0, 0);
 
-			ret=input_register_device(etd->abs_dev);
+			ret = input_register_device(etd->abs_dev);
 			if (ret) {
-			      ELAN_ERR("Unable to register %s input device\n", etd->abs_dev->name);
+			      pr_err("elan_i2c_asus: %s: Unable to register %s input device\n", __func__, etd->abs_dev->name);
 			}
 		}
 		return 0;
 	}
 
- init_fail:
+init_fail:
 	return -1;
-
 }
 
 
@@ -259,7 +250,7 @@ int elantech_detect(struct asusdec_chip *ec_chip)
 {
 	struct i2c_client *client;
 	unsigned char param[3];
-	ELAN_INFO("2.6.2X-Elan-touchpad-2010-11-27\n");
+	pr_info("elan_i2c_asus: 2.6.2X-Elan-touchpad-2010-11-27\n");
 
 	client = ec_chip->client;
 
@@ -268,7 +259,7 @@ int elantech_detect(struct asusdec_chip *ec_chip)
 	    elan_i2c_asus_cmd(client,  NULL, PSMOUSE_CMD_SETSCALE11) ||
 	    elan_i2c_asus_cmd(client,  NULL, PSMOUSE_CMD_SETSCALE11) ||
 	    elan_i2c_asus_cmd(client, param, PSMOUSE_CMD_GETINFO)) {
-		ELAN_ERR("sending Elantech magic knock failed.\n");
+		pr_err("elan_i2c_asus: %s: sending Elantech magic knock failed.\n", __func__);
 		return -1;
 	}
 
@@ -277,8 +268,8 @@ int elantech_detect(struct asusdec_chip *ec_chip)
 	 * set of magic numbers
 	 */
 	if (param[0] != 0x3c ||param[1] != 0x03 || param[2]!= 0x00) {
-		ELAN_ERR("unexpected magic knock result 0x%02x, 0x%02x, 0x%02x.\n",
-			param[0], param[1],param[2]);
+		pr_err("elan_i2c_asus: %s: unexpected magic knock result 0x%02x, 0x%02x, 0x%02x.\n",
+			__func__, param[0], param[1],param[2]);
 		return -1;
 	}
 
@@ -290,16 +281,21 @@ int elantech_detect(struct asusdec_chip *ec_chip)
  */
 int elantech_init(struct asusdec_chip *ec_chip)
 {
-	ELAN_INFO("Elan et1059 elantech_init\n");
+	pr_info("elan_i2c_asus: Elan et1059 elantech_init\n");
 
 	if (elantech_set_absolute_mode(ec_chip)){
-		ELAN_ERR("failed to put touchpad into absolute mode.\n");
+		pr_err("elan_i2c_asus: %s: failed to put touchpad into absolute mode.\n", __func__);
 		return -1;
 	}
+
 	if (elantech_set_input_rel_params(ec_chip)){
-		ELAN_ERR("failed to elantech_set_input_rel_params.\n");
+		pr_err("elan_i2c_asus: %s: failed to elantech_set_input_rel_params.\n", __func__);
 		return -1;
 	}
-	//elan_i2c_asus_cmd(ec_chip->client,  NULL, PSMOUSE_CMD_ENABLE);
+
 	return 0;
 }
+
+MODULE_DESCRIPTION("Elan Touchpad Driver");
+MODULE_LICENSE("GPL");
+
