@@ -17,19 +17,17 @@
 
 #include "elan_i2c_asus.h"
 
-static int elan_i2c_asus_cmd(struct i2c_client *client,unsigned char *param, int command)
+static int elan_i2c_asus_cmd(struct i2c_client *client, unsigned char *param, int command)
 {
 
 	u16 asus_ec_cmd;
-	int ret;
+	int ret = 0;
 	int retry = ELAN_RETRY_COUNT;
 	int i;
 	int retry_data_count;
 	u8 i2c_data[16];
 
-	pr_info("elan_i2c_asus: %s: command = 0x%x\n", __func__, command);
 	asus_ec_cmd = (((command & 0x00ff) << 8) | 0xD4);
-	ret = 0;
 	ret = i2c_smbus_write_word_data(client, 0x64, asus_ec_cmd);
 
 	if (ret < 0) {
@@ -172,7 +170,7 @@ static int elantech_set_absolute_mode(struct asusdec_chip *ec_chip)
 	struct i2c_client *client;
 	unsigned char reg_10 = 0x03;
 
-	pr_info("elan_i2c_asus: %s: elantech_set_absolute_mode 2\n", __func__);
+	pr_info("elan_i2c_asus: %s\n", __func__);
 	client = ec_chip->client;
 
 	if ((!elan_i2c_asus_cmd(client, NULL, ETP_PS2_CUSTOM_COMMAND)) &&
@@ -298,4 +296,3 @@ int elantech_init(struct asusdec_chip *ec_chip)
 
 MODULE_DESCRIPTION("Elan Touchpad Driver");
 MODULE_LICENSE("GPL");
-
