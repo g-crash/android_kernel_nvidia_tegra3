@@ -292,22 +292,16 @@ static struct platform_driver tegra_rt5631_driver = {
 static int __init tegra_rt5631_modinit(void)
 {
 	int ret = 0;
-	u32 project_info = tegra3_get_project_id();
 
-    printk(KERN_INFO "%s+ #####\n", __func__);
-	if(project_info == TEGRA3_PROJECT_TF201 || project_info == TEGRA3_PROJECT_TF300TG ||
-       project_info == TEGRA3_PROJECT_TF700T || project_info == TEGRA3_PROJECT_TF300TL)
-	{
-		printk("%s(): support codec rt5631\n", __func__);
-	}else{
-		printk("%s(): not support codec rt5631\n", __func__);
+	if(tegra3_get_project_id() != TEGRA3_PROJECT_TF300T) {
+		printk("tegra_rt5631: codec is supported\n");
+	} else {
 		return 0;
 	}
 
 	ret = platform_driver_register(&tegra_rt5631_driver);
 	audio_dock_init();
 
-	printk(KERN_INFO "%s- #####\n", __func__);
 	return ret;
 }
 module_init(tegra_rt5631_modinit);
