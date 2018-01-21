@@ -103,25 +103,12 @@ static p_tegra_dc_bl_output bl_output;
 
 static int cardhu_backlight_init(struct device *dev)
 {
-	int ret = 0; 
 	bl_output = cardhu_bl_output_measured;
 
 	if (WARN_ON(ARRAY_SIZE(cardhu_bl_output_measured) != 256))
 		pr_err("%s: bl_output array does not have 256 elements\n", __func__);
-	
-	/* Enable back light */
-	ret = gpio_request(cardhu_bl_enb, "backlight_enb");
-	if (!ret) {
-		ret = gpio_direction_output(cardhu_bl_enb, 1);
-		if (ret < 0) {
-			gpio_free(cardhu_bl_enb);
-			pr_err("%s: error in setting backlight_enb\n", __func__);
-		}
-	} else {
-		pr_err("%s: error in gpio request for backlight_enb\n", __func__);
-	}
 
-	return ret;
+	return 1;
 };
 
 static int cardhu_backlight_notify(struct device *unused, int brightness)
@@ -777,7 +764,7 @@ static struct platform_device *cardhu_gfx_devices[] __initdata = {
 
 int __init cardhu_panel_init(void)
 {
-	int err;
+	int err, ret;
 	struct resource __maybe_unused *res;
 #ifdef CONFIG_TEGRA_GRHOST
 	struct platform_device *phost1x;
@@ -787,6 +774,18 @@ int __init cardhu_panel_init(void)
 	cardhu_carveouts[1].base = tegra_carveout_start;
 	cardhu_carveouts[1].size = tegra_carveout_size;
 #endif
+
+	/* Enable back light */
+	ret = gpio_request(cardhu_bl_enb, "backlight_enb");
+	if (!ret) {
+		ret = gpio_direction_output(cardhu_bl_enb, 1);
+		if (ret < 0) {
+			gpio_free(cardhu_bl_enb);
+			pr_err("%s: error in setting backlight_enb\n", __func__);
+		}
+	} else {
+		pr_err("%s: error in gpio request for backlight_enb\n", __func__);
+	}
 
 	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF700T){
 		cardhu_disp1_out.dither = TEGRA_DC_ORDERED_DITHER;
