@@ -139,8 +139,6 @@ static int tegra_rt5631_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_codec *codec = rtd->codec;
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 
-	printk("%s+\n", __func__);
-
 	snd_soc_dapm_nc_pin(dapm, "MIC2");
 	snd_soc_dapm_nc_pin(dapm, "AXIL");
 	snd_soc_dapm_nc_pin(dapm, "AXIR");
@@ -199,7 +197,6 @@ static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
 	struct tegra_asoc_platform_data *pdata;
 
 	int ret;
-	printk("%s+\n", __func__);
 
 	pdata = pdev->dev.platform_data;
 	if (!pdata) {
@@ -253,7 +250,6 @@ static __devinit int tegra_rt5631_driver_probe(struct platform_device *pdev)
 	}
 #endif
 
-	printk("%s-\n", __func__);
 	return 0;
 
 err_unregister_card:
@@ -291,18 +287,13 @@ static struct platform_driver tegra_rt5631_driver = {
 
 static int __init tegra_rt5631_modinit(void)
 {
-	int ret = 0;
-
 	if(tegra3_get_project_id() != TEGRA3_PROJECT_TF300T) {
 		printk("tegra_rt5631: codec is supported\n");
+		audio_dock_init();
+		return platform_driver_register(&tegra_rt5631_driver);
 	} else {
 		return 0;
 	}
-
-	ret = platform_driver_register(&tegra_rt5631_driver);
-	audio_dock_init();
-
-	return ret;
 }
 module_init(tegra_rt5631_modinit);
 
