@@ -48,9 +48,15 @@
 
 #define ABS_MT_POSITION		0x2a /* Group a set of X and Y */
 
+#ifdef CONFIG_MACH_TRANSFORMER
+#define FIRMWARE_UPDATE_WITH_HEADER 0 
+#define FIRMWARE_NAME "elan/02-3011-4820.ekt"
+MODULE_FIRMWARE(FIRMWARE_NAME);
+#else
 #define FIRMWARE_UPDATE_WITH_HEADER 1 
 #define FIRMWARE_NAME "elan/ektf3k.fw"
 MODULE_FIRMWARE(FIRMWARE_NAME);
+#endif
 
 static uint8_t firmware_recovery = 0x00;
 static uint8_t work_lock = 0;
@@ -479,7 +485,7 @@ static void ektf3k_ts_report_data(struct i2c_client *client, uint8_t *buf)
 				if (active) {
 					ektf3k_ts_parse_xy(&buf[idx], &x, &y);
 #ifdef CONFIG_MACH_TRANSFORMER
-                    y = ts->abs_y_max - y;
+					y = ts->abs_y_max - y;
 #else
 					x = x > ts->abs_x_max ? 0 : ts->abs_x_max - x;
 					y = y > ts->abs_y_max ? ts->abs_y_max : y; 
@@ -489,8 +495,8 @@ static void ektf3k_ts_report_data(struct i2c_client *client, uint8_t *buf)
 					input_report_abs(idev, ABS_MT_TOUCH_MAJOR, touch_size);
 					input_report_abs(idev, ABS_MT_PRESSURE, pressure_size);
 #ifdef CONFIG_MACH_TRANSFORMER
-                    input_report_abs(idev, ABS_MT_POSITION_X, x);
-                    input_report_abs(idev, ABS_MT_POSITION_Y, y);
+					input_report_abs(idev, ABS_MT_POSITION_X, x);
+					input_report_abs(idev, ABS_MT_POSITION_Y, y);
 #else
 					input_report_abs(idev, ABS_MT_POSITION_X, y);
 					input_report_abs(idev, ABS_MT_POSITION_Y, x);
@@ -914,8 +920,8 @@ static int ektf3k_ts_probe(struct i2c_client *client,
 
 	input_mt_init_slots(ts->input_dev, FINGER_NUM);
 #ifdef CONFIG_MACH_TRANSFORMER
-    input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, pdata->abs_x_min, pdata->abs_x_max, 0, 0);
-    input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, pdata->abs_y_min, pdata->abs_y_max, 0, 0);
+	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, pdata->abs_x_min, pdata->abs_x_max, 0, 0);
+	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, pdata->abs_y_min, pdata->abs_y_max, 0, 0);
 #else
 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, pdata->abs_y_min, pdata->abs_y_max, 0, 0);
 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, pdata->abs_x_min, pdata->abs_x_max, 0, 0);
