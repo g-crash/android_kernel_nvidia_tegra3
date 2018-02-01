@@ -82,8 +82,8 @@ static struct rfkill_gpio_platform_data cardhu_bt_rfkill_pdata[] = {
 };
 
 static struct platform_device cardhu_bt_rfkill_device = {
-	.name           = "rfkill_gpio",
-	.id             = -1,
+	.name			= "rfkill_gpio",
+	.id				= -1,
 	.dev = {
 		.platform_data = &cardhu_bt_rfkill_pdata,
 	},
@@ -91,28 +91,28 @@ static struct platform_device cardhu_bt_rfkill_device = {
 
 static struct resource cardhu_bluesleep_resources[] = {
 	[0] = {
-		.name = "gpio_host_wake",
-			.start  = TEGRA_GPIO_PU6,
-			.end    = TEGRA_GPIO_PU6,
-			.flags  = IORESOURCE_IO,
+		.name	= "gpio_host_wake",
+		.start	= TEGRA_GPIO_PU6,
+		.end	= TEGRA_GPIO_PU6,
+		.flags	= IORESOURCE_IO,
 	},
 	[1] = {
-		.name = "gpio_ext_wake",
-			.start  = TEGRA_GPIO_PU1,
-			.end    = TEGRA_GPIO_PU1,
-			.flags  = IORESOURCE_IO,
+		.name	= "gpio_ext_wake",
+		.start	= TEGRA_GPIO_PU1,
+		.end	= TEGRA_GPIO_PU1,
+		.flags	= IORESOURCE_IO,
 	},
 	[2] = {
-		.name = "host_wake",
-		.flags  = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
+		.name	= "host_wake",
+		.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
 	},
 };
 
 static struct platform_device cardhu_bluesleep_device = {
-	.name           = "bluesleep",
-	.id             = -1,
-	.num_resources  = ARRAY_SIZE(cardhu_bluesleep_resources),
-	.resource       = cardhu_bluesleep_resources,
+	.name			= "bluesleep",
+	.id				= -1,
+	.num_resources	= ARRAY_SIZE(cardhu_bluesleep_resources),
+	.resource		= cardhu_bluesleep_resources,
 };
 
 #ifdef CONFIG_BT_BLUESLEEP
@@ -157,59 +157,59 @@ static __initdata struct tegra_clk_init_table cardhu_clk_init_table[] = {
 };
 
 static struct tegra_i2c_platform_data cardhu_i2c1_platform_data = {
-	.adapter_nr	= 0,
-	.bus_count	= 1,
+	.adapter_nr		= 0,
+	.bus_count		= 1,
 	.bus_clk_rate	= { 100000, 0 },
 	.scl_gpio		= {TEGRA_GPIO_PC4, 0},
 	.sda_gpio		= {TEGRA_GPIO_PC5, 0},
-	.arb_recovery = arb_lost_recovery,
+	.arb_recovery		= arb_lost_recovery,
 };
 
 static struct tegra_i2c_platform_data cardhu_i2c2_platform_data = {
-	.adapter_nr	= 1,
-	.bus_count	= 1,
+	.adapter_nr		= 1,
+	.bus_count		= 1,
 	.bus_clk_rate	= { 400000, 0 },
 	.is_clkon_always = true,
 	.scl_gpio		= {TEGRA_GPIO_PT5, 0},
 	.sda_gpio		= {TEGRA_GPIO_PT6, 0},
-	.arb_recovery = arb_lost_recovery,
+	.arb_recovery		= arb_lost_recovery,
 };
 
 static struct tegra_i2c_platform_data cardhu_i2c3_platform_data = {
-	.adapter_nr	= 2,
-	.bus_count	= 1,
+	.adapter_nr		= 2,
+	.bus_count		= 1,
 	.bus_clk_rate	= { 100000, 0 },
 	.scl_gpio		= {TEGRA_GPIO_PBB1, 0},
 	.sda_gpio		= {TEGRA_GPIO_PBB2, 0},
-	.arb_recovery = arb_lost_recovery,
+	.arb_recovery		= arb_lost_recovery,
 };
 
 static struct tegra_i2c_platform_data cardhu_i2c3_platform_data_for_TF300 = {
-	.adapter_nr	= 2,
-	.bus_count	= 1,
+	.adapter_nr		= 2,
+	.bus_count		= 1,
 	.bus_clk_rate	= { 400000, 0 },
 	.scl_gpio		= {TEGRA_GPIO_PBB1, 0},
 	.sda_gpio		= {TEGRA_GPIO_PBB2, 0},
-	.arb_recovery = arb_lost_recovery,
+	.arb_recovery		= arb_lost_recovery,
 };
 
 /* Higher freq could be applied for TF300T/TF300TG/TF300TL Camera FW update*/
 static struct tegra_i2c_platform_data cardhu_i2c4_platform_data = {
-	.adapter_nr	= 3,
-	.bus_count	= 1,
+	.adapter_nr		= 3,
+	.bus_count		= 1,
 	.bus_clk_rate	= { 93750, 0 },
 	.scl_gpio		= {TEGRA_GPIO_PV4, 0},
 	.sda_gpio		= {TEGRA_GPIO_PV5, 0},
-	.arb_recovery = arb_lost_recovery,
+	.arb_recovery		= arb_lost_recovery,
 };
 
 static struct tegra_i2c_platform_data cardhu_i2c5_platform_data = {
-	.adapter_nr	= 4,
-	.bus_count	= 1,
+	.adapter_nr		= 4,
+	.bus_count		= 1,
 	.bus_clk_rate	= { 400000, 0 },
 	.scl_gpio		= {TEGRA_GPIO_PZ6, 0},
 	.sda_gpio		= {TEGRA_GPIO_PZ7, 0},
-	.arb_recovery = arb_lost_recovery,
+	.arb_recovery		= arb_lost_recovery,
 };
 
 static struct wm8903_platform_data cardhu_wm8903_pdata = {
@@ -229,7 +229,7 @@ static struct wm8903_platform_data cardhu_wm8903_pdata = {
 
 #ifdef CONFIG_DSP_FM34
 static struct i2c_board_info __initdata dsp_board_info = {
-    I2C_BOARD_INFO("dsp_fm34", 0x60),
+	I2C_BOARD_INFO("dsp_fm34", 0x60),
 };
 #endif
 
@@ -446,18 +446,18 @@ static struct tegra_asoc_platform_data cardhu_audio_pdata = {
 	.gpio_hp_mute		= -1,
 	.gpio_int_mic_en	= -1,
 	.gpio_ext_mic_en	= -1,
-	.i2s_param[HIFI_CODEC]	= {
+	.i2s_param[HIFI_CODEC] = {
 		.audio_port_id	= 0,
 		.is_i2s_master	= 1,
-		.i2s_mode	= TEGRA_DAIFMT_I2S,
+		.i2s_mode		= TEGRA_DAIFMT_I2S,
 	},
-	.i2s_param[BASEBAND]	= {
+	.i2s_param[BASEBAND] = {
 		.audio_port_id	= -1,
 	},
-	.i2s_param[BT_SCO]	= {
+	.i2s_param[BT_SCO] = {
 		.audio_port_id	= 3,
 		.is_i2s_master	= 1,
-		.i2s_mode	= TEGRA_DAIFMT_DSP_A,
+		.i2s_mode		= TEGRA_DAIFMT_DSP_A,
 	},
 };
 
@@ -511,8 +511,8 @@ static u8 read_chg(void)
 }
 
 static struct mxt_platform_data atmel_mxt_info = {
-	.irqflags       = IRQF_ONESHOT | IRQF_TRIGGER_LOW,
-	.read_chg       = &read_chg,
+	.irqflags		= IRQF_ONESHOT | IRQF_TRIGGER_LOW,
+	.read_chg		= &read_chg,
 };
 
 static struct i2c_board_info __initdata atmel_i2c_info[] = {
@@ -530,10 +530,10 @@ static struct i2c_board_info __initdata atmel_i2c_info[] = {
 
 #include <linux/i2c/ektf3k.h>
 
-#define ELAN_X_MAX 	2240
-#define ELAN_Y_MAX	1408
-#define ELAN_X_MAX_202T  2944
-#define ELAN_Y_MAX_202T  1856
+#define ELAN_X_MAX			2240
+#define ELAN_Y_MAX			1408
+#define ELAN_X_MAX_202T		2944
+#define ELAN_Y_MAX_202T		1856
 
 struct elan_ktf3k_i2c_platform_data ts_elan_ktf3k_data[] = {
 	{
@@ -701,7 +701,7 @@ static struct tegra_usb_platform_data tegra_ehci2_utmi_pdata = {
 	.port_otg = false,
 	.has_hostpc = true,
 	.phy_intf = TEGRA_USB_PHY_INTF_UTMI,
-	.op_mode        = TEGRA_USB_OPMODE_HOST,
+	.op_mode = TEGRA_USB_OPMODE_HOST,
 	.u_data.host = {
 		.vbus_gpio = -1,
 		.hot_plug = true,
@@ -968,7 +968,7 @@ static void __init tegra_cardhu_init(void)
 	tegra_soc_device_init("cardhu");
 	cardhu_pinmux_init_early();
 	cardhu_booting_info();
-    cardhu_misc_init(tegra_chip_uid());
+	cardhu_misc_init(tegra_chip_uid());
 	cardhu_pinmux_init();
 	cardhu_gpio_init();
 	cardhu_misc_reset();
@@ -1016,15 +1016,15 @@ static const char *cardhu_dt_board_compat[] = {
 };
 
 MACHINE_START(TRANSFORMER, "transformer")
-	.atag_offset    = 0x100,
-	.soc            = &tegra_soc_desc,
-	.map_io         = tegra_map_common_io,
-	.reserve        = tegra_cardhu_reserve,
-	.init_early     = tegra30_init_early,
-	.init_irq       = tegra_init_irq,
-	.handle_irq     = gic_handle_irq,
-	.timer          = &tegra_timer,
-	.init_machine   = tegra_cardhu_init,
-	.dt_compat      = cardhu_dt_board_compat,
-	.restart        = tegra_assert_system_reset,
+	.atag_offset		= 0x100,
+	.soc				= &tegra_soc_desc,
+	.map_io			= tegra_map_common_io,
+	.reserve			= tegra_cardhu_reserve,
+	.init_early		= tegra30_init_early,
+	.init_irq		= tegra_init_irq,
+	.handle_irq		= gic_handle_irq,
+	.timer			= &tegra_timer,
+	.init_machine		= tegra_cardhu_init,
+	.dt_compat		= cardhu_dt_board_compat,
+	.restart			= tegra_assert_system_reset,
 MACHINE_END

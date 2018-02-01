@@ -47,7 +47,7 @@
 /* common pins( backlight ) for all display boards */
 #define cardhu_bl_enb			TEGRA_GPIO_PH2
 #define cardhu_hdmi_hpd			TEGRA_GPIO_PN7
-#define cardhu_hdmi_enb         	TEGRA_GPIO_PP2
+#define cardhu_hdmi_enb		 	TEGRA_GPIO_PP2
 
 #ifdef CONFIG_TEGRA_DC
 static struct regulator *cardhu_hdmi_reg = NULL;
@@ -118,10 +118,10 @@ static int cardhu_backlight_notify(struct device *unused, int brightness)
 	/* Set the backlight GPIO pin mode to 'backlight_enable' */
 	gpio_set_value(cardhu_bl_enb, !!brightness);
  
-    if (tegra3_get_project_id() == TEGRA3_PROJECT_TF201
-                    && isRecording) {
-        gpio_set_value(cardhu_bl_enb, 1);
-    }
+	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF201
+					&& isRecording) {
+		gpio_set_value(cardhu_bl_enb, 1);
+	}
 
 	/* SD brightness is a percentage, 8-bit value. */
 	brightness = DIV_ROUND_CLOSEST((brightness * cur_sd_brightness), 255);
@@ -294,7 +294,7 @@ static int cardhu_panel_disable_tf700t(void)
 	gpio_set_value(TEGRA_GPIO_PC6, 0);
 	gpio_set_value(TEGRA_GPIO_PBB3, 0);
 
-	if (gpio_get_value(TEGRA_GPIO_PI6)==0 ){        //panel is panasonic
+	if (gpio_get_value(TEGRA_GPIO_PI6)==0 ){		//panel is panasonic
 		msleep(85);
 	}
 	else {  //panel is hydis
@@ -358,12 +358,12 @@ static int cardhu_panel_prepoweroff(void)
 		regulator_disable(cardhu_lvds_vdd_bl);
 		regulator_put(cardhu_lvds_vdd_bl);
 		cardhu_lvds_vdd_bl = NULL;
-	}    
+	}
 	msleep(200);
 
 	gpio_set_value(e1247_pm269_lvds_shutdown, 0);
 	msleep(10);
-        return 0;
+	return 0;
 }
 
 #ifdef CONFIG_TEGRA_DC
@@ -435,17 +435,17 @@ static int cardhu_hdmi_enable(struct device *dev)
 
 static int cardhu_hdmi_disable(void)
 {
-        if (cardhu_hdmi_reg) {
-                regulator_disable(cardhu_hdmi_reg);
-                regulator_put(cardhu_hdmi_reg);
-                cardhu_hdmi_reg = NULL;
-        }
-        if(cardhu_hdmi_pll) {
-                regulator_disable(cardhu_hdmi_pll);
-                regulator_put(cardhu_hdmi_pll);
-                cardhu_hdmi_pll = NULL;
-        }
-        return 0;
+		if (cardhu_hdmi_reg) {
+				regulator_disable(cardhu_hdmi_reg);
+				regulator_put(cardhu_hdmi_reg);
+				cardhu_hdmi_reg = NULL;
+		}
+		if(cardhu_hdmi_pll) {
+				regulator_disable(cardhu_hdmi_pll);
+				regulator_put(cardhu_hdmi_pll);
+				cardhu_hdmi_pll = NULL;
+		}
+		return 0;
 }
 
 static struct resource cardhu_disp1_resources[] = {
