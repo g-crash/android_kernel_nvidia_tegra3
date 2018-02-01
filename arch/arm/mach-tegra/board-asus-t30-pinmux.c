@@ -719,34 +719,34 @@ int __init cardhu_pinmux_init(void)
 
 	tegra_pinmux_config_table(cardhu_pinmux_common, ARRAY_SIZE(cardhu_pinmux_common));
 	tegra_drive_pinmux_config_table(cardhu_drive_pinmux,
-					ARRAY_SIZE(cardhu_drive_pinmux));
+			ARRAY_SIZE(cardhu_drive_pinmux));
 
 	tegra_pinmux_config_table(cardhu_pinmux_e118x,
-				    ARRAY_SIZE(cardhu_pinmux_e118x));
+			ARRAY_SIZE(cardhu_pinmux_e118x));
 	tegra_pinmux_config_table(unused_pins_lowpower,
-					ARRAY_SIZE(unused_pins_lowpower));
+			ARRAY_SIZE(unused_pins_lowpower));
 	tegra_pinmux_config_table(gmi_pins_269,
-					ARRAY_SIZE(gmi_pins_269));
+			ARRAY_SIZE(gmi_pins_269));
 
 	if (project_info == TEGRA3_PROJECT_TF700T) {
 		printk("Check TF700T pinmux \n");
 		tegra_pinmux_config_table(gmi_pins_700T,
-					ARRAY_SIZE(gmi_pins_700T));
+			ARRAY_SIZE(gmi_pins_700T));
 	} else {
 		tegra_pinmux_config_table(gmi_pins_not_700T,
-					ARRAY_SIZE(gmi_pins_not_700T));
+			ARRAY_SIZE(gmi_pins_not_700T));
 	}
 
 	// Config the pinmux of 3G version
 	if (project_info == TEGRA3_PROJECT_TF300TL) {
 		printk("Check TF300TL pinmux\n");
 		tegra_pinmux_config_table(pinmux_TF300TL,
-					ARRAY_SIZE(pinmux_TF300TL));
+			ARRAY_SIZE(pinmux_TF300TL));
 	} else if (project_info == TEGRA3_PROJECT_TF300TG) {
 		tegra_pinmux_config_table(pinmux_TF300TG,
-					ARRAY_SIZE(pinmux_TF300TG));
+			ARRAY_SIZE(pinmux_TF300TG));
 		tegra_drive_pinmux_config_table(cardhu_drive_pinmux_TF300TG,
-					ARRAY_SIZE(cardhu_drive_pinmux_TF300TG));
+			ARRAY_SIZE(cardhu_drive_pinmux_TF300TG));
 	}
 
 	return 0;
@@ -797,7 +797,7 @@ static void set_unused_pin_gpio(struct gpio_init_pin_info *lpm_pin_info,
 			ret = gpio_direction_input(pin_info->gpio_nr);
 		else
 			ret = gpio_direction_output(pin_info->gpio_nr,
-							pin_info->value);
+					pin_info->value);
 		if (ret < 0) {
 			pr_err("%s() Error in setting gpio %d to in/out\n",
 				__func__, pin_info->gpio_nr);

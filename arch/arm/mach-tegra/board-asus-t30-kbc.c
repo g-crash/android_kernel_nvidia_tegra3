@@ -43,13 +43,13 @@ static struct gpio_keys_button cardhu_int_keys[] = {
 };
 
 static struct gpio_keys_platform_data cardhu_int_keys_pdata = {
-	.buttons			= cardhu_int_keys,
-	.nbuttons		= ARRAY_SIZE(cardhu_int_keys),
+	.buttons	= cardhu_int_keys,
+	.nbuttons	= ARRAY_SIZE(cardhu_int_keys),
 };
 
 static struct platform_device cardhu_int_keys_device = {
 	.name	= "gpio-keys",
-	.id		= 0,
+	.id	= 0,
 	.dev	= {
 		.platform_data  = &cardhu_int_keys_pdata,
 	},

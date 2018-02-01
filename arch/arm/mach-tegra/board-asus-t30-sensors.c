@@ -467,23 +467,23 @@ struct yuv_sensor_platform_data iCatch7002a_sensor_data = {
 #endif  /* CONFIG_VIDEO_YUV */
 
 static struct throttle_table tj_throttle_table[] = {
-		  /* CPU_THROT_LOW cannot be used by other than CPU */
-		  /* NO_CAP cannot be used by CPU */
-		  /*      CPU,    CBUS,    SCLK,     EMC */
-		  { { 1000000,  NO_CAP,  NO_CAP,  NO_CAP } },
-		  { {  760000,  NO_CAP,  NO_CAP,  NO_CAP } },
-		  { {  760000,  NO_CAP,  NO_CAP,  NO_CAP } },
-		  { {  620000,  NO_CAP,  NO_CAP,  NO_CAP } },
-		  { {  620000,  NO_CAP,  NO_CAP,  NO_CAP } },
-		  { {  620000,  437000,  NO_CAP,  NO_CAP } },
-		  { {  620000,  352000,  NO_CAP,  NO_CAP } },
-		  { {  475000,  352000,  NO_CAP,  NO_CAP } },
-		  { {  475000,  352000,  NO_CAP,  NO_CAP } },
-		  { {  475000,  352000,  250000,  375000 } },
-		  { {  475000,  352000,  250000,  375000 } },
-		  { {  475000,  247000,  204000,  375000 } },
-		  { {  475000,  247000,  204000,  204000 } },
-		  { {  475000,  247000,  204000,  204000 } },
+	      /* CPU_THROT_LOW cannot be used by other than CPU */
+	      /* NO_CAP cannot be used by CPU */
+	      /*      CPU,    CBUS,    SCLK,     EMC */
+	      { { 1000000,  NO_CAP,  NO_CAP,  NO_CAP } },
+	      { {  760000,  NO_CAP,  NO_CAP,  NO_CAP } },
+	      { {  760000,  NO_CAP,  NO_CAP,  NO_CAP } },
+	      { {  620000,  NO_CAP,  NO_CAP,  NO_CAP } },
+	      { {  620000,  NO_CAP,  NO_CAP,  NO_CAP } },
+	      { {  620000,  437000,  NO_CAP,  NO_CAP } },
+	      { {  620000,  352000,  NO_CAP,  NO_CAP } },
+	      { {  475000,  352000,  NO_CAP,  NO_CAP } },
+	      { {  475000,  352000,  NO_CAP,  NO_CAP } },
+	      { {  475000,  352000,  250000,  375000 } },
+	      { {  475000,  352000,  250000,  375000 } },
+	      { {  475000,  247000,  204000,  375000 } },
+	      { {  475000,  247000,  204000,  204000 } },
+	      { {  475000,  247000,  204000,  204000 } },
 	{ { CPU_THROT_LOW,  247000,  204000,  102000 } },
 };
 
@@ -566,7 +566,7 @@ static int cardhu_nct1008_init(void)
 	int ret = 0;
 
 	cardhu_i2c4_nct1008_board_info[0].irq =
-				gpio_to_irq(TEGRA_GPIO_PCC2);
+		gpio_to_irq(TEGRA_GPIO_PCC2);
 
 	ret = gpio_request(TEGRA_GPIO_PCC2, "temp_alert");
 	if (ret < 0) {
@@ -581,8 +581,8 @@ static int cardhu_nct1008_init(void)
 	}
 
 	tegra_platform_edp_init(cardhu_nct1008_pdata.trips,
-							&cardhu_nct1008_pdata.num_trips,
-							0); /* edp temperature margin */
+				&cardhu_nct1008_pdata.num_trips,
+				0); /* edp temperature margin */
 	return ret;
 }
 

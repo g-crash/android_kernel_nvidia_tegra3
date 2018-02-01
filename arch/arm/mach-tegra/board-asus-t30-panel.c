@@ -45,9 +45,9 @@
 #define e1247_pm269_lvds_shutdown	TEGRA_GPIO_PN6
 
 /* common pins( backlight ) for all display boards */
-#define cardhu_bl_enb			TEGRA_GPIO_PH2
+#define cardhu_bl_enb				TEGRA_GPIO_PH2
 #define cardhu_hdmi_hpd			TEGRA_GPIO_PN7
-#define cardhu_hdmi_enb		 	TEGRA_GPIO_PP2
+#define cardhu_hdmi_enb			TEGRA_GPIO_PP2
 
 #ifdef CONFIG_TEGRA_DC
 static struct regulator *cardhu_hdmi_reg = NULL;
@@ -119,7 +119,7 @@ static int cardhu_backlight_notify(struct device *unused, int brightness)
 	gpio_set_value(cardhu_bl_enb, !!brightness);
  
 	if (tegra3_get_project_id() == TEGRA3_PROJECT_TF201
-					&& isRecording) {
+			&& isRecording) {
 		gpio_set_value(cardhu_bl_enb, 1);
 	}
 
@@ -435,17 +435,17 @@ static int cardhu_hdmi_enable(struct device *dev)
 
 static int cardhu_hdmi_disable(void)
 {
-		if (cardhu_hdmi_reg) {
-				regulator_disable(cardhu_hdmi_reg);
-				regulator_put(cardhu_hdmi_reg);
-				cardhu_hdmi_reg = NULL;
-		}
-		if(cardhu_hdmi_pll) {
-				regulator_disable(cardhu_hdmi_pll);
-				regulator_put(cardhu_hdmi_pll);
-				cardhu_hdmi_pll = NULL;
-		}
-		return 0;
+	if (cardhu_hdmi_reg) {
+			regulator_disable(cardhu_hdmi_reg);
+			regulator_put(cardhu_hdmi_reg);
+			cardhu_hdmi_reg = NULL;
+	}
+	if(cardhu_hdmi_pll) {
+			regulator_disable(cardhu_hdmi_pll);
+			regulator_put(cardhu_hdmi_pll);
+			cardhu_hdmi_pll = NULL;
+	}
+	return 0;
 }
 
 static struct resource cardhu_disp1_resources[] = {

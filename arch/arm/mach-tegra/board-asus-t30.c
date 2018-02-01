@@ -83,7 +83,7 @@ static struct rfkill_gpio_platform_data cardhu_bt_rfkill_pdata[] = {
 
 static struct platform_device cardhu_bt_rfkill_device = {
 	.name			= "rfkill_gpio",
-	.id				= -1,
+	.id			= -1,
 	.dev = {
 		.platform_data = &cardhu_bt_rfkill_pdata,
 	},
@@ -110,8 +110,8 @@ static struct resource cardhu_bluesleep_resources[] = {
 
 static struct platform_device cardhu_bluesleep_device = {
 	.name			= "bluesleep",
-	.id				= -1,
-	.num_resources	= ARRAY_SIZE(cardhu_bluesleep_resources),
+	.id			= -1,
+	.num_resources		= ARRAY_SIZE(cardhu_bluesleep_resources),
 	.resource		= cardhu_bluesleep_resources,
 };
 
@@ -358,7 +358,7 @@ static void __init cardhu_uart_init(void)
 	cardhu_uart_pdata.parent_clk_count = ARRAY_SIZE(uart_parent_clk);
 	cardhu_loopback_uart_pdata.parent_clk_list = uart_parent_clk;
 	cardhu_loopback_uart_pdata.parent_clk_count =
-						ARRAY_SIZE(uart_parent_clk);
+			ARRAY_SIZE(uart_parent_clk);
 	cardhu_loopback_uart_pdata.is_loopback = true;
 	tegra_uartb_device.dev.platform_data = &cardhu_uart_pdata;
 	tegra_uartc_device.dev.platform_data = &cardhu_uart_pdata;
@@ -374,7 +374,7 @@ static void __init cardhu_uart_init(void)
 				debug_uart_clk, -1, -1);
 
 	platform_add_devices(cardhu_uart_devices,
-				ARRAY_SIZE(cardhu_uart_devices));
+			ARRAY_SIZE(cardhu_uart_devices));
 }
 
 static struct platform_device *cardhu_spi_devices[] __initdata = {
@@ -417,7 +417,7 @@ static void __init cardhu_spi_init(void)
 	cardhu_spi_pdata.parent_clk_count = ARRAY_SIZE(spi_parent_clk);
 	tegra_spi_device4.dev.platform_data = &cardhu_spi_pdata;
 	platform_add_devices(cardhu_spi_devices,
-				ARRAY_SIZE(cardhu_spi_devices));
+			ARRAY_SIZE(cardhu_spi_devices));
 }
 
 static struct resource tegra_rtc_resources[] = {
@@ -449,7 +449,7 @@ static struct tegra_asoc_platform_data cardhu_audio_pdata = {
 	.i2s_param[HIFI_CODEC] = {
 		.audio_port_id	= 0,
 		.is_i2s_master	= 1,
-		.i2s_mode		= TEGRA_DAIFMT_I2S,
+		.i2s_mode	= TEGRA_DAIFMT_I2S,
 	},
 	.i2s_param[BASEBAND] = {
 		.audio_port_id	= -1,
@@ -457,7 +457,7 @@ static struct tegra_asoc_platform_data cardhu_audio_pdata = {
 	.i2s_param[BT_SCO] = {
 		.audio_port_id	= 3,
 		.is_i2s_master	= 1,
-		.i2s_mode		= TEGRA_DAIFMT_DSP_A,
+		.i2s_mode	= TEGRA_DAIFMT_DSP_A,
 	},
 };
 
@@ -1017,14 +1017,14 @@ static const char *cardhu_dt_board_compat[] = {
 
 MACHINE_START(TRANSFORMER, "transformer")
 	.atag_offset		= 0x100,
-	.soc				= &tegra_soc_desc,
+	.soc			= &tegra_soc_desc,
 	.map_io			= tegra_map_common_io,
-	.reserve			= tegra_cardhu_reserve,
+	.reserve		= tegra_cardhu_reserve,
 	.init_early		= tegra30_init_early,
 	.init_irq		= tegra_init_irq,
 	.handle_irq		= gic_handle_irq,
 	.timer			= &tegra_timer,
 	.init_machine		= tegra_cardhu_init,
 	.dt_compat		= cardhu_dt_board_compat,
-	.restart			= tegra_assert_system_reset,
+	.restart		= tegra_assert_system_reset,
 MACHINE_END
